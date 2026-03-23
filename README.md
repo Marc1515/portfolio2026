@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio 2026
 
-## Getting Started
+Personal portfolio built with Next.js App Router and TypeScript, following a mobile-first and scalable architecture.
 
-First, run the development server:
+## Scripts
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- `npm run dev`: run development server.
+- `npm run build`: create production build.
+- `npm run start`: serve production build.
+- `npm run lint`: run ESLint.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `src/app`: App Router entries, layout and global styles.
+- `src/components/ui`: generic reusable UI primitives (`Section`).
+- `src/components/layout`: layout components (`Header`, `Footer`, `Container`).
+- `src/components/sections`: top-level page sections.
+- `src/components/features`: domain components grouped by feature.
+- `src/data`: typed content separated from UI.
+- `src/types`: domain type contracts.
+- `src/lib`: shared constants and utility helpers.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Content Maintenance
 
-## Learn More
+Update portfolio content without touching UI by editing:
 
-To learn more about Next.js, take a look at the following resources:
+- `src/data/site.ts`
+- `src/data/projects.ts`
+- `src/data/experience.ts`
+- `src/data/contact.ts`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All files are validated by TypeScript through `satisfies` and strict typing.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Conventions
 
-## Deploy on Vercel
+- Prefer Server Components. Add `'use client'` only when browser APIs or interactivity require it.
+- Avoid `any` (explicit and implicit) and keep strict TypeScript enabled.
+- Keep `sections` focused on composition and move reusable pieces into `ui` or `features`.
+- Reuse `Section` for shared section structure (id, spacing, headings, container).
+- Keep domain data serializable and independent from JSX to ease future migration to CMS/API.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Run locally
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Install dependencies: `npm install`
+2. Start development server: `npm run dev`
+3. Open `http://localhost:3000`
