@@ -13,6 +13,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <Image
           src={project.image}
           alt={`${project.title} preview`}
+          loading={project.featured ? "eager" : "lazy"}
+          priority={project.featured}
           width={640}
           height={360}
           sizes="(max-width: 768px) 100vw, 33vw"

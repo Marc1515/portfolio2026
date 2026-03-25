@@ -2,24 +2,26 @@ import type { Project } from "@/types/project";
 
 export const projects = [
   {
-    id: "finance-dashboard",
-    title: "Finance Dashboard",
+    id: "caseta-martiicarmeta",
+    title: "Reservation Management System",
     description:
-      "A responsive dashboard with charts, filters and account activity insights.",
-    tags: ["Next.js", "TypeScript", "Charts"],
-    repoUrl: "https://github.com/your-user/finance-dashboard",
-    liveUrl: "https://example.com/finance-dashboard",
-    image: "/images/projects/finance-dashboard.svg",
+      "Full-stack booking platform for a rural house, featuring a public reservation flow and an admin panel for availability management.",
+    tags: ["Next.js", "TypeScript", "Tailwind CSS", "i18n"],
+    repoUrl: "https://github.com/Marc1515/casetamartiicarmeta",
+    liveUrl: "https://casetamartiicarmeta.com",
+    image: "/images/projects/caseta.png",
     featured: true,
   },
   {
-    id: "design-system",
-    title: "UI Design System",
+    id: "trello-app",
+    title: "Trello System",
     description:
-      "Reusable components and tokens for consistent interfaces across products.",
-    tags: ["React", "Storybook", "Design Tokens"],
-    repoUrl: "https://github.com/your-user/ui-design-system",
-    image: "/images/projects/ui-design-system.svg",
+      "Trello-style task management app with boards, lists, cards and drag-and-drop organization.",
+    tags: ["Next.js", "Shadcn", "Clerk", "Stripe"],
+    repoUrl: "https://github.com/Marc1515/trello-app",
+    liveUrl: "https://trello.marcespana.com/",
+    image: "/images/projects/trello.png",
+
     featured: true,
   },
   {
