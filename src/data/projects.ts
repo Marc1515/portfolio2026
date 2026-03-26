@@ -17,19 +17,18 @@ export const projects = [
     title: "Trello System",
     description:
       "Trello-style task management app with boards, lists, cards and drag-and-drop organization.",
-    tags: ["Next.js", "Shadcn", "Clerk", "Stripe"],
+    tags: ["Next.js", "Shadcn", "PostgresSQL", "Stripe"],
     repoUrl: "https://github.com/Marc1515/trello-app",
     liveUrl: "https://trello.marcespana.com/",
     image: "/images/projects/trello.png",
-
     featured: true,
   },
   {
-    id: "booking-platform",
+    id: "guided-tours-platform",
     title: "Guided Tours Platform",
     description:
-      "End-to-end booking platform for guided tours, including search, details page and confirmation.",
-    tags: ["Next.js", "Node.js", "PostgreSQL"],
+      "Full-stack platform for guided tours, including search, details page and confirmation.",
+    tags: ["Next.js", "Tailwind CSS", "Prisma", "PostgreSQL"],
     repoUrl: "https://github.com/Marc1515/deltaroutes",
     liveUrl: "https://deltaroutes.marcespana.com/",
     image: "/images/projects/deltaroutes.png",
