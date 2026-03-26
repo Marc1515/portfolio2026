@@ -6,8 +6,6 @@ export const siteConfig = {
   role: "Frontend Developer",
   location: "Remote / Your City",
   tagline: "Building modern, performant web experiences.",
-  description:
-    "Personal portfolio built with Next.js and TypeScript, focused on clean architecture and scalable component design.",
   navigation: [
     { id: SECTION_IDS.home, label: "Home" },
     { id: SECTION_IDS.projects, label: "Projects" },

@@ -15,7 +15,6 @@ export interface SiteConfig {
   role: string;
   location: string;
   tagline: string;
-  description: string;
   navigation: NavItem[];
   socialLinks: SocialLink[];
 }
