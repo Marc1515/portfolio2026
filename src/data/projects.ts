@@ -30,8 +30,8 @@ export const projects = [
     description:
       "An end-to-end booking flow with search, details page and confirmation.",
     tags: ["Next.js", "Node.js", "PostgreSQL"],
-    repoUrl: "https://github.com/your-user/booking-platform",
-    liveUrl: "https://example.com/booking-platform",
+    repoUrl: "https://github.com/Marc1515/deltaroutes",
+    liveUrl: "https://deltaroutes.marcespana.com/",
     image: "/images/projects/booking-platform.svg",
     featured: false,
   },
