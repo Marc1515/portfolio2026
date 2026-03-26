@@ -10,6 +10,7 @@ export const siteConfig = {
     { id: SECTION_IDS.home, label: "Home" },
     { id: SECTION_IDS.projects, label: "Projects" },
     { id: SECTION_IDS.experience, label: "Experience" },
+    { id: SECTION_IDS.skills, label: "Skills" },
     { id: SECTION_IDS.about, label: "About Me" },
     { id: SECTION_IDS.contact, label: "Contact" },
   ],

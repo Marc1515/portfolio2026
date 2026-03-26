@@ -230,6 +230,31 @@ a {
   margin-top: 0.35rem;
 }
 
+.skills-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.skills-item {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--foreground);
+}
+
+.skills-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
 .contact-list {
   list-style: none;
 }
@@ -270,6 +295,10 @@ a {
 
   .hero-layout {
     grid-template-columns: 1fr auto;
+  }
+
+  .skills-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .hero-profile {
