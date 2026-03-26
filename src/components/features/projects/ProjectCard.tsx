@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 import type { Project } from "@/types/project";
 
@@ -7,12 +8,16 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const t = useTranslations("projects");
+  const title = t(`items.${project.translationKey}.title`);
+  const description = t(`items.${project.translationKey}.description`);
+
   return (
     <article className="card project-card">
       <div className="project-image">
         <Image
           src={project.image}
-          alt={`${project.title} preview`}
+          alt={t("previewAlt", { title })}
           loading={project.featured ? "eager" : "lazy"}
           priority={project.featured}
           width={640}
@@ -21,9 +26,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
         />
       </div>
       <div className="project-content">
-        <h3>{project.title}</h3>
-        <p>{project.description}</p>
-        <ul className="tag-list" aria-label={`${project.title} tech stack`}>
+        <h3>{title}</h3>
+        <p>{description}</p>
+        <ul className="tag-list" aria-label={t("techStackAria", { title })}>
           {project.tags.map((tag) => (
             <li key={tag}>{tag}</li>
           ))}
@@ -31,12 +36,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="project-links">
           {project.liveUrl ? (
             <a href={project.liveUrl} target="_blank" rel="noreferrer">
-              Live
+              {t("live")}
             </a>
           ) : null}
           {project.repoUrl ? (
             <a href={project.repoUrl} target="_blank" rel="noreferrer">
-              Repository
+              {t("repository")}
             </a>
           ) : null}
         </div>

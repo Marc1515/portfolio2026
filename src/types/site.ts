@@ -2,7 +2,6 @@ export type SectionId = "home" | "projects" | "experience" | "skills" | "about" 
 
 export interface NavItem {
   id: SectionId;
-  label: string;
 }
 
 export interface SocialLink {
@@ -12,9 +11,6 @@ export interface SocialLink {
 
 export interface SiteConfig {
   name: string;
-  role: string;
-  location: string;
-  tagline: string;
   navigation: NavItem[];
   socialLinks: SocialLink[];
 }

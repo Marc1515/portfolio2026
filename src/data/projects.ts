@@ -3,9 +3,7 @@ import type { Project } from "@/types/project";
 export const projects = [
   {
     id: "caseta-martiicarmeta",
-    title: "Reservation Management System",
-    description:
-      "Full-stack booking platform for a rural house, featuring a public reservation flow and an admin panel for availability management.",
+    translationKey: "casetaMartiICarmeta",
     tags: ["Next.js", "TypeScript", "Tailwind CSS", "i18n"],
     repoUrl: "https://github.com/Marc1515/casetamartiicarmeta",
     liveUrl: "https://casetamartiicarmeta.com",
@@ -14,9 +12,7 @@ export const projects = [
   },
   {
     id: "trello-app",
-    title: "Trello System",
-    description:
-      "Trello-style task management app with boards, lists, cards and drag-and-drop organization.",
+    translationKey: "trelloApp",
     tags: ["Next.js", "Shadcn", "PostgresSQL", "Stripe"],
     repoUrl: "https://github.com/Marc1515/trello-app",
     liveUrl: "https://trello.marcespana.com/",
@@ -25,9 +21,7 @@ export const projects = [
   },
   {
     id: "guided-tours-platform",
-    title: "Guided Tours Platform",
-    description:
-      "Full-stack platform for guided tours, including search, details page and confirmation.",
+    translationKey: "guidedToursPlatform",
     tags: ["Next.js", "Tailwind CSS", "Prisma", "PostgreSQL"],
     repoUrl: "https://github.com/Marc1515/deltaroutes",
     liveUrl: "https://deltaroutes.marcespana.com/",
