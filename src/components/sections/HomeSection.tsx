@@ -15,7 +15,7 @@ export function HomeSection() {
           <p className="muted">{siteConfig.location}</p>
         </div>
 
-        <div className="hero-profile">
+        <div className="hero-profile h-64 w-64 overflow-hidden rounded-full border border-(--surface-border)">
           <Image
             src="/images/home/fotoPerfil.png"
             alt={`Foto de perfil de ${siteConfig.name}`}
@@ -23,7 +23,7 @@ export function HomeSection() {
             height={256}
             priority
             sizes="(max-width: 768px) 60vw, 25vw"
-            style={{ objectFit: "cover" }}
+            className="h-full w-full object-cover"
           />
         </div>
       </div>
