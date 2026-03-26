@@ -26,13 +26,13 @@ export const projects = [
   },
   {
     id: "booking-platform",
-    title: "Booking Platform",
+    title: "Guided Tours Platform",
     description:
-      "An end-to-end booking flow with search, details page and confirmation.",
+      "End-to-end booking platform for guided tours, including search, details page and confirmation.",
     tags: ["Next.js", "Node.js", "PostgreSQL"],
     repoUrl: "https://github.com/Marc1515/deltaroutes",
     liveUrl: "https://deltaroutes.marcespana.com/",
-    image: "/images/projects/booking-platform.svg",
+    image: "/images/projects/deltaroutes.png",
     featured: false,
   },
 ] satisfies Project[];
