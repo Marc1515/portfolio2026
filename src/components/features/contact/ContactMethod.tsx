@@ -5,10 +5,14 @@ interface ContactMethodProps {
 }
 
 export function ContactMethod({ method }: ContactMethodProps) {
+  const Icon = method.icon;
+
   return (
     <li className="card contact-card">
       <a href={method.href} target="_blank" rel="noreferrer">
-        <span className="contact-type">{method.type}</span>
+        <span className="contact-type">
+          <Icon className="contact-icon" aria-hidden="true" />
+        </span>
         <span>{method.label}</span>
       </a>
     </li>
