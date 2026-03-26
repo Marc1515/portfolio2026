@@ -13,9 +13,11 @@ export function ExperienceItem({ experience }: ExperienceItemProps) {
         <p>{experience.company}</p>
         <p className="muted">{formatDateRange(experience.startDate, experience.endDate)}</p>
       </header>
-      <ul>
+      <ul className="mt-4 list-disc pl-5">
         {experience.highlights.map((highlight) => (
-          <li key={highlight}>{highlight}</li>
+          <li key={highlight} className="mt-1.5">
+            {highlight}
+          </li>
         ))}
       </ul>
     </article>
