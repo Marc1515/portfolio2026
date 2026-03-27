@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 type RevealTag = "div" | "li";
 
@@ -63,8 +69,8 @@ export function RevealOnScroll({
 
   return (
     <Tag
-      ref={(node) => {
-        elementRef.current = node as HTMLElement | null;
+      ref={(node: HTMLElement | null) => {
+        elementRef.current = node;
       }}
       className={`reveal-on-scroll ${!enabled || isVisible ? "is-visible" : ""}${className ? ` ${className}` : ""}`}
       style={style}
