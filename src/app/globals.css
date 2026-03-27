@@ -153,6 +153,39 @@ a {
   left: 50%;
 }
 
+.cv-download-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 16rem;
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--surface-border));
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface));
+  color: var(--foreground);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-align: center;
+  transition:
+    transform 0.15s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cv-download-button:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 80%, var(--surface-border));
+}
+
+.cv-download-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .eyebrow {
   color: var(--accent);
   text-transform: uppercase;

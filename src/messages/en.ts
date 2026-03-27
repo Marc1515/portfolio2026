@@ -24,6 +24,7 @@ const en = {
     tagline: "Building modern, performant web experiences.",
     location: "Remote / Spain",
     profileImageAlt: "Profile picture of {name}",
+    downloadCv: "Download CV",
   },
   projects: {
     title: "Projects",
