@@ -10,7 +10,7 @@ export function HomeSection() {
   const t = useTranslations("home");
 
   return (
-    <Section id={SECTION_IDS.home} className="section hero">
+    <Section id={SECTION_IDS.home} className="section hero" animated={false}>
       <div className="hero-layout">
         <div className="hero-copy">
           <p className="eyebrow">{t("role")}</p>

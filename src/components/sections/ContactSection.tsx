@@ -1,4 +1,5 @@
 import { ContactMethod } from "@/components/features/contact/ContactMethod";
+import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 import { Section } from "@/components/ui/Section";
 import { contactMethods } from "@/data/contact";
 import { SECTION_IDS } from "@/lib/constants";
@@ -15,8 +16,10 @@ export function ContactSection() {
       className="section"
     >
       <ul className="stack contact-list">
-        {contactMethods.map((method) => (
-          <ContactMethod key={method.id} method={method} />
+        {contactMethods.map((method, index) => (
+          <RevealOnScroll as="li" key={method.id} delayMs={160 + index * 90}>
+            <ContactMethod method={method} />
+          </RevealOnScroll>
         ))}
       </ul>
     </Section>

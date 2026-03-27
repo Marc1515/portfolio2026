@@ -1,4 +1,5 @@
 import { ExperienceItem } from "@/components/features/experience/ExperienceItem";
+import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 import { Section } from "@/components/ui/Section";
 import { experiences } from "@/data/experience";
 import { SECTION_IDS } from "@/lib/constants";
@@ -15,8 +16,10 @@ export function ExperienceSection() {
       className="section"
     >
       <div className="stack">
-        {experiences.map((experience) => (
-          <ExperienceItem key={experience.id} experience={experience} />
+        {experiences.map((experience, index) => (
+          <RevealOnScroll key={experience.id} delayMs={160 + index * 90}>
+            <ExperienceItem experience={experience} />
+          </RevealOnScroll>
         ))}
       </div>
     </Section>

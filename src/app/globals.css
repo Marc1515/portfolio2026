@@ -61,6 +61,24 @@ a {
   padding-block: var(--space-5);
 }
 
+.reveal-on-scroll {
+  --reveal-delay: 0ms;
+  opacity: 0;
+  transform: translate3d(0, 30px, 0) scale(0.985);
+  filter: blur(8px);
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay),
+    filter 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay);
+  will-change: opacity, transform, filter;
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0);
+}
+
 .section h2 {
   font-size: clamp(1.5rem, 5vw, 2.25rem);
   margin-bottom: var(--space-1);
@@ -470,6 +488,10 @@ a {
   color: var(--foreground);
 }
 
+.skills-reveal-item {
+  transform: translate3d(0, 26px, 0) scale(0.98);
+}
+
 .skills-icon {
   width: 1.75rem;
   height: 1.75rem;
@@ -565,5 +587,16 @@ a {
 
   .contact-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll,
+  .reveal-on-scroll.is-visible,
+  .skills-reveal-item {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
   }
 }
