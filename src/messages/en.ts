@@ -8,6 +8,7 @@ const en = {
   },
   layout: {
     primaryNav: "Primary",
+    menuToggle: "Toggle navigation menu",
     socialLinksLabel: "Social links",
     footerRights: "All rights reserved.",
     nav: {

@@ -8,6 +8,7 @@ const es = {
   },
   layout: {
     primaryNav: "Principal",
+    menuToggle: "Abrir o cerrar menu de navegacion",
     socialLinksLabel: "Redes sociales",
     footerRights: "Todos los derechos reservados.",
     nav: {
