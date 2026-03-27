@@ -2,20 +2,51 @@
 
 import { useCallback, useEffect, useSyncExternalStore, useState } from "react";
 import { createPortal } from "react-dom";
+import { LanguageSwitch } from "@/components/features/i18n/LanguageSwitch";
 import { siteConfig } from "@/data/site";
+import { useActiveSection } from "@/hooks/useActiveSection";
 import { useTranslations } from "next-intl";
 
 const subscribe = () => () => {};
 const useMounted = () =>
-  useSyncExternalStore(subscribe, () => true, () => false);
+  useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const mounted = useMounted();
+  const activeId = useActiveSection();
   const t = useTranslations("layout");
 
   const toggle = useCallback(() => setOpen((v) => !v), []);
   const close = useCallback(() => setOpen(false), []);
+
+  const navigateTo = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+      e.preventDefault();
+      const target = document.getElementById(id);
+      if (!target) {
+        close();
+        return;
+      }
+
+      document.body.style.overflow = "";
+      target.scrollIntoView({ behavior: "smooth" });
+
+      const done = () => {
+        window.removeEventListener("scrollend", done);
+        clearTimeout(timer);
+        close();
+      };
+
+      window.addEventListener("scrollend", done, { once: true });
+      const timer = setTimeout(done, 800);
+    },
+    [close],
+  );
 
   useEffect(() => {
     if (open) {
@@ -59,15 +90,22 @@ export function MobileNav() {
               <ul className="mobile-nav-list">
                 {siteConfig.navigation.map((item) => (
                   <li key={item.id}>
-                    <a href={`#${item.id}`} onClick={close}>
+                    <a
+                      href={`#${item.id}`}
+                      className={activeId === item.id ? "is-active" : ""}
+                      onClick={(e) => navigateTo(e, item.id)}
+                    >
                       {t(`nav.${item.id}`)}
                     </a>
                   </li>
                 ))}
+                <li className="mobile-nav-language-switch">
+                  <LanguageSwitch />
+                </li>
               </ul>
             </nav>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

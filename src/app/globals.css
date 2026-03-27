@@ -207,12 +207,7 @@ a {
 }
 
 .site-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(8px);
-  background: color-mix(in srgb, var(--background) 88%, transparent);
-  border-bottom: 1px solid var(--surface-border);
+  display: none;
 }
 
 .site-nav {
@@ -240,15 +235,23 @@ a {
 
 .nav-list a {
   color: var(--muted);
+  transition: color 0.2s ease;
 }
 
 .nav-list a:hover {
   color: var(--foreground);
 }
 
+.nav-list a.is-active {
+  color: var(--accent);
+}
+
 /* --- Burger button --- */
 
 .burger-btn {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -259,8 +262,7 @@ a {
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 60;
-  position: relative;
+  z-index: 110;
 }
 
 .burger-line {
@@ -293,9 +295,9 @@ a {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: color-mix(in srgb, var(--background) 85%, transparent);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: color-mix(in srgb, var(--background) 85%, transparent) !important;
+  backdrop-filter: blur(48px) !important;
+  -webkit-backdrop-filter: blur(48px) !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -327,6 +329,18 @@ a {
 .mobile-nav-list a:hover,
 .mobile-nav-list a:focus-visible {
   color: var(--foreground);
+}
+
+.mobile-nav-list a.is-active {
+  color: var(--accent);
+}
+
+.mobile-nav-language-switch {
+  margin-top: 0.5rem;
+}
+
+.mobile-nav-language-switch .language-switch {
+  justify-self: center;
 }
 
 .grid {
@@ -467,13 +481,23 @@ a {
 }
 
 @media (min-width: 768px) {
+  .site-header {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    background: color-mix(in srgb, var(--background) 88%, transparent);
+    border-bottom: 1px solid var(--surface-border);
+  }
+
   .nav-list {
     display: flex;
   }
 
   .burger-btn,
   .mobile-nav-overlay {
-    display: none;
+    display: none !important;
   }
 
   .grid {

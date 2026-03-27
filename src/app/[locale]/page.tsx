@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { MobileNav } from "@/components/layout/MobileNav";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { ContactSection } from "@/components/sections/ContactSection";
 import { ExperienceSection } from "@/components/sections/ExperienceSection";
@@ -10,6 +11,7 @@ import { SkillsSection } from "@/components/sections/SkillsSection";
 export default function Home() {
   return (
     <>
+      <MobileNav />
       <Header />
       <main>
         <HomeSection />
