@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   portfolio2026:
     container_name: portfolio2026
@@ -8,28 +6,21 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     networks:
-      - traefik
+      - traefik-proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
 
-      # Router HTTPS
       - traefik.http.routers.portfolio2026.rule=Host(`marcespana.com`)
       - traefik.http.routers.portfolio2026.entrypoints=websecure
       - traefik.http.routers.portfolio2026.tls=true
-      - traefik.http.routers.portfolio2026.service=portfolio2026
-
-      # Puerto interno del contenedor
       - traefik.http.services.portfolio2026.loadbalancer.server.port=3000
 
-      # Red que usa Traefik
-      - traefik.docker.network=traefik
-
-      # Redirección HTTP -> HTTPS
       - traefik.http.routers.portfolio2026-http.rule=Host(`marcespana.com`)
       - traefik.http.routers.portfolio2026-http.entrypoints=web
-      - traefik.http.routers.portfolio2026-http.middlewares=portfolio2026-https-redirect
-      - traefik.http.middlewares.portfolio2026-https-redirect.redirectscheme.scheme=https
+      - traefik.http.routers.portfolio2026-http.middlewares=portfolio2026-redirect
+      - traefik.http.middlewares.portfolio2026-redirect.redirectscheme.scheme=https
 
 networks:
-  traefik:
+  traefik-proxy:
     external: true
