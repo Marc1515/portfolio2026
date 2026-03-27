@@ -11,7 +11,7 @@ export function HomeSection() {
 
   return (
     <Section id={SECTION_IDS.home} className="section hero" animated={false}>
-      <div className="hero-layout">
+      <div className="hero-layout pt-10!">
         <div className="hero-copy">
           <p className="eyebrow">{t("role")}</p>
           <h1>{siteConfig.name}</h1>
@@ -19,7 +19,7 @@ export function HomeSection() {
           <p className="muted">React · Next.js · TypeScript</p>
         </div>
 
-        <div className="hero-profile-wrap">
+        <div className="hero-profile-wrap flex! flex-col! gap-6! items-center!">
           <div className="hero-profile h-64 w-64 overflow-hidden rounded-full border border-(--surface-border)">
             <Image
               src="/images/home/fotoPerfil.png"
