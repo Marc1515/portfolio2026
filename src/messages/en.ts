@@ -21,7 +21,7 @@ const en = {
     },
   },
   home: {
-    role: "Frontend Developer",
+    role: "Full Stack Developer",
     tagline: "Building modern, performant web experiences.",
     profileImageAlt: "Profile picture of {name}",
     downloadCv: "Download CV",
@@ -56,7 +56,7 @@ const en = {
     subtitle: "Highlights from roles where I shipped and scaled frontend products.",
     items: {
       delinternetTelecom: {
-        role: "Frontend Web Developer",
+        role: "Full Stack Web Developer",
         highlights: [
           "Designed internal tools and interfaces that enabled employees to work faster and with greater precision.",
           "Developed applications mainly with Next.js and React, while also contributing to a full-stack project.",

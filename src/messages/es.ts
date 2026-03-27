@@ -21,7 +21,7 @@ const es = {
     },
   },
   home: {
-    role: "Desarrollador Frontend",
+    role: "Desarrollador Full Stack",
     tagline: "Construyendo experiencias web modernas y de alto rendimiento.",
     profileImageAlt: "Foto de perfil de {name}",
     downloadCv: "Descargar CV",
@@ -56,7 +56,7 @@ const es = {
     subtitle: "Resumen de roles donde lance y escale productos frontend.",
     items: {
       delinternetTelecom: {
-        role: "Desarrollador Web Frontend",
+        role: "Desarrollador Web Full Stack",
         highlights: [
           "Disene herramientas internas e interfaces que permitieron a los empleados trabajar mas rapido y con mayor precision.",
           "Desarrolle aplicaciones principalmente con Next.js y React, contribuyendo tambien en un proyecto full-stack.",

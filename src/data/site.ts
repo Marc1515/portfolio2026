@@ -2,7 +2,7 @@ import { SECTION_IDS } from "@/lib/constants";
 import type { SiteConfig } from "@/types/site";
 
 export const siteConfig = {
-  name: "Marc Espana",
+  name: "Marc España",
   navigation: [
     { id: SECTION_IDS.home },
     { id: SECTION_IDS.projects },
