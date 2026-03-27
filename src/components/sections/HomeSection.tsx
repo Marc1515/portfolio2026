@@ -16,7 +16,7 @@ export function HomeSection() {
           <p className="eyebrow">{t("role")}</p>
           <h1>{siteConfig.name}</h1>
           <p className="lead">{t("tagline")}</p>
-          <p className="muted">{t("location")}</p>
+          <p className="muted">React · Next.js · TypeScript</p>
         </div>
 
         <div className="hero-profile-wrap">

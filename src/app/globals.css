@@ -197,7 +197,9 @@ a {
 .lead {
   margin-top: var(--space-2);
   font-size: clamp(1.05rem, 3.3vw, 1.35rem);
+  line-height: 1.4;
   max-width: 45ch;
+  min-height: calc(1.4em * 2);
 }
 
 .muted {
@@ -388,6 +390,7 @@ a {
 
   .hero-layout {
     grid-template-columns: 1fr auto;
+    align-items: start;
   }
 
   .skills-grid {

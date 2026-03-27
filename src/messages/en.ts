@@ -22,7 +22,6 @@ const en = {
   home: {
     role: "Frontend Developer",
     tagline: "Building modern, performant web experiences.",
-    location: "Remote / Spain",
     profileImageAlt: "Profile picture of {name}",
     downloadCv: "Download CV",
   },

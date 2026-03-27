@@ -22,7 +22,6 @@ const es = {
   home: {
     role: "Desarrollador Frontend",
     tagline: "Construyendo experiencias web modernas y de alto rendimiento.",
-    location: "Remoto / Espana",
     profileImageAlt: "Foto de perfil de {name}",
     downloadCv: "Descargar CV",
   },
