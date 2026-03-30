@@ -1,12 +1,7 @@
-import type { Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { TextZoomNormalize } from "@/components/ui/TextZoomNormalize";
 import "./globals.css";
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +24,10 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <TextZoomNormalize />
+        {children}
+      </body>
     </html>
   );
 }
