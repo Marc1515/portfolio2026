@@ -19,17 +19,6 @@
 html {
   height: 100%;
   scroll-behavior: smooth;
-  /* Lock rem + block WebKit font boosting (Instagram / in-app browsers). */
-  font-size: 16px;
-  -webkit-text-size-adjust: none;
-  text-size-adjust: 100%;
-  -moz-text-size-adjust: none;
-}
-
-/* Some WebViews only apply adjustment per element; force inheritance from html. */
-html * {
-  -webkit-text-size-adjust: inherit;
-  text-size-adjust: inherit;
 }
 
 html,
@@ -45,13 +34,14 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  font-size: 1rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: none;
+  /* Disable WebView text autosizing (Instagram, Facebook, etc.). */
+  max-height: 999999px;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  -moz-text-size-adjust: none;
 }
 
 * {
@@ -95,15 +85,8 @@ a {
 }
 
 .section h2 {
-  /* No vw below 1024px — in-app WebViews often disagree with Chrome on layout width. */
-  font-size: 1.65rem;
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
   margin-bottom: var(--space-1);
-}
-
-@media (min-width: 1024px) {
-  .section h2 {
-    font-size: clamp(1.5rem, 1.35rem + 1.1vw, 2.25rem);
-  }
 }
 
 .section-subtitle {
@@ -116,14 +99,8 @@ a {
 }
 
 .hero h1 {
-  font-size: 2.375rem;
+  font-size: clamp(2rem, 9vw, 4rem);
   line-height: 1.1;
-}
-
-@media (min-width: 1024px) {
-  .hero h1 {
-    font-size: clamp(2rem, 1.35rem + 4vw, 4rem);
-  }
 }
 
 .hero-layout {
@@ -278,16 +255,10 @@ a {
 
 .lead {
   margin-top: var(--space-2);
-  font-size: 1.125rem;
+  font-size: clamp(1.05rem, 3.3vw, 1.35rem);
   line-height: 1.4;
   max-width: 45ch;
   min-height: calc(1.4em * 2);
-}
-
-@media (min-width: 1024px) {
-  .lead {
-    font-size: clamp(1.05rem, 0.95rem + 0.65vw, 1.35rem);
-  }
 }
 
 .muted {
@@ -408,7 +379,7 @@ a {
 }
 
 .mobile-nav-list a {
-  font-size: 1.65rem;
+  font-size: clamp(1.5rem, 6vw, 2.25rem);
   font-weight: 700;
   color: var(--muted);
   transition: color 0.2s ease;
