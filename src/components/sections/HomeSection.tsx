@@ -11,7 +11,7 @@ export function HomeSection() {
 
   return (
     <Section id={SECTION_IDS.home} className="section hero" animated={false}>
-      <div className="hero-layout pt-10!">
+      <div className="hero-layout">
         <div className="hero-copy">
           <p className="eyebrow">{t("role")}</p>
           <h1>{siteConfig.name}</h1>
