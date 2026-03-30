@@ -26,6 +26,12 @@ html {
   -moz-text-size-adjust: none;
 }
 
+/* Some WebViews only apply adjustment per element; force inheritance from html. */
+html * {
+  -webkit-text-size-adjust: inherit;
+  text-size-adjust: inherit;
+}
+
 html,
 body {
   max-width: 100vw;
@@ -89,9 +95,15 @@ a {
 }
 
 .section h2 {
-  /* rem + modest vw: pure vw scales differently across WebViews vs Chrome. */
-  font-size: clamp(1.5rem, 1.35rem + 1.1vw, 2.25rem);
+  /* No vw below 1024px — in-app WebViews often disagree with Chrome on layout width. */
+  font-size: 1.65rem;
   margin-bottom: var(--space-1);
+}
+
+@media (min-width: 1024px) {
+  .section h2 {
+    font-size: clamp(1.5rem, 1.35rem + 1.1vw, 2.25rem);
+  }
 }
 
 .section-subtitle {
@@ -104,8 +116,14 @@ a {
 }
 
 .hero h1 {
-  font-size: clamp(2rem, 1.35rem + 4vw, 4rem);
+  font-size: 2.375rem;
   line-height: 1.1;
+}
+
+@media (min-width: 1024px) {
+  .hero h1 {
+    font-size: clamp(2rem, 1.35rem + 4vw, 4rem);
+  }
 }
 
 .hero-layout {
@@ -260,10 +278,16 @@ a {
 
 .lead {
   margin-top: var(--space-2);
-  font-size: clamp(1.05rem, 0.95rem + 0.65vw, 1.35rem);
+  font-size: 1.125rem;
   line-height: 1.4;
   max-width: 45ch;
   min-height: calc(1.4em * 2);
+}
+
+@media (min-width: 1024px) {
+  .lead {
+    font-size: clamp(1.05rem, 0.95rem + 0.65vw, 1.35rem);
+  }
 }
 
 .muted {
@@ -384,7 +408,7 @@ a {
 }
 
 .mobile-nav-list a {
-  font-size: clamp(1.5rem, 1.35rem + 1.4vw, 2.25rem);
+  font-size: 1.65rem;
   font-weight: 700;
   color: var(--muted);
   transition: color 0.2s ease;
