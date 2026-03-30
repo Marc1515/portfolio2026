@@ -86,7 +86,8 @@ export function MobileNav() {
             className={`mobile-nav-overlay ${open ? "is-open" : ""}`}
             aria-hidden={!open}
           >
-            <nav aria-label={t("primaryNav")}>
+            <div className="mobile-nav-glass" />
+            <nav className="mobile-nav-inner" aria-label={t("primaryNav")}>
               <ul className="mobile-nav-list">
                 {siteConfig.navigation.map((item) => (
                   <li key={item.id}>
