@@ -91,17 +91,14 @@ a {
 
 .hero {
   padding-top: calc(var(--space-5) + 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (min-width: 768px) {
   .hero {
-    display: flex;
-    align-items: center;
     padding-top: 0;
-  }
-
-  .hero > * {
-    width: 100%;
   }
 }
 
