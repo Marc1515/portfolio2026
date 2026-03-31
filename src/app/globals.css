@@ -93,6 +93,18 @@ a {
   padding-top: calc(var(--space-5) + 2rem);
 }
 
+@media (min-width: 768px) {
+  .hero {
+    display: flex;
+    align-items: center;
+    padding-top: 0;
+  }
+
+  .hero > * {
+    width: 100%;
+  }
+}
+
 .hero h1 {
   font-size: clamp(2rem, 9vw, 4rem);
   line-height: 1.1;
@@ -573,7 +585,7 @@ a {
 
   .hero-layout {
     grid-template-columns: 1fr auto;
-    align-items: start;
+    align-items: center;
   }
 
   .skills-grid {
