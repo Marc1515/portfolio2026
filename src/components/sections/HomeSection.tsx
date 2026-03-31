@@ -32,7 +32,7 @@ export function HomeSection() {
             />
           </div>
           <LanguageSwitch />
-          <a className="cv-download-button" href="/cv.pdf" download>
+          <a className="cv-download-button" href="/MEQ_ESP.pdf" download>
             {t("downloadCv")}
           </a>
         </div>
