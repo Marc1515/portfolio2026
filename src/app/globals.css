@@ -572,6 +572,10 @@ a {
 }
 
 @media (min-width: 768px) {
+  .section {
+    scroll-margin-top: 5rem;
+  }
+
   .site-header {
     display: block;
     position: fixed;
