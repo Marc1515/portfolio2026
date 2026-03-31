@@ -287,13 +287,28 @@ a {
   font-weight: 700;
 }
 
+.brand-language-switch {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  pointer-events: none;
+}
+
+.brand-language-switch.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
 .nav-list {
   list-style: none;
   display: none;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.75rem;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
 }
 
 .nav-list a {
@@ -559,11 +574,13 @@ a {
 @media (min-width: 768px) {
   .site-header {
     display: block;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
-    backdrop-filter: blur(8px);
-    background: color-mix(in srgb, var(--background) 88%, transparent);
+    backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--background) 80%, transparent);
     border-bottom: 1px solid var(--surface-border);
   }
 
@@ -616,5 +633,11 @@ a {
     transform: none;
     filter: none;
     transition: none;
+  }
+
+  .brand-language-switch,
+  .brand-language-switch.is-visible {
+    transition: none;
+    transform: none;
   }
 }
