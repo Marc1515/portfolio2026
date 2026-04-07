@@ -15,7 +15,7 @@ const en = {
       home: "Home",
       projects: "Projects",
       experience: "Experience",
-      skills: "Skills",
+      technologies: "Technologies",
       about: "About Me",
       contact: "Contact",
     },
@@ -74,10 +74,10 @@ const en = {
       },
     },
   },
-  skills: {
-    title: "Skills",
+  technologies: {
+    title: "Technologies",
     subtitle: "Technologies I use to build robust and scalable products.",
-    ariaListLabel: "Technology skills",
+    ariaListLabel: "Technologies",
   },
   about: {
     title: "About Me",

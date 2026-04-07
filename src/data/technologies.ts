@@ -17,9 +17,9 @@ import {
   SiQgis
 } from "react-icons/si";
 
-import type { Skill } from "@/types/skill";
+import type { Technology } from "@/types/technology";
 
-export const skills = [
+export const technologies = [
   { id: "typescript", label: "TypeScript", icon: SiTypescript },
   { id: "javascript", label: "JavaScript", icon: SiJavascript },
   { id: "nextjs", label: "Next.js", icon: SiNextdotjs },
@@ -36,4 +36,4 @@ export const skills = [
   { id: "node", label: "Node.js", icon: SiNodedotjs },
   { id: "python", label: "Python", icon: SiPython },
   { id: "qgis", label: "QGIS", icon: SiQgis },
-] satisfies Skill[];
+] satisfies Technology[];

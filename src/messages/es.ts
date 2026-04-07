@@ -15,7 +15,7 @@ const es = {
       home: "Inicio",
       projects: "Proyectos",
       experience: "Experiencia",
-      skills: "Skills",
+      technologies: "Tecnologías",
       about: "Sobre mí",
       contact: "Contacto",
     },
@@ -74,10 +74,10 @@ const es = {
       },
     },
   },
-  skills: {
-    title: "Skills",
+  technologies: {
+    title: "Tecnologías",
     subtitle: "Tecnologías que uso para construir productos robustos y escalables.",
-    ariaListLabel: "Habilidades técnicas",
+    ariaListLabel: "Tecnologías",
   },
   about: {
     title: "Sobre mí",
