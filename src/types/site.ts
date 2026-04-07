@@ -1,4 +1,11 @@
-export type SectionId = "home" | "projects" | "experience" | "technologies" | "about" | "contact";
+export type SectionId =
+  | "home"
+  | "projects"
+  | "experience"
+  | "skills"
+  | "technologies"
+  | "about"
+  | "contact";
 
 export interface NavItem {
   id: SectionId;

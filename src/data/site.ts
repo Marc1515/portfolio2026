@@ -7,6 +7,7 @@ export const siteConfig = {
     { id: SECTION_IDS.home },
     { id: SECTION_IDS.projects },
     { id: SECTION_IDS.experience },
+    { id: SECTION_IDS.skills },
     { id: SECTION_IDS.technologies },
     { id: SECTION_IDS.about },
     { id: SECTION_IDS.contact },

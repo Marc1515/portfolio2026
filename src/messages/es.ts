@@ -15,6 +15,7 @@ const es = {
       home: "Inicio",
       projects: "Proyectos",
       experience: "Experiencia",
+      skills: "Habilidades",
       technologies: "Tecnologías",
       about: "Sobre mí",
       contact: "Contacto",
@@ -70,6 +71,63 @@ const es = {
           "Desarrollé interfaces para sistemas de taquillas electrónicas usadas por huéspedes de hotel para recoger sus llaves tras completar una reserva.",
           "Trabajé con JavaScript vanilla y conecté funcionalidades frontend con servicios web backend.",
           "Inicié mi carrera como frontend junior, ganando experiencia real en interfaces listas para producción en proyectos de cliente.",
+        ],
+      },
+    },
+  },
+  skills: {
+    title: "Habilidades",
+    subtitle:
+      "Capacidades técnicas que aplico para construir productos mantenibles, escalables y bien ejecutados de principio a fin.",
+    items: {
+      frontendUi: {
+        title: "Frontend e interfaz",
+        caption: "Experiencias claras, rápidas y cuidadas",
+        meta: "React · TypeScript · Next.js · CSS",
+        highlights: [
+          "Construcción de interfaces reutilizables con componentes bien organizados y flujo de datos claro.",
+          "Layouts responsive, accesibilidad y atención al rendimiento percibido en experiencias reales de usuario.",
+          "Trabajo con sistemas de diseño y evolución de interfaces sin perder consistencia ni mantenibilidad.",
+        ],
+      },
+      backendApis: {
+        title: "Backend y APIs",
+        caption: "Servicios sólidos para producto real",
+        meta: "REST · Node.js · Bases de datos",
+        highlights: [
+          "Diseño e integración de APIs con validación, manejo de errores y estructuras fáciles de mantener.",
+          "Trabajo con lógica de negocio, autenticación, autorización e integraciones con servicios de terceros.",
+          "Colaboración en modelos de datos y flujos backend con foco en claridad y fiabilidad.",
+        ],
+      },
+      architectureQuality: {
+        title: "Arquitectura y calidad",
+        caption: "Código preparado para crecer",
+        meta: "Clean · Hexagonal · Onion · DRY · KISS · YAGNI",
+        highlights: [
+          "Buenos conocimientos de arquitecturas como Clean, Hexagonal y Onion, aplicadas según el contexto del proyecto.",
+          "Comprensión de patrones de diseño como Factory, Singleton y otros enfoques orientados a mejorar orden, extensibilidad y reutilización.",
+          "Aplicación de principios como DRY, KISS y YAGNI para mantener código simple, legible y sostenible.",
+        ],
+      },
+      cicdDocker: {
+        title: "CI/CD y Docker",
+        caption: "Entrega fiable y entornos reproducibles",
+        meta: "Pipelines · Docker · Git · Calidad en CI",
+        highlights: [
+          "Automatización de builds, comprobaciones y pruebas mediante pipelines de integración y entrega.",
+          "Uso de Docker para reducir diferencias entre desarrollo, testing y despliegue.",
+          "Buenas prácticas de Git, revisión de cambios y resolución de incidencias detectadas en CI.",
+        ],
+      },
+      aiAssisted: {
+        title: "Desarrollo asistido por IA",
+        caption: "Más velocidad con criterio técnico",
+        meta: "Claude Code · Sonnet · GPT · elección por tarea",
+        highlights: [
+          "Uso asistentes de IA para explorar soluciones, acelerar implementación y apoyar refactors o revisiones.",
+          "Elijo la herramienta según la tarea, equilibrando contexto, capacidad, coste y calidad de respuesta.",
+          "Mantengo validación, criterio técnico y buenas prácticas para que la IA sume sin comprometer el resultado.",
         ],
       },
     },
