@@ -136,6 +136,8 @@ const en = {
     title: "Technologies",
     subtitle: "Technologies I use to build robust and scalable products.",
     ariaListLabel: "Technologies",
+    more: "More",
+    less: "Less",
   },
   about: {
     title: "About Me",

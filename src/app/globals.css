@@ -532,6 +532,92 @@ a {
   flex-shrink: 0;
 }
 
+.technologies-mobile-toggle {
+  display: flex;
+  flex-direction: column;
+}
+
+.technologies-mobile-toggle-button {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  width: 100%;
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.technologies-mobile-toggle-button.is-hidden-after-expand {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.technologies-mobile-toggle-button.is-reappearing {
+  animation: technologies-toggle-reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.technologies-mobile-toggle-button::-webkit-details-marker {
+  display: none;
+}
+
+.technologies-mobile-toggle-arrow {
+  transition: transform 0.2s ease;
+}
+
+.technologies-mobile-toggle[open] .technologies-mobile-toggle-arrow {
+  transform: rotate(180deg);
+}
+
+.technologies-mobile-toggle-more {
+  display: inline;
+}
+
+.technologies-mobile-toggle-less {
+  display: none;
+}
+
+.technologies-mobile-toggle[open] .technologies-mobile-toggle-more {
+  display: none;
+}
+
+.technologies-mobile-toggle[open] .technologies-mobile-toggle-less {
+  display: inline;
+}
+
+.technologies-grid-extra {
+  margin-top: var(--space-2);
+}
+
+.technologies-mobile-toggle:not([open]) .technologies-mobile-toggle-button {
+  margin-top: 0.5rem;
+}
+
+.technologies-mobile-toggle[open] .technologies-mobile-toggle-button {
+  order: 2;
+  margin-top: 0.6rem;
+}
+
+.technologies-mobile-toggle[open] .technologies-grid-extra {
+  order: 1;
+}
+
+@keyframes technologies-toggle-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) scale(0.98);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
 .contact-list {
   list-style: none;
   grid-template-columns: 1fr;
@@ -608,6 +694,18 @@ a {
 
   .technologies-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .technologies-mobile-toggle-button {
+    display: none;
+  }
+
+  .technologies-mobile-toggle > .technologies-grid-extra {
+    display: grid !important;
+  }
+
+  .technologies-grid-extra {
+    margin-top: var(--space-2);
   }
 
   .hero-profile {

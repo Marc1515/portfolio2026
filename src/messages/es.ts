@@ -136,6 +136,8 @@ const es = {
     title: "Tecnologías",
     subtitle: "Tecnologías que uso para construir productos robustos y escalables.",
     ariaListLabel: "Tecnologías",
+    more: "Más",
+    less: "Menos",
   },
   about: {
     title: "Sobre mí",
