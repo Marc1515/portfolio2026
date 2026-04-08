@@ -507,6 +507,18 @@ a {
   color: var(--foreground);
 }
 
+.technologies-desktop-reveal-item {
+  opacity: 0;
+}
+
+.technologies-desktop-only {
+  display: none;
+}
+
+.technologies-mobile-only {
+  display: block;
+}
+
 .technologies-reveal-item {
   transform: translate3d(0, 26px, 0) scale(0.98);
 }
@@ -687,6 +699,14 @@ a {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .technologies-desktop-only {
+    display: grid;
+  }
+
+  .technologies-mobile-only {
+    display: none;
+  }
+
   .hero-profile {
     justify-self: end;
   }
@@ -716,6 +736,10 @@ a {
     transform: none;
     filter: none;
     transition: none;
+  }
+
+  .technologies-desktop-reveal-item {
+    opacity: 1;
   }
 
   .brand-language-switch,

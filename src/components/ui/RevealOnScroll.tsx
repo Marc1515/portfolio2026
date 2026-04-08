@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useRef,
-  type ReactNode,
-} from "react";
+import { useRef, type ReactNode } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -74,7 +71,8 @@ export function RevealOnScroll({
 
   const Tag = as;
   const revealClassName = enabled ? "reveal-on-scroll" : "";
-  const resolvedClassName = `${revealClassName}${className ? ` ${className}` : ""}`.trim();
+  const resolvedClassName =
+    `${revealClassName}${className ? ` ${className}` : ""}`.trim();
 
   return (
     <Tag

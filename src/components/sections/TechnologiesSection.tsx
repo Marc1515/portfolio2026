@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { DesktopTechnologiesList } from "@/components/features/technologies/DesktopTechnologiesList";
 import { Section } from "@/components/ui/Section";
 import { technologies } from "@/data/technologies";
 import { SECTION_IDS } from "@/lib/constants";
@@ -138,6 +139,36 @@ export function TechnologiesSection() {
     );
   };
 
+  const fadeOutExtraNodes = (onComplete?: () => void) => {
+    if (!rootRef.current) {
+      onComplete?.();
+      return;
+    }
+
+    const extraNodes = rootRef.current.querySelectorAll<HTMLElement>(
+      "[data-tech-extra='true']",
+    );
+
+    if (!extraNodes.length) {
+      onComplete?.();
+      return;
+    }
+
+    gsap.to(extraNodes, {
+      opacity: 0,
+      y: 18,
+      scale: 0.99,
+      filter: "blur(4px)",
+      duration: 0.32,
+      stagger: {
+        each: 0.02,
+        from: "end",
+      },
+      ease: "power2.out",
+      onComplete,
+    });
+  };
+
   const hideToggleButton = () => {
     if (!rootRef.current) {
       return;
@@ -212,6 +243,10 @@ export function TechnologiesSection() {
       anchor.getBoundingClientRect().top + window.scrollY - scrollTopOffset,
       0,
     );
+    return smoothScrollTo(targetY);
+  };
+
+  const smoothScrollTo = (targetY: number) => {
     window.scrollTo({ top: targetY, behavior: "smooth" });
 
     return new Promise<void>((resolve) => {
@@ -250,11 +285,25 @@ export function TechnologiesSection() {
     }
 
     if (isExpanded) {
-      setIsExpanded(false);
-      const technologiesSection = document.getElementById(SECTION_IDS.technologies);
-      technologiesSection?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+      isToggleTransitioningRef.current = true;
+      const technologiesSection = document.getElementById(
+        SECTION_IDS.technologies,
+      );
+      if (!technologiesSection) {
+        setIsExpanded(false);
+        isToggleTransitioningRef.current = false;
+        return;
+      }
+
+      const sectionTopY = Math.max(
+        technologiesSection.getBoundingClientRect().top + window.scrollY,
+        0,
+      );
+      await smoothScrollTo(sectionTopY);
+
+      fadeOutExtraNodes(() => {
+        setIsExpanded(false);
+        isToggleTransitioningRef.current = false;
       });
       return;
     }
@@ -281,7 +330,8 @@ export function TechnologiesSection() {
       subtitle={t("subtitle")}
       className="section"
     >
-      <div ref={rootRef}>
+      <DesktopTechnologiesList className="technologies-desktop-only" />
+      <div ref={rootRef} className="technologies-mobile-only">
         <ul className="technologies-grid" aria-label={t("ariaListLabel")}>
           {visibleTechnologies.map((technology, index) => {
             const Icon = technology.icon;
