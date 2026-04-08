@@ -14,9 +14,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <article className="card">
-      <div className="project-image">
+      <div className="aspect-video overflow-hidden rounded-lg border border-(--surface-border)">
         <Image
           src={project.image}
+          className="w-full h-full display-block object-cover"
           alt={t("previewAlt", { title })}
           loading={project.featured ? "eager" : "lazy"}
           priority={project.featured}
@@ -25,15 +26,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
           sizes="(max-width: 768px) 100vw, 33vw"
         />
       </div>
-      <div className="project-content">
+      <div className="flex flex-col gap-2 pt-4!">
         <h3>{title}</h3>
-        <p>{description}</p>
+        <p className="min-h-20">{description}</p>
         <ul className="tag-list" aria-label={t("techStackAria", { title })}>
           {project.tags.map((tag) => (
             <li key={tag}>{tag}</li>
           ))}
         </ul>
-        <div className="project-links">
+        <div className="flex mt-(--space-2)! gap-(--space-2) text-(--accent) font-medium">
           {project.liveUrl ? (
             <a href={project.liveUrl} target="_blank" rel="noreferrer">
               {t("live")}
