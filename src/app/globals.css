@@ -535,6 +535,7 @@ a {
 .technologies-mobile-toggle {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
 }
 
 .technologies-mobile-toggle-button {
@@ -549,6 +550,9 @@ a {
   color: var(--muted);
   cursor: pointer;
   user-select: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
 }
 
 .technologies-mobile-toggle-button.is-hidden-after-expand {
@@ -568,7 +572,8 @@ a {
   transition: transform 0.2s ease;
 }
 
-.technologies-mobile-toggle[open] .technologies-mobile-toggle-arrow {
+.technologies-mobile-toggle-button[aria-expanded="true"]
+  .technologies-mobile-toggle-arrow {
   transform: rotate(180deg);
 }
 
@@ -694,18 +699,6 @@ a {
 
   .technologies-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .technologies-mobile-toggle-button {
-    display: none;
-  }
-
-  .technologies-mobile-toggle > .technologies-grid-extra {
-    display: grid !important;
-  }
-
-  .technologies-grid-extra {
-    margin-top: var(--space-2);
   }
 
   .hero-profile {
