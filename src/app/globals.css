@@ -452,6 +452,10 @@ a {
   margin-bottom: var(--space-1);
 }
 
+.project-content p {
+  min-height: 4.9rem;
+}
+
 .tag-list {
   margin-top: var(--space-2);
   list-style: none;

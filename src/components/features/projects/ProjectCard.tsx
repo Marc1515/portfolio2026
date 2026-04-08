@@ -13,7 +13,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const description = t(`items.${project.translationKey}.description`);
 
   return (
-    <article className="card project-card">
+    <article className="card">
       <div className="project-image">
         <Image
           src={project.image}
