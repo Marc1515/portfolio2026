@@ -1,12 +1,14 @@
 "use client";
 
 import {
-  useEffect,
   useRef,
-  useState,
-  type CSSProperties,
   type ReactNode,
 } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 type RevealTag = "div" | "li";
 
@@ -25,55 +27,61 @@ export function RevealOnScroll({
   enabled = true,
   as = "div",
 }: RevealOnScrollProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const elementRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
+  useGSAP(
+    () => {
+      if (!enabled) {
+        return;
+      }
 
-    const node = elementRef.current;
-    if (!node) {
-      return;
-    }
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+      }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (!entry) {
-          return;
-        }
+      const node = elementRef.current;
+      if (!node) {
+        return;
+      }
 
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      {
-        root: null,
-        threshold: 0.2,
-        rootMargin: "0px 0px -12% 0px",
-      },
-    );
-
-    observer.observe(node);
-
-    return () => observer.disconnect();
-  }, [enabled]);
+      gsap.fromTo(
+        node,
+        {
+          opacity: 0,
+          y: 26,
+          scale: 0.98,
+          filter: "blur(8px)",
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 0.9,
+          delay: delayMs / 1000,
+          ease: "cubic-bezier(0.22, 1, 0.36, 1)",
+          clearProps: "transform,filter",
+          scrollTrigger: {
+            trigger: node,
+            start: "top 82%",
+            once: true,
+          },
+        },
+      );
+    },
+    { dependencies: [delayMs, enabled], revertOnUpdate: true },
+  );
 
   const Tag = as;
-  const style = {
-    "--reveal-delay": `${delayMs}ms`,
-  } as CSSProperties;
+  const revealClassName = enabled ? "reveal-on-scroll" : "";
+  const resolvedClassName = `${revealClassName}${className ? ` ${className}` : ""}`.trim();
 
   return (
     <Tag
       ref={(node: HTMLElement | null) => {
         elementRef.current = node;
       }}
-      className={`reveal-on-scroll ${!enabled || isVisible ? "is-visible" : ""}${className ? ` ${className}` : ""}`}
-      style={style}
+      className={resolvedClassName}
     >
       {children}
     </Tag>

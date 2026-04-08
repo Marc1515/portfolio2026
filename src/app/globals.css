@@ -62,21 +62,7 @@ a {
 }
 
 .reveal-on-scroll {
-  --reveal-delay: 0ms;
   opacity: 0;
-  transform: translate3d(0, 30px, 0) scale(0.985);
-  filter: blur(8px);
-  transition:
-    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay),
-    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay),
-    filter 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay);
-  will-change: opacity, transform, filter;
-}
-
-.reveal-on-scroll.is-visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0);
 }
 
 .section h2 {
@@ -721,8 +707,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal-on-scroll,
-  .reveal-on-scroll.is-visible,
+  .reveal-on-scroll {
+    opacity: 1;
+  }
+
   .technologies-reveal-item {
     opacity: 1;
     transform: none;
