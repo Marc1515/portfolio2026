@@ -99,24 +99,38 @@ export function MobileNav() {
       {mounted &&
         createPortal(
           <div
-            className={`mobile-nav-overlay ${open ? "is-open" : ""}`}
+            className={clsx(
+              "fixed inset-0 z-90 md:hidden transition-[clip-path] duration-600 ease-[cubic-bezier(0.65,0,0.35,1)] [clip-path:circle(0%_at_calc(100%-2.25rem)_2rem)]",
+              open
+                ? "pointer-events-auto [clip-path:circle(150%_at_calc(100%-2.25rem)_2rem)]"
+                : "pointer-events-none",
+            )}
             aria-hidden={!open}
           >
-            <div className="mobile-nav-glass" />
-            <nav className="mobile-nav-inner" aria-label={t("primaryNav")}>
-              <ul className="mobile-nav-list">
+            <div
+              className="absolute inset-0 bg-[color-mix(in_srgb,var(--background)_98%,transparent)]"
+              aria-hidden
+            />
+            <nav
+              className="relative flex h-full w-full items-center justify-center"
+              aria-label={t("primaryNav")}
+            >
+              <ul className="flex flex-col items-center gap-(--space-4)">
                 {siteConfig.navigation.map((item) => (
                   <li key={item.id}>
                     <a
                       href={`#${item.id}`}
-                      className={activeId === item.id ? "is-active" : ""}
+                      className={clsx(
+                        "text-2xl! font-bold transition-colors duration-300 ease-in-out hover:text-(--foreground)!",
+                        activeId === item.id ? "text-accent!" : "text-muted!",
+                      )}
                       onClick={(e) => navigateTo(e, item.id)}
                     >
                       {t(`nav.${item.id}`)}
                     </a>
                   </li>
                 ))}
-                <li className="mobile-nav-language-switch">
+                <li className="mt-space-3!">
                   <LanguageSwitch />
                 </li>
               </ul>

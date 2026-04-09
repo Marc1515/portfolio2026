@@ -11,6 +11,7 @@ const es = {
     menuToggle: "Abrir o cerrar menú de navegación",
     socialLinksLabel: "Redes sociales",
     footerRights: "Todos los derechos reservados.",
+    footerBackToTop: "Subir arriba",
     nav: {
       home: "Inicio",
       projects: "Proyectos",

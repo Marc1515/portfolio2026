@@ -111,67 +111,6 @@ a {
 
 /* --- Mobile nav overlay (wave / clip-path circle) --- */
 
-.mobile-nav-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  clip-path: circle(0% at calc(100% - 2.25rem) 2rem);
-  transition: clip-path 0.6s cubic-bezier(0.65, 0, 0.35, 1);
-  pointer-events: none;
-}
-
-.mobile-nav-overlay.is-open {
-  clip-path: circle(150% at calc(100% - 2.25rem) 2rem);
-  pointer-events: auto;
-}
-
-.mobile-nav-glass {
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, var(--background) 98%, transparent);
-}
-
-.mobile-nav-inner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-
-.mobile-nav-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.mobile-nav-list a {
-  font-size: clamp(1.5rem, 6vw, 2.25rem);
-  font-weight: 700;
-  color: var(--muted);
-  transition: color 0.2s ease;
-}
-
-.mobile-nav-list a:hover,
-.mobile-nav-list a:focus-visible {
-  color: var(--foreground);
-}
-
-.mobile-nav-list a.is-active {
-  color: var(--accent);
-}
-
-.mobile-nav-language-switch {
-  margin-top: 0.5rem;
-}
-
-.mobile-nav-language-switch .language-switch {
-  justify-self: center;
-}
-
 .grid {
   display: grid;
   gap: var(--space-2);
@@ -189,23 +128,6 @@ a {
   padding: var(--space-2);
 }
 
-.site-footer {
-  margin-top: auto;
-  border-top: 1px solid var(--surface-border);
-  width: min(100% - 2rem, var(--max-width));
-  margin-inline: auto;
-  padding-block: var(--space-3);
-  display: grid;
-  gap: var(--space-2);
-}
-
-.social-links {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
 @media (min-width: 768px) {
   .section {
     scroll-margin-top: 5rem;
@@ -215,8 +137,7 @@ a {
     display: flex;
   }
 
-  .burger-btn,
-  .mobile-nav-overlay {
+  .burger-btn {
     display: none !important;
   }
 

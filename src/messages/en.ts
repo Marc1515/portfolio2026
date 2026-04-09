@@ -11,6 +11,7 @@ const en = {
     menuToggle: "Toggle navigation menu",
     socialLinksLabel: "Social links",
     footerRights: "All rights reserved.",
+    footerBackToTop: "Back to top",
     nav: {
       home: "Home",
       projects: "Projects",
