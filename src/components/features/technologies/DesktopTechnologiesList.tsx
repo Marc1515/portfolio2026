@@ -12,7 +12,9 @@ interface DesktopTechnologiesListProps {
   className?: string;
 }
 
-export function DesktopTechnologiesList({ className }: DesktopTechnologiesListProps) {
+export function DesktopTechnologiesList({
+  className,
+}: DesktopTechnologiesListProps) {
   const t = useTranslations("technologies");
   const rootRef = useRef<HTMLUListElement | null>(null);
 
@@ -22,7 +24,9 @@ export function DesktopTechnologiesList({ className }: DesktopTechnologiesListPr
     }
 
     const ctx = gsap.context(() => {
-      const items = gsap.utils.toArray<HTMLElement>("[data-tech-desktop-item='true']");
+      const items = gsap.utils.toArray<HTMLElement>(
+        "[data-tech-desktop-item='true']",
+      );
 
       if (!items.length) {
         return;
@@ -62,7 +66,7 @@ export function DesktopTechnologiesList({ className }: DesktopTechnologiesListPr
   return (
     <ul
       ref={rootRef}
-      className={`technologies-grid ${className ?? ""}`.trim()}
+      className={`list-none! grid! grid-cols-4! gap-(--space-2)! ${className ?? ""}`.trim()}
       aria-label={t("ariaListLabel")}
     >
       {technologies.map((technology) => {
@@ -71,10 +75,13 @@ export function DesktopTechnologiesList({ className }: DesktopTechnologiesListPr
         return (
           <li
             key={technology.id}
-            className="technologies-item technologies-desktop-reveal-item"
+            className="bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)! flex items-center gap-3!"
             data-tech-desktop-item="true"
           >
-            <Icon className="technologies-icon" aria-hidden="true" />
+            <Icon
+              className="w-7 h-7! color-(--foreground)!"
+              aria-hidden="true"
+            />
             <span>{technology.label}</span>
           </li>
         );

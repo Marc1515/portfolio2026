@@ -330,9 +330,12 @@ export function TechnologiesSection() {
       subtitle={t("subtitle")}
       className="section"
     >
-      <DesktopTechnologiesList className="technologies-desktop-only" />
-      <div ref={rootRef} className="technologies-mobile-only">
-        <ul className="technologies-grid" aria-label={t("ariaListLabel")}>
+      <DesktopTechnologiesList className="hidden! md:grid!" />
+      <div ref={rootRef} className="md:hidden!">
+        <ul
+          className="list-none grid grid-cols-2 gap-(--space-2)"
+          aria-label={t("ariaListLabel")}
+        >
           {visibleTechnologies.map((technology, index) => {
             const Icon = technology.icon;
             const isInitial = index < collapsedVisibleCount;
@@ -341,31 +344,34 @@ export function TechnologiesSection() {
             return (
               <li
                 key={technology.id}
-                className="technologies-item"
+                className="bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)! flex items-center gap-3!"
                 data-tech-initial={isInitial ? "true" : "false"}
                 data-tech-extra={isExtra ? "true" : "false"}
                 data-tech-scroll-anchor={
                   index === scrollAnchorIndex ? "true" : "false"
                 }
               >
-                <Icon className="technologies-icon" aria-hidden="true" />
+                <Icon
+                  className="w-7 h-7! color-(--foreground)!"
+                  aria-hidden="true"
+                />
                 <span>{technology.label}</span>
               </li>
             );
           })}
         </ul>
         {canToggle ? (
-          <div className="technologies-mobile-toggle">
+          <div className="flex justify-end">
             <button
               type="button"
-              className="technologies-mobile-toggle-button"
+              className="flex items-center gap-1 mt-1! font-extralight text-xs color-(--muted) group"
               onClick={handleToggle}
               aria-expanded={isExpanded}
               data-tech-toggle-button="true"
             >
               {isExpanded ? t("less") : t("more")}
               <span
-                className="technologies-mobile-toggle-arrow"
+                className="group-aria-expanded:rotate-180"
                 aria-hidden="true"
               >
                 ▾

@@ -8,10 +8,15 @@ export function ContactMethod({ method }: ContactMethodProps) {
   const Icon = method.icon;
 
   return (
-    <article className="card contact-card">
-      <a href={method.href} target="_blank" rel="noreferrer">
-        <span className="contact-type">
-          <Icon className="contact-icon" aria-hidden="true" />
+    <article className="card">
+      <a
+        className="flex justify-between"
+        href={method.href}
+        target="_blank"
+        rel="noreferrer"
+      >
+        <span className="text-(--muted)! inline-flex items-center">
+          <Icon className="w-5 h-5!" aria-hidden="true" />
         </span>
         <span>{method.label}</span>
       </a>

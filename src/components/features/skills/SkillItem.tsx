@@ -7,20 +7,22 @@ interface SkillItemProps {
 
 export function SkillItem({ skill }: SkillItemProps) {
   const t = useTranslations("skills");
-  const highlights = t.raw(`items.${skill.translationKey}.highlights`) as string[];
+  const highlights = t.raw(
+    `items.${skill.translationKey}.highlights`,
+  ) as string[];
 
   return (
-    <article className="card experience-card">
+    <article className="card">
       <header>
         <h3>{t(`items.${skill.translationKey}.title`)}</h3>
         <p>{t(`items.${skill.translationKey}.caption`)}</p>
-        <p className="muted">{t(`items.${skill.translationKey}.meta`)}</p>
+        <p className="text-(--muted)">
+          {t(`items.${skill.translationKey}.meta`)}
+        </p>
       </header>
-      <ul className="mt-4 list-disc pl-5">
+      <ul className="list-disc mt-(--space-2)! pl-5! space-y-1.5!">
         {highlights.map((highlight) => (
-          <li key={highlight} className="mt-1.5">
-            {highlight}
-          </li>
+          <li key={highlight}>{highlight}</li>
         ))}
       </ul>
     </article>

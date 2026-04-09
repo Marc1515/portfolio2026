@@ -70,16 +70,12 @@ export function RevealOnScroll({
   );
 
   const Tag = as;
-  const revealClassName = enabled ? "reveal-on-scroll" : "";
-  const resolvedClassName =
-    `${revealClassName}${className ? ` ${className}` : ""}`.trim();
 
   return (
     <Tag
       ref={(node: HTMLElement | null) => {
         elementRef.current = node;
       }}
-      className={resolvedClassName}
     >
       {children}
     </Tag>

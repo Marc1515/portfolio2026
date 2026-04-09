@@ -29,9 +29,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <div className="flex flex-col gap-2 pt-4!">
         <h3>{title}</h3>
         <p className="min-h-20">{description}</p>
-        <ul className="tag-list" aria-label={t("techStackAria", { title })}>
+        <ul className="flex gap-2" aria-label={t("techStackAria", { title })}>
           {project.tags.map((tag) => (
-            <li key={tag}>{tag}</li>
+            <li
+              key={tag}
+              className="bg-[#1a2340] text-[#c9d8ff] border border-(--surface-border) rounded-2xl px-3! py-1! text-[11px]!"
+            >
+              {tag}
+            </li>
           ))}
         </ul>
         <div className="flex mt-(--space-2)! gap-(--space-2) text-(--accent) font-medium">

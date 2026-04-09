@@ -6,6 +6,7 @@ import { LanguageSwitch } from "@/components/features/i18n/LanguageSwitch";
 import { siteConfig } from "@/data/site";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { useTranslations } from "next-intl";
+import clsx from "clsx";
 
 const subscribe = () => () => {};
 const useMounted = () =>
@@ -70,14 +71,29 @@ export function MobileNav() {
   return (
     <>
       <button
-        className="burger-btn"
+        className="fixed top-4 right-4 z-110 flex h-10 w-10 cursor-pointer flex-col justify-center gap-[5px] border-0 bg-transparent p-2 md:hidden"
         onClick={toggle}
         aria-expanded={open}
         aria-label={t("menuToggle")}
       >
-        <span className={`burger-line ${open ? "is-open" : ""}`} />
-        <span className={`burger-line ${open ? "is-open" : ""}`} />
-        <span className={`burger-line ${open ? "is-open" : ""}`} />
+        <span
+          className={clsx(
+            "block h-[2px] w-6 origin-center rounded-[2px] bg-foreground transform-gpu transition-all duration-350 ease-[cubic-bezier(0.77,0,0.18,1)]",
+            open ? "translate-y-[7px] rotate-45" : "",
+          )}
+        />
+        <span
+          className={clsx(
+            "block h-[2px] w-6 origin-center rounded-[2px] bg-foreground transform-gpu transition-all duration-350 ease-[cubic-bezier(0.77,0,0.18,1)]",
+            open ? "opacity-0" : "",
+          )}
+        />
+        <span
+          className={clsx(
+            "block h-[2px] w-6 origin-center rounded-[2px] bg-foreground transform-gpu transition-all duration-350 ease-[cubic-bezier(0.77,0,0.18,1)]",
+            open ? "-translate-y-[7px] -rotate-45" : "",
+          )}
+        />
       </button>
 
       {mounted &&
