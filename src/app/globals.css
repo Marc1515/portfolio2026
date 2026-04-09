@@ -74,22 +74,6 @@ a {
   margin-inline: auto;
 }
 
-.section {
-  min-height: 100vh;
-  min-height: 100svh;
-  padding-block: var(--space-5);
-}
-
-.section h2 {
-  font-size: clamp(1.5rem, 5vw, 2.25rem);
-  margin-bottom: var(--space-1);
-}
-
-.section-subtitle {
-  color: var(--muted);
-  margin-bottom: var(--space-3);
-}
-
 .brand {
   font-weight: 700;
 }
@@ -129,16 +113,8 @@ a {
 }
 
 @media (min-width: 768px) {
-  .section {
-    scroll-margin-top: 5rem;
-  }
-
   .nav-list {
     display: flex;
-  }
-
-  .burger-btn {
-    display: none !important;
   }
 
   .grid {
