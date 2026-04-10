@@ -21,7 +21,9 @@ export function HomeSection() {
           <p className="text-accent text-sm! uppercase! tracking-wider! mb-(--space-1)!">
             {t("role")}
           </p>
-          <h1 className="text-4xl! md:text-6xl!">{siteConfig.name}</h1>
+          <h1 className="text-4xl! md:text-6xl! md:pb-(--space-2)!">
+            {siteConfig.name}
+          </h1>
           <p className="text-lg! mt-(--space-2)! md:text-xl! max-w-2xl!">
             {t("tagline")}
           </p>
