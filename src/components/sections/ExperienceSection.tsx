@@ -13,9 +13,8 @@ export function ExperienceSection() {
       id={SECTION_IDS.experience}
       title={t("title")}
       subtitle={t("subtitle")}
-      className="section"
     >
-      <div className="stack">
+      <div className="space-y-(--space-2)!">
         {experiences.map((experience, index) => (
           <RevealOnScroll key={experience.id} delayMs={160 + index * 90}>
             <ExperienceItem experience={experience} />

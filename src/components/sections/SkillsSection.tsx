@@ -13,9 +13,8 @@ export function SkillsSection() {
       id={SECTION_IDS.skills}
       title={t("title")}
       subtitle={t("subtitle")}
-      className="section"
     >
-      <div className="stack">
+      <div className="space-y-(--space-2)!">
         {skillAreas.map((skill, index) => (
           <RevealOnScroll key={skill.id} delayMs={160 + index * 90}>
             <SkillItem skill={skill} />

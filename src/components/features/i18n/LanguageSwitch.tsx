@@ -54,7 +54,7 @@ export function LanguageSwitch() {
       disabled={isTransitioning}
       onClick={handleToggle}
     >
-      <span className="grid! grid-cols-2! h-full! relative! z-1!">
+      <span className="grid! grid-cols-2! h-full! relative! z-1! font-bold!">
         <span
           className={clsx(
             "text-xs text-center flex items-center justify-center",

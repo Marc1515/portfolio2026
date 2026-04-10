@@ -19,14 +19,17 @@ export function Header() {
         aria-label={t("primaryNav")}
         className="w-[min(calc(100%-2rem),var(--max-width))] mx-auto! min-h-16 flex items-center justify-between gap-space-2"
       >
-        <div className="brand">
-          <div
-            className={`brand-language-switch ${showLanguageSwitch ? "is-visible" : ""}`}
-            aria-hidden={!showLanguageSwitch}
-          >
-            <LanguageSwitch />
-          </div>
+        <div
+          className={clsx(
+            "transition-[opacity,transform] duration-250 ease-out",
+            showLanguageSwitch
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none",
+          )}
+        >
+          <LanguageSwitch />
         </div>
+
         <ul className="flex items-center gap-space-2">
           {siteConfig.navigation.map((item) => (
             <li key={item.id}>

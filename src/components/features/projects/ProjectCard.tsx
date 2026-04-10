@@ -13,7 +13,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const description = t(`items.${project.translationKey}.description`);
 
   return (
-    <article className="card">
+    <article className="bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)!">
       <div className="aspect-video overflow-hidden rounded-lg border border-(--surface-border)">
         <Image
           src={project.image}

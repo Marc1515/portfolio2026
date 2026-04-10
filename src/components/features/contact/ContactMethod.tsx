@@ -8,7 +8,7 @@ export function ContactMethod({ method }: ContactMethodProps) {
   const Icon = method.icon;
 
   return (
-    <article className="card">
+    <article className="bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)!">
       <a
         className="flex justify-between"
         href={method.href}

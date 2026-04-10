@@ -328,7 +328,6 @@ export function TechnologiesSection() {
       id={SECTION_IDS.technologies}
       title={t("title")}
       subtitle={t("subtitle")}
-      className="section"
     >
       <DesktopTechnologiesList className="hidden! md:grid!" />
       <div ref={rootRef} className="md:hidden!">

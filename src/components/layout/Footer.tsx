@@ -37,7 +37,10 @@ export function Footer() {
         <div className="w-full md:w-auto md:justify-self-end md:text-right">
           <a
             href={`#${SECTION_IDS.home}`}
-            className={clsx(footerLinkClass, "inline-flex items-center gap-1.5")}
+            className={clsx(
+              footerLinkClass,
+              "inline-flex items-center gap-1.5",
+            )}
           >
             <span aria-hidden className="text-(--accent)">
               ↑

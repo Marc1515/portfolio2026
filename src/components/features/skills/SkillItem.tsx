@@ -12,7 +12,7 @@ export function SkillItem({ skill }: SkillItemProps) {
   ) as string[];
 
   return (
-    <article className="card">
+    <article className="bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)!">
       <header>
         <h3>{t(`items.${skill.translationKey}.title`)}</h3>
         <p>{t(`items.${skill.translationKey}.caption`)}</p>

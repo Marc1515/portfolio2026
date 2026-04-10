@@ -12,7 +12,8 @@ export function HomeSection() {
   return (
     <Section
       id={SECTION_IDS.home}
-      className="section flex! items-center! justify-center!"
+      extraTopPadding={false}
+      className="flex! items-center! justify-center!"
       animated={false}
     >
       <div className="flex flex-col gap-8 md:flex-row items-center justify-between">

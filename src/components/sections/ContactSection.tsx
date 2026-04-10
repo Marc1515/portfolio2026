@@ -13,9 +13,8 @@ export function ContactSection() {
       id={SECTION_IDS.contact}
       title={t("title")}
       subtitle={t("subtitle")}
-      className="section"
     >
-      <ul className="stack grid">
+      <ul className="grid grid-cols-1 md:grid-cols-3! gap-(--space-2)!">
         {contactMethods.map((method, index) => (
           <RevealOnScroll as="li" key={method.id} delayMs={160 + index * 90}>
             <ContactMethod method={method} />
