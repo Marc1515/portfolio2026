@@ -33,7 +33,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           {project.tags.map((tag) => (
             <li
               key={tag}
-              className="bg-[#1a2340] text-[#c9d8ff] border border-(--surface-border) rounded-2xl px-3! py-1! text-[11px]!"
+              className="bg-[#1a2340] text-[#c9d8ff] border border-(--surface-border) rounded-2xl px-[.5rem]! py-1! text-[.8rem]!"
             >
               {tag}
             </li>
