@@ -7,6 +7,7 @@ import { siteConfig } from "@/data/site";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { useTranslations } from "next-intl";
 import clsx from "clsx";
+import BurgerButton from "@/components/features/navbar/BurgerButton";
 
 const subscribe = () => () => {};
 const useMounted = () =>
@@ -22,8 +23,8 @@ export function MobileNav() {
   const activeId = useActiveSection();
   const t = useTranslations("layout");
 
-  const toggle = useCallback(() => setOpen((v) => !v), []);
   const close = useCallback(() => setOpen(false), []);
+  const toggle = useCallback(() => setOpen((v) => !v), []);
 
   const navigateTo = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -70,32 +71,7 @@ export function MobileNav() {
 
   return (
     <>
-      <button
-        className="fixed top-4 right-4 z-110 flex h-10 w-10 cursor-pointer flex-col justify-center gap-[5px] border-0 bg-transparent p-2 md:hidden"
-        onClick={toggle}
-        aria-expanded={open}
-        aria-label={t("menuToggle")}
-      >
-        <span
-          className={clsx(
-            "block h-[2px] w-6 origin-center rounded-[2px] bg-foreground transform-gpu transition-all duration-350 ease-[cubic-bezier(0.77,0,0.18,1)]",
-            open ? "translate-y-[7px] rotate-45" : "",
-          )}
-        />
-        <span
-          className={clsx(
-            "block h-[2px] w-6 origin-center rounded-[2px] bg-foreground transform-gpu transition-all duration-350 ease-[cubic-bezier(0.77,0,0.18,1)]",
-            open ? "opacity-0" : "",
-          )}
-        />
-        <span
-          className={clsx(
-            "block h-[2px] w-6 origin-center rounded-[2px] bg-foreground transform-gpu transition-all duration-350 ease-[cubic-bezier(0.77,0,0.18,1)]",
-            open ? "-translate-y-[7px] -rotate-45" : "",
-          )}
-        />
-      </button>
-
+      <BurgerButton open={open} onToggle={toggle} />
       {mounted &&
         createPortal(
           <div
