@@ -33,7 +33,7 @@ export function Section({
       id={id}
       aria-labelledby={title ? titleId : undefined}
       className={clsx(
-        "min-h-screen px-(--space-5) pb-(--space-5)",
+        "min-h-screen px-(--space-2)!",
         extraTopPadding ? "pt-12! md:pt-28!" : "pt-0!",
         className,
       )}

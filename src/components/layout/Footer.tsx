@@ -11,8 +11,8 @@ export function Footer() {
   const tHome = useTranslations("home");
 
   return (
-    <footer className="mt-auto border-t border-(--surface-border) w-full">
-      <div className="container py-(--space-4)! flex flex-col gap-(--space-4) items-center! text-center md:grid md:grid-cols-[1fr_auto_1fr] md:items-start md:gap-(--space-3) md:text-left">
+    <footer className="w-full border-t border-(--surface-border)">
+      <div className="max-w-6xl! mx-auto! px-(--space-2)! py-(--space-4)! flex flex-col items-center! text-center gap-(--space-2)! md:flex-row md:justify-between!">
         <div className="md:justify-self-start w-full md:w-auto">
           <a
             href="/MEQ_ESP.pdf"
