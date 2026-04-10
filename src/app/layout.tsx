@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { ScrollTriggerLayoutSync } from "@/components/layout/ScrollTriggerLayoutSync";
 import { TextZoomNormalize } from "@/components/ui/TextZoomNormalize";
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({
     >
       <body>
         <TextZoomNormalize />
+        <ScrollTriggerLayoutSync />
         {children}
       </body>
     </html>

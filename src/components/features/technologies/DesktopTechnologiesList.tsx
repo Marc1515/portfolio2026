@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { technologies } from "@/data/technologies";
 import { useTranslations } from "next-intl";
+import { isCheapRevealMotionPreferred } from "@/lib/revealMotion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,23 +33,22 @@ export function DesktopTechnologiesList({
         return;
       }
 
+      const cheap = isCheapRevealMotionPreferred();
+
       gsap.fromTo(
         items,
-        {
-          opacity: 0,
-          y: 26,
-          scale: 0.98,
-          filter: "blur(8px)",
-        },
+        cheap
+          ? { opacity: 0, y: 26, scale: 0.98 }
+          : { opacity: 0, y: 26, scale: 0.98, filter: "blur(8px)" },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          filter: "blur(0px)",
+          ...(cheap ? {} : { filter: "blur(0px)" }),
           duration: 0.9,
           stagger: 0.08,
           ease: "cubic-bezier(0.22, 1, 0.36, 1)",
-          clearProps: "transform,filter",
+          clearProps: cheap ? "transform" : "transform,filter",
           scrollTrigger: {
             trigger: rootRef.current,
             start: "top 82%",

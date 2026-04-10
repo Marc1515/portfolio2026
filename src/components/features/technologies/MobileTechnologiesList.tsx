@@ -3,6 +3,7 @@ import { useRef, useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { technologies } from "@/data/technologies";
 import gsap from "gsap";
+import { isCheapRevealMotionPreferred } from "@/lib/revealMotion";
 import { SECTION_IDS } from "@/lib/constants";
 
 const MobileTechnologiesList = () => {
@@ -38,6 +39,8 @@ const MobileTechnologiesList = () => {
         return;
       }
 
+      const cheap = isCheapRevealMotionPreferred();
+
       const revealTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: rootRef.current,
@@ -48,21 +51,18 @@ const MobileTechnologiesList = () => {
 
       revealTimeline.fromTo(
         initialNodes,
-        {
-          opacity: 0,
-          y: 26,
-          scale: 0.98,
-          filter: "blur(8px)",
-        },
+        cheap
+          ? { opacity: 0, y: 26, scale: 0.98 }
+          : { opacity: 0, y: 26, scale: 0.98, filter: "blur(8px)" },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          filter: "blur(0px)",
+          ...(cheap ? {} : { filter: "blur(0px)" }),
           duration: 0.9,
           stagger: 0.08,
           ease: revealEase,
-          clearProps: "opacity,transform,filter",
+          clearProps: cheap ? "opacity,transform" : "opacity,transform,filter",
         },
       );
 
@@ -72,20 +72,17 @@ const MobileTechnologiesList = () => {
 
       revealTimeline.fromTo(
         toggleButton,
-        {
-          opacity: 0,
-          y: 26,
-          scale: 0.98,
-          filter: "blur(8px)",
-        },
+        cheap
+          ? { opacity: 0, y: 26, scale: 0.98 }
+          : { opacity: 0, y: 26, scale: 0.98, filter: "blur(8px)" },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          filter: "blur(0px)",
+          ...(cheap ? {} : { filter: "blur(0px)" }),
           duration: 0.9,
           ease: revealEase,
-          clearProps: "opacity,transform,filter",
+          clearProps: cheap ? "opacity,transform" : "opacity,transform,filter",
         },
         "+=0.08",
       );
@@ -111,23 +108,22 @@ const MobileTechnologiesList = () => {
       return;
     }
 
+    const cheap = isCheapRevealMotionPreferred();
+
     gsap.fromTo(
       extraNodes,
-      {
-        opacity: 0,
-        y: 26,
-        scale: 0.98,
-        filter: "blur(8px)",
-      },
+      cheap
+        ? { opacity: 0, y: 26, scale: 0.98 }
+        : { opacity: 0, y: 26, scale: 0.98, filter: "blur(8px)" },
       {
         opacity: 1,
         y: 0,
         scale: 1,
-        filter: "blur(0px)",
+        ...(cheap ? {} : { filter: "blur(0px)" }),
         duration: 0.9,
         stagger: 0.08,
         ease: revealEase,
-        clearProps: "opacity,transform,filter",
+        clearProps: cheap ? "opacity,transform" : "opacity,transform,filter",
         onComplete,
       },
     );
@@ -148,11 +144,13 @@ const MobileTechnologiesList = () => {
       return;
     }
 
+    const cheap = isCheapRevealMotionPreferred();
+
     gsap.to(extraNodes, {
       opacity: 0,
       y: 18,
       scale: 0.99,
-      filter: "blur(4px)",
+      ...(cheap ? {} : { filter: "blur(4px)" }),
       duration: 0.32,
       stagger: {
         each: 0.02,
@@ -199,22 +197,23 @@ const MobileTechnologiesList = () => {
       return;
     }
 
+    const cheap = isCheapRevealMotionPreferred();
+
     gsap.fromTo(
       toggleButton,
-      {
-        opacity: 0,
-        y: 26,
-        scale: 0.98,
-        filter: "blur(8px)",
-      },
+      cheap
+        ? { opacity: 0, y: 26, scale: 0.98 }
+        : { opacity: 0, y: 26, scale: 0.98, filter: "blur(8px)" },
       {
         opacity: 1,
         y: 0,
         scale: 1,
-        filter: "blur(0px)",
+        ...(cheap ? {} : { filter: "blur(0px)" }),
         duration: 0.9,
         ease: revealEase,
-        clearProps: "opacity,transform,filter,pointerEvents",
+        clearProps: cheap
+          ? "opacity,transform,pointerEvents"
+          : "opacity,transform,filter,pointerEvents",
         onComplete,
       },
     );

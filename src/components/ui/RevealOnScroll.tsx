@@ -5,6 +5,8 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+import { isCheapRevealMotionPreferred } from "@/lib/revealMotion";
+
 gsap.registerPlugin(ScrollTrigger);
 
 type RevealTag = "div" | "li";
@@ -41,23 +43,35 @@ export function RevealOnScroll({
         return;
       }
 
+      const cheap = isCheapRevealMotionPreferred();
+
       gsap.fromTo(
         node,
-        {
-          opacity: 0,
-          y: 26,
-          scale: 0.98,
-          filter: "blur(8px)",
-        },
+        cheap
+          ? {
+              opacity: 0,
+              y: 26,
+              scale: 0.98,
+            }
+          : {
+              opacity: 0,
+              y: 26,
+              scale: 0.98,
+              filter: "blur(8px)",
+            },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          filter: "blur(0px)",
+          ...(cheap
+            ? {}
+            : {
+                filter: "blur(0px)",
+              }),
           duration: 0.9,
           delay: delayMs / 1000,
           ease: "cubic-bezier(0.22, 1, 0.36, 1)",
-          clearProps: "transform,filter",
+          clearProps: cheap ? "transform" : "transform,filter",
           scrollTrigger: {
             trigger: node,
             start: "top 82%",
