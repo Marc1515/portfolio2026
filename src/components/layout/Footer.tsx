@@ -13,7 +13,7 @@ export function Footer() {
   return (
     <footer className="w-full border-t border-(--surface-border)">
       <div className="max-w-6xl! mx-auto! px-(--space-2)! py-(--space-4)! flex flex-col items-center! text-center gap-(--space-2)! md:flex-row md:justify-between!">
-        <div className="md:justify-self-start w-full md:w-auto">
+        <div className="md:justify-self-start w-full md:w-auto hover:text-(--accent)">
           <a
             href="/MEQ_ESP.pdf"
             download
@@ -22,7 +22,7 @@ export function Footer() {
               "inline-flex items-center gap-1.5",
             )}
           >
-            <span aria-hidden className="text-(--accent)">
+            <span aria-hidden className="text-(--accent) hover:text-(--accent)">
               ↓
             </span>
             {tHome("downloadCv")}
@@ -34,7 +34,7 @@ export function Footer() {
           {tLayout("footerRights")}
         </p>
 
-        <div className="w-full md:w-auto md:justify-self-end md:text-right">
+        <div className="w-full md:w-auto md:justify-self-end md:text-right hover:text-(--accent)">
           <a
             href={`#${SECTION_IDS.home}`}
             className={clsx(
