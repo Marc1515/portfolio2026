@@ -19,16 +19,18 @@ export function HomeSection() {
     >
       <div className="flex flex-col gap-8 md:flex-row items-center justify-between">
         <div className="hero-copy">
-          <p className="text-accent text-sm! uppercase! tracking-wider! mb-(--space-1)!">
+          <p className="text-accent text-sm! md:text-xl! lg:text-2xl! uppercase! tracking-wider! mb-(--space-1)!">
             {t("role")}
           </p>
-          <h1 className="text-4xl! md:text-6xl! md:pb-(--space-2)!">
+          <h1 className="text-4xl md:text-6xl! lg:text-7xl! md:pb-(--space-2)!">
             {siteConfig.name}
           </h1>
-          <p className="text-lg! mt-(--space-2)! md:text-xl! max-w-2xl!">
+          <p className="text-lg! mt-(--space-2)! md:text-xl! lg:text-2xl! max-w-2xl!">
             {t("tagline")}
           </p>
-          <p className="text-(--muted)!">React · Next.js · TypeScript</p>
+          <p className="text-(--muted)! text-sm! md:text-xl! lg:text-2xl! mt-(--space-1)! md:mt-(--space-2)!">
+            React · Next.js · TypeScript
+          </p>
         </div>
 
         <div className="flex! flex-col! gap-6! items-center!">
