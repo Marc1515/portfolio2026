@@ -2,6 +2,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { LanguageSwitch } from "@/components/features/i18n/LanguageSwitch";
+import DownloadCV from "@/components/features/buttons/DownloadCV";
 import { Section } from "@/components/ui/Section";
 import { SECTION_IDS } from "@/lib/constants";
 import { siteConfig } from "@/data/site";
@@ -43,27 +44,7 @@ export function HomeSection() {
             />
           </div>
           <LanguageSwitch />
-          <a
-            href="/MEQ_ESP.pdf"
-            download
-            className="
-                        inline-flex items-center justify-center justify-self-center
-                        w-full max-w-64 min-h-13
-                        px-4 py-3
-                        rounded-[0.85rem]
-                        border border-[color-mix(in_srgb,var(--accent)_60%,var(--surface-border))]
-                        bg-[color-mix(in_srgb,var(--accent)_24%,var(--surface))]
-                        text-foreground font-bold tracking-[0.01em] text-center
-                        transition-[transform,background-color,border-color]
-                        duration-[150ms,200ms,200ms] ease-in-out
-                        hover:-translate-y-px
-                        hover:bg-[color-mix(in_srgb,var(--accent)_32%,var(--surface))]
-                        hover:border-[color-mix(in_srgb,var(--accent)_80%,var(--surface-border))]
-                        focus-visible:outline-2 focus-visible:outline-(--accent) focus-visible:outline-offset-2
-                      "
-          >
-            {t("downloadCv")}
-          </a>
+          <DownloadCV />
         </div>
       </div>
     </Section>
