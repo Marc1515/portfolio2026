@@ -17,7 +17,14 @@ export function ContactSection() {
       <ul className="grid grid-cols-1 md:grid-cols-3! gap-(--space-2)!">
         {contactMethods.map((method, index) => (
           <RevealOnScroll as="li" key={method.id} delayMs={160 + index * 90}>
-            <ContactMethod method={method} />
+            <ContactMethod
+              method={{
+                id: method.id,
+                label: method.label,
+                href: method.href,
+                type: method.type,
+              }}
+            />
           </RevealOnScroll>
         ))}
       </ul>
