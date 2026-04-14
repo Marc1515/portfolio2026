@@ -11,15 +11,6 @@ export const projects = [
     featured: true,
   },
   {
-    id: "trello-app",
-    translationKey: "trelloApp",
-    tags: ["Next.js", "Shadcn", "PostgresSQL", "Stripe"],
-    repoUrl: "https://github.com/Marc1515/trello-app",
-    liveUrl: "https://trello.marcespana.com/",
-    image: "/images/projects/trello.png",
-    featured: true,
-  },
-  {
     id: "guided-tours-platform",
     translationKey: "guidedToursPlatform",
     tags: ["Next.js", "Tailwind CSS", "Prisma", "PostgreSQL"],
@@ -27,5 +18,14 @@ export const projects = [
     liveUrl: "https://deltaroutes.marcespana.com/",
     image: "/images/projects/deltaroutes.png",
     featured: false,
+  },
+  {
+    id: "trello-app",
+    translationKey: "trelloApp",
+    tags: ["Next.js", "Shadcn", "PostgresSQL", "Stripe"],
+    repoUrl: "https://github.com/Marc1515/trello-app",
+    liveUrl: "https://trello.marcespana.com/",
+    image: "/images/projects/trello.png",
+    featured: true,
   },
 ] satisfies Project[];
