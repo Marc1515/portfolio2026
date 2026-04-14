@@ -25,7 +25,7 @@ export function HomeSection() {
           <h1 className="text-4xl md:text-6xl! lg:text-7xl! md:pb-(--space-2)!">
             {siteConfig.name}
           </h1>
-          <p className="text-lg! mt-(--space-2)! md:text-xl! lg:text-2xl! max-w-2xl!">
+          <p className="text-lg! mt-(--space-2)! md:text-xl! lg:text-2xl! max-w-2xl! min-h-16">
             {t("tagline")}
           </p>
           <p className="text-(--muted)! text-sm! md:text-xl! lg:text-2xl! mt-(--space-1)! md:mt-(--space-2)!">
