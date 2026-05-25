@@ -2,6 +2,7 @@
   "name": "portfolio2026",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.1.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -28,5 +29,13 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "typescript": "^5"
-  }
+  },
+  "pnpm": {
+  "onlyBuiltDependencies": [
+    "@parcel/watcher",
+    "@swc/core",
+    "sharp",
+    "unrs-resolver"
+  ]
+}
 }
