@@ -1,0 +1,21 @@
+name: Deploy dev
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  deploy-dev:
+    runs-on: self-hosted
+
+    steps:
+      - name: Deploy dev locally
+        run: |
+          cd ~/apps/portfolio2026
+          git fetch origin
+          git checkout dev
+          git reset --hard origin/dev
+          docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
+          docker image prune -f
