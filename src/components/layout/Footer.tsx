@@ -15,7 +15,7 @@ export function Footer() {
       <div className="max-w-6xl! mx-auto! px-(--space-2)! py-(--space-4)! flex flex-col items-center! text-center gap-(--space-2)! md:flex-row md:justify-between!">
         <div className="md:justify-self-start w-full md:w-auto hover:text-(--accent)">
           <a
-            href="/MEQ_ESP.pdf"
+            href="/MEQ_EN.pdf"
             download
             className={clsx(
               footerLinkClass,

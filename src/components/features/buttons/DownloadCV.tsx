@@ -107,7 +107,7 @@ const DownloadCV = () => {
   return (
     <a
       ref={linkRef}
-      href="/MEQ_ESP.pdf"
+      href="/MEQ_EN.pdf"
       download
       style={baseMixStyle}
       className="
