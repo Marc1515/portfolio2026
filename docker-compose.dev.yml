@@ -1,3 +1,5 @@
+name: portfolio2026-dev
+
 services:
   portfolio2026-dev:
     container_name: portfolio2026-dev

@@ -1,3 +1,5 @@
+name: portfolio2026-prod
+
 services:
   portfolio2026-prod:
     container_name: portfolio2026-prod
