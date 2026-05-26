@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug SSH connectivity
+        run: |
+          echo "Testing SSH connectivity..."
+          nc -vz -w 10 ${{ secrets.SSH_HOST }} ${{ secrets.SSH_PORT }}
+
       - name: Deploy dev on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -18,6 +23,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          timeout: 60s
+          command_timeout: 20m
           script: |
             cd /home/marc/apps/portfolio2026
             git fetch origin
