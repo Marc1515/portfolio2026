@@ -14,6 +14,7 @@ services:
       - traefik.http.routers.portfolio2026-prod.rule=Host(`marcespana.com`)
       - traefik.http.routers.portfolio2026-prod.entrypoints=websecure
       - traefik.http.routers.portfolio2026-prod.tls=true
+      - traefik.http.routers.portfolio2026-prod.tls.certresolver=letsencrypt
       - traefik.http.services.portfolio2026-prod.loadbalancer.server.port=3000
 
       - traefik.http.routers.portfolio2026-prod-http.rule=Host(`marcespana.com`)
