@@ -1,0 +1,26 @@
+services:
+  portfolio2026-prod:
+    container_name: portfolio2026-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - traefik-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
+
+      - traefik.http.routers.portfolio2026-prod.rule=Host(`marcespana.com`)
+      - traefik.http.routers.portfolio2026-prod.entrypoints=websecure
+      - traefik.http.routers.portfolio2026-prod.tls=true
+      - traefik.http.services.portfolio2026-prod.loadbalancer.server.port=3000
+
+      - traefik.http.routers.portfolio2026-prod-http.rule=Host(`marcespana.com`)
+      - traefik.http.routers.portfolio2026-prod-http.entrypoints=web
+      - traefik.http.routers.portfolio2026-prod-http.middlewares=portfolio2026-prod-redirect
+      - traefik.http.middlewares.portfolio2026-prod-redirect.redirectscheme.scheme=https
+
+networks:
+  traefik-proxy:
+    external: true
