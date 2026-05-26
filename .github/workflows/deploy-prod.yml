@@ -19,7 +19,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd /var/www/portfolio2026
+            cd /home/marc/apps/portfolio2026
             git fetch origin
             git checkout main
             git reset --hard origin/main
