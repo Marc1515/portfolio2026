@@ -1,0 +1,27 @@
+  name: Deploy dev
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy dev on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /var/www/portfolio2026
+            git fetch origin
+            git checkout dev
+            git reset --hard origin/dev
+            docker compose -f docker-compose.dev.yml up -d --build
+            docker image prune -f
