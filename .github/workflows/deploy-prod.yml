@@ -18,4 +18,5 @@ jobs:
           git checkout main
           git reset --hard origin/main
           docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
-          docker image prune -f
+          docker image prune -af
+          docker builder prune -af --filter "until=24h"
