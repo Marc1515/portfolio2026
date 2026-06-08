@@ -107,7 +107,7 @@ const DownloadCV = () => {
   return (
     <a
       ref={linkRef}
-      href="/MEQ_EN.pdf"
+      href="/Marc_Espana_CV_Full_Stack.pdf"
       download
       style={baseMixStyle}
       className="
