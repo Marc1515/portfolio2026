@@ -13,7 +13,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const description = t(`items.${project.translationKey}.description`);
 
   return (
-    <article className="flex flex-col justify-between min-h-[440px] bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)!">
+    <article className="flex flex-col min-h-[440px] bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)!">
       <div className="aspect-video overflow-hidden rounded-lg border border-(--surface-border)">
         <Image
           src={project.image}
@@ -28,7 +28,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       </div>
       <div className="flex flex-col gap-2 pt-4!">
         <h3>{title}</h3>
-        <p className="min-h-20">{description}</p>
+        <p className="min-h-28">{description}</p>
         <ul className="flex gap-2" aria-label={t("techStackAria", { title })}>
           {project.tags.map((tag) => (
             <li
