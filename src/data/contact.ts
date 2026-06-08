@@ -7,15 +7,15 @@ import type { ContactMethod } from "@/types/contact";
 export const contactMethods = [
   {
     id: "phone",
-    label: "+34 628 24 63 63",
-    href: "tel:+34628246363",
+    label: "+353 87 004 1006",
+    href: "tel:+353870041006",
     type: "phone",
     icon: FaPhone,
   },
   {
     id: "whatsapp",
     label: "WhatsApp",
-    href: "https://wa.me/+34628246363",
+    href: "https://wa.me/+353870041006",
     type: "whatsapp",
     icon: FaWhatsapp,
   },
