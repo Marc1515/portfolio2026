@@ -4,7 +4,7 @@ export const projects = [
   {
     id: "caseta-martiicarmeta",
     translationKey: "casetaMartiICarmeta",
-    tags: ["Next.js", "TypeScript", "Tailwind CSS", "i18n"],
+    tags: ["Next.js", "TypeScript", "Tailwind", "i18n"],
     repoUrl: "https://github.com/Marc1515/casetamartiicarmeta",
     liveUrl: "https://casetamartiicarmeta.com",
     image: "/images/projects/caseta.png",
@@ -13,7 +13,7 @@ export const projects = [
   {
     id: "guided-tours-platform",
     translationKey: "guidedToursPlatform",
-    tags: ["Next.js", "Tailwind CSS", "Prisma", "PostgreSQL"],
+    tags: ["Next.js", "Tailwind", "Prisma", "PostgreSQL"],
     repoUrl: "https://github.com/Marc1515/deltaroutes",
     liveUrl: "https://deltaroutes.marcespana.com/",
     image: "/images/projects/deltaroutes.png",
