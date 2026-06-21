@@ -36,15 +36,15 @@ const en = {
     live: "Live",
     repository: "Repository",
     items: {
+      aiCodeReviewTrainer: {
+        title: "AI Code Review Trainer",
+        description:
+          "Full-stack application for practising code reviews with AI-generated feedback, authentication, review history, rate limiting and a production-ready deployment workflow.",
+      },
       casetaMartiICarmeta: {
         title: "Reservation Management System",
         description:
           "Full-stack booking platform for a rural house, featuring a public reservation flow and an admin panel for availability management.",
-      },
-      trelloApp: {
-        title: "Trello System",
-        description:
-          "Trello-style task management app with boards, lists, cards and drag-and-drop organization.",
       },
       guidedToursPlatform: {
         title: "Guided Tours Platform",
@@ -55,7 +55,8 @@ const en = {
   },
   experience: {
     title: "Experience",
-    subtitle: "Highlights from roles where I shipped and scaled frontend products.",
+    subtitle:
+      "Highlights from roles where I shipped and scaled frontend products.",
     items: {
       delinternetTelecom: {
         role: "Full Stack Web Developer",
@@ -154,7 +155,8 @@ const en = {
   },
   contact: {
     title: "Contact",
-    subtitle: "Let's connect for collaborations, freelance work or full-time opportunities.",
+    subtitle:
+      "Let's connect for collaborations, freelance work or full-time opportunities.",
   },
 };
 
