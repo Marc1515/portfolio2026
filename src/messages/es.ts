@@ -30,26 +30,27 @@ const es = {
   },
   projects: {
     title: "Proyectos",
-    subtitle: "Trabajos seleccionados con foco en calidad de producto y mantenibilidad.",
+    subtitle:
+      "Trabajos seleccionados con foco en calidad de producto y mantenibilidad.",
     previewAlt: "Vista previa de {title}",
     techStackAria: "Stack tecnológico de {title}",
     live: "Demo",
     repository: "Repositorio",
     items: {
-      casetaMartiICarmeta: {
-        title: "Sistema de Gestión de Reservas",
+      aiCodeReviewTrainer: {
+        title: "AI Code Review Trainer",
         description:
-          "Plataforma full-stack de reservas para una casa rural, con flujo público para clientes y panel de administración de disponibilidad.",
+          "Aplicacion full-stack para practicar revisiones de codigo con feedback generado por IA, autenticacion, historial de revisiones, limitacion de uso y despliegue preparado para produccion.",
       },
-      trelloApp: {
-        title: "Sistema estilo Trello",
+      casetaMartiICarmeta: {
+        title: "Sistema de Gestion de Reservas",
         description:
-          "Aplicación de gestión de tareas con tableros, listas, tarjetas y organización mediante drag and drop.",
+          "Plataforma full-stack de reservas para una casa rural, con flujo publico para clientes y panel de administracion de disponibilidad.",
       },
       guidedToursPlatform: {
         title: "Plataforma de Rutas Guiadas",
         description:
-          "Plataforma full-stack para rutas guiadas, con buscador, página de detalle y confirmación de reserva.",
+          "Plataforma full-stack para rutas guiadas, con buscador, pagina de detalle y confirmacion de reserva.",
       },
     },
   },
@@ -135,7 +136,8 @@ const es = {
   },
   technologies: {
     title: "Tecnologías",
-    subtitle: "Tecnologías que uso para construir productos robustos y escalables.",
+    subtitle:
+      "Tecnologías que uso para construir productos robustos y escalables.",
     ariaListLabel: "Tecnologías",
     more: "Más",
     less: "Menos",
@@ -154,7 +156,8 @@ const es = {
   },
   contact: {
     title: "Contacto",
-    subtitle: "Conectemos para colaboraciones, proyectos freelance u oportunidades full-time.",
+    subtitle:
+      "Conectemos para colaboraciones, proyectos freelance u oportunidades full-time.",
   },
 };
 

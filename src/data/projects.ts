@@ -2,6 +2,15 @@ import type { Project } from "@/types/project";
 
 export const projects = [
   {
+    id: "ai-code-review-trainer",
+    translationKey: "aiCodeReviewTrainer",
+    tags: ["Next.js", "PostgreSQL", "Ollama", "Docker"],
+    repoUrl: "https://github.com/Marc1515/ai-code-review-trainer",
+    liveUrl: "https://trainer.marcespana.com/",
+    image: "/images/projects/ai_code_reviwer_trainer.png",
+    featured: true,
+  },
+  {
     id: "caseta-martiicarmeta",
     translationKey: "casetaMartiICarmeta",
     tags: ["Next.js", "TypeScript", "Tailwind", "i18n"],
@@ -18,14 +27,5 @@ export const projects = [
     liveUrl: "https://deltaroutes.marcespana.com/",
     image: "/images/projects/deltaroutes.png",
     featured: false,
-  },
-  {
-    id: "trello-app",
-    translationKey: "trelloApp",
-    tags: ["Next.js", "Shadcn", "PostgresSQL", "Stripe"],
-    repoUrl: "https://github.com/Marc1515/trello-app",
-    liveUrl: "https://trello.marcespana.com/",
-    image: "/images/projects/trello.png",
-    featured: true,
   },
 ] satisfies Project[];
