@@ -67,3 +67,34 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+.project-details-dialog {
+  width: min(56rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: 90dvh;
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: calc(var(--radius) + 0.25rem);
+  box-shadow: 0 2rem 6rem rgb(0 0 0 / 55%);
+}
+
+.project-details-dialog::backdrop {
+  background: rgb(3 7 18 / 78%);
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 40rem) {
+  .project-details-dialog {
+    width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+    border-radius: var(--radius);
+  }
+
+  .project-details-dialog > div {
+    max-height: calc(100dvh - 1rem);
+  }
+}

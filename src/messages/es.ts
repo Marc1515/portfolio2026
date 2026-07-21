@@ -34,23 +34,71 @@ const es = {
       "Trabajos seleccionados con foco en calidad de producto y mantenibilidad.",
     previewAlt: "Vista previa de {title}",
     techStackAria: "Stack tecnológico de {title}",
+    viewDetails: "Ver detalles",
+    viewDetailsAria: "Ver detalles de {title}",
     live: "Demo",
     repository: "Repositorio",
+    modal: {
+      closeAria: "Cerrar detalles del proyecto",
+      sections: {
+        overview: "Resumen",
+        keyFeatures: "Funcionalidades principales",
+        testing: "Testing y calidad",
+        deployment: "Despliegue automatizado",
+        technologies: "Tecnologías",
+      },
+    },
     items: {
       aiCodeReviewTrainer: {
         title: "AI Code Review Trainer",
         description:
           "Aplicacion full-stack para practicar revisiones de codigo con feedback generado por IA, autenticacion, historial de revisiones, limitacion de uso y despliegue preparado para produccion.",
+        details: {
+          overview: [
+            "AI Code Review Trainer es una aplicación educativa full-stack creada para ayudar a otros desarrolladores a practicar revisiones técnicas de código. El usuario pega un fragmento, elige el enfoque de la revisión y recibe feedback estructurado con un estilo similar al de un mentor, explicando por qué importa cada problema, priorizando los hallazgos y proponiendo mejoras concretas.",
+            "Los enfoques disponibles incluyen revisión general, clean code, bugs, seguridad, rendimiento, arquitectura y testing.",
+          ],
+          keyFeatures: [
+            "El código enviado se trata como texto no confiable y nunca se ejecuta, evalúa ni compila.",
+            "Los visitantes pueden utilizar el revisor de forma anónima.",
+            "Los usuarios que inician sesión con GitHub o Google pueden guardar y consultar su historial de revisiones.",
+            "El análisis con IA se realiza en el servidor mediante una instancia local de Ollama, sin necesidad de que el usuario proporcione una API key.",
+            "El modelo local actual está basado en Qwen Coder.",
+            "La aplicación incluye validación, autenticación, persistencia, rate limiting, internacionalización, configuración de temas, historial de revisiones y monitorización de errores.",
+            "La interfaz está disponible en español e inglés.",
+            "Sentry se utiliza para monitorizar errores en producción.",
+          ],
+          testing: [
+            "El proyecto combina pruebas automatizadas con Vitest y controles de calidad mediante ESLint, Prettier, comprobación de tipos con TypeScript y validación del build de producción. Husky y lint-staged ejecutan comprobaciones sobre los archivos preparados antes de crear un commit.",
+            "Los cambios también se revisan manualmente en español e inglés, en los temas claro y oscuro, en diferentes tamaños de pantalla, mediante navegación por teclado y en los principales flujos anónimos y autenticados.",
+          ],
+          deployment: [
+            "El despliegue está automatizado con GitHub Actions mediante un runner self-hosted instalado en el VPS. Un push a dev despliega el entorno de desarrollo y un push a main despliega producción. El workflow sincroniza la rama correspondiente y reconstruye y recrea la aplicación mediante Docker Compose.",
+            "PostgreSQL funciona como un servicio persistente y no se vuelve a crear durante los despliegues normales de la aplicación. Las migraciones de Prisma se ejecutan automáticamente al iniciar el contenedor. Traefik gestiona el reverse proxy, el enrutamiento, HTTPS y los certificados TLS. Ollama se comunica con la aplicación a través de la red Docker privada y no está expuesto públicamente.",
+          ],
+        },
       },
       casetaMartiICarmeta: {
         title: "Sistema de Gestion de Reservas",
         description:
           "Plataforma full-stack de reservas para una casa rural, con flujo publico para clientes y panel de administracion de disponibilidad.",
+        details: {
+          overview: [
+            "Sistema full-stack de gestión de reservas creado para una casa rural. Combina un flujo público de reserva sencillo con un espacio de administración para gestionar la disponibilidad.",
+            "Las experiencias pública y administrativa se mantienen claramente separadas, de modo que los huéspedes pueden reservar mientras los administradores mantienen la disponibilidad mostrada en el flujo.",
+          ],
+        },
       },
       guidedToursPlatform: {
         title: "Plataforma de Rutas Guiadas",
         description:
           "Plataforma full-stack para rutas guiadas, con buscador, pagina de detalle y confirmacion de reserva.",
+        details: {
+          overview: [
+            "Plataforma full-stack para descubrir rutas guiadas y avanzar desde la búsqueda hasta la confirmación de la reserva. Los visitantes pueden explorar experiencias, consultar los detalles de una ruta y completar el flujo de reserva en una interfaz coherente.",
+            "El producto mantiene claro el recorrido desde el descubrimiento hasta la confirmación tanto en escritorio como en dispositivos móviles.",
+          ],
+        },
       },
     },
   },

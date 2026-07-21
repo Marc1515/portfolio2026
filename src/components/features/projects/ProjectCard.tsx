@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 
+import { ProjectDetailsModal } from "@/components/features/projects/ProjectDetailsModal";
 import type { Project } from "@/types/project";
 
 interface ProjectCardProps {
@@ -14,18 +14,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <article className="flex flex-col min-h-[440px] bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)!">
-      <div className="aspect-video overflow-hidden rounded-lg border border-(--surface-border)">
-        <Image
-          src={project.image}
-          className="w-full h-full display-block object-cover"
-          alt={t("previewAlt", { title })}
-          loading={project.featured ? "eager" : "lazy"}
-          priority={project.featured}
-          width={640}
-          height={360}
-          sizes="(max-width: 768px) 100vw, 33vw"
-        />
-      </div>
+      <ProjectDetailsModal project={project} title={title} />
       <div className="flex flex-col gap-2 pt-4!">
         <h3>{title}</h3>
         <p className="min-h-34">{description}</p>

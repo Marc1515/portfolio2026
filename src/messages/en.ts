@@ -33,23 +33,71 @@ const en = {
     subtitle: "Selected work focused on product quality and maintainability.",
     previewAlt: "{title} preview",
     techStackAria: "{title} tech stack",
+    viewDetails: "View details",
+    viewDetailsAria: "View details for {title}",
     live: "Live",
     repository: "Repository",
+    modal: {
+      closeAria: "Close project details",
+      sections: {
+        overview: "Overview",
+        keyFeatures: "Key features",
+        testing: "Testing and quality",
+        deployment: "Automated deployment",
+        technologies: "Technologies",
+      },
+    },
     items: {
       aiCodeReviewTrainer: {
         title: "AI Code Review Trainer",
         description:
           "Full-stack application for practising code reviews with AI-generated feedback, authentication, review history, rate limiting and a production-ready deployment workflow.",
+        details: {
+          overview: [
+            "AI Code Review Trainer is a full-stack educational application created to help developers practise technical code reviews. Users paste a code snippet, choose a review focus, and receive structured mentor-style feedback that explains why each issue matters, prioritises findings, and suggests concrete improvements.",
+            "The available review focuses include general review, clean code, bugs, security, performance, architecture, and testing.",
+          ],
+          keyFeatures: [
+            "Submitted code is treated as untrusted text and is never executed, evaluated, or compiled.",
+            "Anonymous visitors can use the reviewer without creating an account.",
+            "Users who sign in with GitHub or Google can save and revisit their review history.",
+            "AI analysis runs server-side through a local Ollama instance, so users do not need an external API key.",
+            "The current local model is based on Qwen Coder.",
+            "The application includes validation, authentication, persistence, rate limiting, internationalisation, theme settings, review history, and error monitoring.",
+            "The interface is available in English and Spanish.",
+            "Sentry is used for production error monitoring.",
+          ],
+          testing: [
+            "The project combines automated Vitest tests with ESLint, Prettier, TypeScript type checking, and production-build validation. Husky and lint-staged run quality checks on staged files before commits.",
+            "Changes are additionally verified manually across English and Spanish routes, light and dark themes, responsive layouts, keyboard interactions, and the main authenticated and anonymous user flows.",
+          ],
+          deployment: [
+            "Deployment is automated with GitHub Actions running on a self-hosted runner inside the VPS. A push to dev deploys the development environment, while a push to main deploys production. The workflow synchronises the corresponding branch and rebuilds and recreates the application through Docker Compose.",
+            "The PostgreSQL database runs as a persistent service and is not recreated during normal application deployments. Prisma migrations run automatically when the application container starts. Traefik handles reverse-proxy routing, HTTPS, and TLS certificates. Ollama communicates with the application through the private Docker network and is not publicly exposed.",
+          ],
+        },
       },
       casetaMartiICarmeta: {
         title: "Reservation Management System",
         description:
           "Full-stack booking platform for a rural house, featuring a public reservation flow and an admin panel for availability management.",
+        details: {
+          overview: [
+            "A full-stack reservation management system built for a rural house. It combines a straightforward public booking flow with an administration workspace for managing availability.",
+            "The public and administrative experiences stay clearly separated, so guests can reserve while administrators maintain the availability shown in the booking flow.",
+          ],
+        },
       },
       guidedToursPlatform: {
         title: "Guided Tours Platform",
         description:
           "Full-stack platform for guided tours, including search, details page and confirmation.",
+        details: {
+          overview: [
+            "A full-stack platform for discovering guided tours and moving from search to reservation confirmation. Visitors can explore available experiences, review the details of a tour, and complete the booking flow in one consistent interface.",
+            "The product is designed to keep the journey from discovery to confirmation clear across desktop and mobile screens.",
+          ],
+        },
       },
     },
   },
