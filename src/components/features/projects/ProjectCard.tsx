@@ -16,7 +16,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
     <article className="flex flex-col min-h-[440px] bg-(--surface) border border-(--surface-border) rounded-(--radius) p-(--space-2)!">
       <ProjectDetailsModal project={project} title={title} />
       <div className="flex flex-col gap-2 pt-4!">
-        <h3>{title}</h3>
+        <h3 className="font-bold">{title}</h3>
         <p className="min-h-34">{description}</p>
         <ul className="flex gap-2" aria-label={t("techStackAria", { title })}>
           {project.tags.map((tag) => (
