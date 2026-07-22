@@ -51,7 +51,7 @@ const en = {
       aiCodeReviewTrainer: {
         title: "AI Code Review Trainer",
         description:
-          "Full-stack application for practising code reviews with AI-generated feedback, authentication, review history, rate limiting and a production-ready deployment workflow.",
+          "Full-stack app for practising code reviews with AI feedback, authentication, rate limiting, and a reliable deployment workflow.",
         details: {
           overview: [
             "AI Code Review Trainer is a full-stack educational application created to help developers practise technical code reviews. Users paste a code snippet, choose a review focus, and receive structured mentor-style feedback that explains why each issue matters, prioritises findings, and suggests concrete improvements.",
@@ -91,7 +91,7 @@ const en = {
       guidedToursPlatform: {
         title: "Guided Tours Platform",
         description:
-          "Full-stack platform for guided tours, including search, details page and confirmation.",
+          "Full-stack platform for guided tours, with search, detailed routes, booking confirmation, and a clear experience from discovery to reservation.",
         details: {
           overview: [
             "A full-stack platform for discovering guided tours and moving from search to reservation confirmation. Visitors can explore available experiences, review the details of a tour, and complete the booking flow in one consistent interface.",

@@ -52,7 +52,7 @@ const es = {
       aiCodeReviewTrainer: {
         title: "AI Code Review Trainer",
         description:
-          "Aplicacion full-stack para practicar revisiones de codigo con feedback generado por IA, autenticacion, historial de revisiones, limitacion de uso y despliegue preparado para produccion.",
+          "Aplicación full-stack para practicar revisiones de código con IA, autenticación, rate limiting y un flujo de despliegue fiable.",
         details: {
           overview: [
             "AI Code Review Trainer es una aplicación educativa full-stack creada para ayudar a otros desarrolladores a practicar revisiones técnicas de código. El usuario pega un fragmento, elige el enfoque de la revisión y recibe feedback estructurado con un estilo similar al de un mentor, explicando por qué importa cada problema, priorizando los hallazgos y proponiendo mejoras concretas.",
@@ -92,7 +92,7 @@ const es = {
       guidedToursPlatform: {
         title: "Plataforma de Rutas Guiadas",
         description:
-          "Plataforma full-stack para rutas guiadas, con buscador, pagina de detalle y confirmacion de reserva.",
+          "Plataforma full-stack para rutas guiadas, con buscador, detalles de cada ruta, confirmación de reserva y una experiencia clara de principio a fin.",
         details: {
           overview: [
             "Plataforma full-stack para descubrir rutas guiadas y avanzar desde la búsqueda hasta la confirmación de la reserva. Los visitantes pueden explorar experiencias, consultar los detalles de una ruta y completar el flujo de reserva en una interfaz coherente.",
