@@ -83,8 +83,25 @@ const en = {
           "Full-stack booking platform for a rural house, featuring a public reservation flow and an admin panel for availability management.",
         details: {
           overview: [
-            "A full-stack reservation management system built for a rural house. It combines a straightforward public booking flow with an administration workspace for managing availability.",
-            "The public and administrative experiences stay clearly separated, so guests can reserve while administrators maintain the availability shown in the booking flow.",
+            "Reservation Management System is a full-stack booking platform built for a rural house. Guests use a public calendar to check availability and request a stay, while authenticated staff work in a dedicated administration calendar to create, update, and remove reservations.",
+            "The application separates the public and administrative experiences while keeping both connected to the same PostgreSQL data model through Prisma. Its interface is available in English and Spanish and is designed to work clearly across desktop and mobile screens.",
+          ],
+          keyFeatures: [
+            "A public availability calendar gives guests a clear view of existing reservations before they submit a request.",
+            "A dedicated administration calendar supports creating, editing, and deleting reservations from one workspace.",
+            "NextAuth and the Prisma adapter protect administrative functionality, with separate administrator and viewer roles.",
+            "React Hook Form and Zod provide structured form handling and validation for reservation data.",
+            "React Big Calendar and date-fns power the public and administrative calendar experiences.",
+            "The application uses explicit reservation use cases and persistence mappers to keep business logic separated from HTTP handlers and database access.",
+            "The interface is localised in English and Spanish, and Sentry provides production error monitoring.",
+          ],
+          testing: [
+            "The project uses Vitest for automated coverage of reservation creation, updates and deletion, request handlers, payload validation, persistence and calendar mappers, public-calendar utilities, administrator authorisation, authentication callbacks, structured data, and public-site helpers.",
+            "ESLint, TypeScript and production-build validation provide additional quality checks. The test configuration isolates each test with automatic mock clearing and restoration to reduce state leakage between cases.",
+          ],
+          deployment: [
+            "GitHub Actions automates deployments through a self-hosted runner. A push to dev rebuilds the development environment, while a push to main rebuilds production. A separate repository rule ensures that pull requests targeting main originate from dev.",
+            "Each environment is built with a multi-stage Docker image and recreated through its own Docker Compose configuration. Prisma migrations run automatically when the application container starts, and Traefik handles routing, HTTPS redirects, and TLS certificates for the development and production domains.",
           ],
         },
       },
@@ -94,8 +111,26 @@ const en = {
           "Full-stack platform for guided tours, with search, detailed routes, booking confirmation, and a clear experience from discovery to reservation.",
         details: {
           overview: [
-            "A full-stack platform for discovering guided tours and moving from search to reservation confirmation. Visitors can explore available experiences, review the details of a tour, and complete the booking flow in one consistent interface.",
-            "The product is designed to keep the journey from discovery to confirmation clear across desktop and mobile screens.",
+            "DeltaRoutes is a full-stack platform for discovering and booking guided outdoor experiences, including cycling, kayaking, walking tours, and mini cruises. Visitors can explore published activities, compare their duration, difficulty, location, and available languages, and complete the journey from discovery to reservation in one consistent interface.",
+            "The booking domain handles scheduled sessions, capacity, adult and minor pricing, temporary holds, waiting lists, payments, transactional emails, cancellations, and refunds. PostgreSQL and Prisma keep those states connected throughout the reservation lifecycle.",
+          ],
+          keyFeatures: [
+            "Published experiences include route information, duration, difficulty, location, imagery, and supported languages.",
+            "Scheduled sessions define start and end times, meeting points, map links, booking cut-offs, capacity, seats per guide, and separate adult and minor prices.",
+            "Customers can reserve without creating an account, while temporary holds prevent the same capacity from being sold twice during checkout.",
+            "When a session is full, customers can join a waiting list and later claim newly available places through a controlled reservation flow.",
+            "Stripe Checkout and webhooks coordinate payments, confirmations, payment status, cancellations, and refunds.",
+            "Resend and React Email deliver reservation-created, waiting-list, payment-confirmed, availability, and contact-form messages, with idempotency fields that prevent duplicate transactional emails.",
+            "The data model supports administrator, guide, and staff roles, guide language profiles, and guide assignment to reservations.",
+            "Responsive booking and checkout screens keep the flow clear across desktop and mobile devices.",
+          ],
+          testing: [
+            "Quality checks currently rely on ESLint, TypeScript validation during the Next.js production build, and Prisma schema and migration validation. The repository does not yet include an automated unit, integration, or end-to-end test suite.",
+            "Dedicated database utilities support operational verification by listing sessions and reservations, inspecting database counts and session details, creating future sessions, and cleaning up or force-expiring temporary holds.",
+          ],
+          deployment: [
+            "Production is packaged with a multi-stage Node.js Docker build. The image installs dependencies, generates the Prisma client, validates the Next.js production build, and automatically applies pending database migrations before starting the application.",
+            "Docker Compose orchestrates the application and PostgreSQL, waits for the database health check, persists its data, and keeps both services restartable. Traefik routes the public domain over HTTPS and manages TLS certificates through Let's Encrypt. The repository does not currently define a push-triggered GitHub Actions deployment workflow.",
           ],
         },
       },

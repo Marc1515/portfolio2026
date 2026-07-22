@@ -84,8 +84,25 @@ const es = {
           "Plataforma full-stack de reservas para una casa rural, con flujo publico para clientes y panel de administracion de disponibilidad.",
         details: {
           overview: [
-            "Sistema full-stack de gestión de reservas creado para una casa rural. Combina un flujo público de reserva sencillo con un espacio de administración para gestionar la disponibilidad.",
-            "Las experiencias pública y administrativa se mantienen claramente separadas, de modo que los huéspedes pueden reservar mientras los administradores mantienen la disponibilidad mostrada en el flujo.",
+            "Sistema de Gestión de Reservas es una plataforma full-stack creada para una casa rural. Los huéspedes consultan la disponibilidad y solicitan su estancia desde un calendario público, mientras el personal autenticado utiliza un calendario de administración específico para crear, actualizar y eliminar reservas.",
+            "La aplicación separa claramente la experiencia pública de la administrativa, aunque ambas trabajan sobre el mismo modelo de datos PostgreSQL mediante Prisma. La interfaz está disponible en español e inglés y mantiene una experiencia clara tanto en escritorio como en móvil.",
+          ],
+          keyFeatures: [
+            "Un calendario público de disponibilidad permite consultar las reservas existentes antes de enviar una solicitud.",
+            "El calendario de administración permite crear, editar y eliminar reservas desde un único espacio de trabajo.",
+            "NextAuth y su adaptador de Prisma protegen las funciones administrativas, con roles diferenciados de administrador y consulta.",
+            "React Hook Form y Zod proporcionan una gestión estructurada de formularios y validación de los datos de reserva.",
+            "React Big Calendar y date-fns sostienen las experiencias de calendario pública y administrativa.",
+            "La aplicación utiliza casos de uso y mappers específicos para separar la lógica de negocio de los handlers HTTP y del acceso a la base de datos.",
+            "La interfaz está localizada en español e inglés y Sentry permite monitorizar errores en producción.",
+          ],
+          testing: [
+            "El proyecto utiliza Vitest para cubrir de forma automatizada la creación, actualización y eliminación de reservas, los handlers de las peticiones, la validación de payloads, los mappers de persistencia y calendario, las utilidades del calendario público, la autorización de administradores, los callbacks de autenticación, los datos estructurados y otras utilidades del sitio público.",
+            "ESLint, TypeScript y la validación del build de producción aportan controles de calidad adicionales. La configuración de testing limpia y restaura los mocks automáticamente para reducir la filtración de estado entre casos.",
+          ],
+          deployment: [
+            "GitHub Actions automatiza los despliegues mediante un runner self-hosted. Un push a dev reconstruye el entorno de desarrollo y un push a main reconstruye producción. Una regla adicional del repositorio exige que las pull requests dirigidas a main procedan de dev.",
+            "Cada entorno se construye con una imagen Docker multi-stage y se recrea mediante su propia configuración de Docker Compose. Las migraciones de Prisma se ejecutan automáticamente al iniciar el contenedor, mientras Traefik gestiona el enrutamiento, las redirecciones a HTTPS y los certificados TLS de los dominios de desarrollo y producción.",
           ],
         },
       },
@@ -95,8 +112,26 @@ const es = {
           "Plataforma full-stack para rutas guiadas, con buscador, detalles de cada ruta, confirmación de reserva y una experiencia clara de principio a fin.",
         details: {
           overview: [
-            "Plataforma full-stack para descubrir rutas guiadas y avanzar desde la búsqueda hasta la confirmación de la reserva. Los visitantes pueden explorar experiencias, consultar los detalles de una ruta y completar el flujo de reserva en una interfaz coherente.",
-            "El producto mantiene claro el recorrido desde el descubrimiento hasta la confirmación tanto en escritorio como en dispositivos móviles.",
+            "DeltaRoutes es una plataforma full-stack para descubrir y reservar experiencias guiadas al aire libre, como rutas en bicicleta, kayak, senderismo y minicruceros. Los visitantes pueden explorar las actividades publicadas, comparar su duración, dificultad, ubicación e idiomas disponibles, y completar todo el recorrido desde el descubrimiento hasta la reserva en una interfaz coherente.",
+            "El dominio de reservas gestiona sesiones programadas, aforo, precios para adultos y menores, bloqueos temporales de plazas, listas de espera, pagos, emails transaccionales, cancelaciones y reembolsos. PostgreSQL y Prisma mantienen conectados todos esos estados durante el ciclo de vida de la reserva.",
+          ],
+          keyFeatures: [
+            "Las experiencias publicadas incluyen información de la ruta, duración, dificultad, ubicación, imágenes e idiomas disponibles.",
+            "Las sesiones programadas definen horarios, punto de encuentro, enlace al mapa, cierre de reservas, capacidad, plazas por guía y precios diferenciados para adultos y menores.",
+            "Los clientes pueden reservar sin crear una cuenta, mientras los bloqueos temporales evitan vender dos veces la misma capacidad durante el checkout.",
+            "Cuando una sesión está completa, el cliente puede apuntarse a una lista de espera y reclamar más adelante las plazas que vuelvan a estar disponibles mediante un flujo controlado.",
+            "Stripe Checkout y sus webhooks coordinan los pagos, confirmaciones, estados de pago, cancelaciones y reembolsos.",
+            "Resend y React Email envían mensajes de reserva creada, lista de espera, pago confirmado, disponibilidad y formulario de contacto, con campos de idempotencia para evitar emails transaccionales duplicados.",
+            "El modelo de datos contempla roles de administrador, guía y personal, perfiles de idiomas para los guías y su asignación a las reservas.",
+            "Las pantallas responsive de reserva y checkout mantienen el flujo claro en escritorio y dispositivos móviles.",
+          ],
+          testing: [
+            "Los controles de calidad actuales se apoyan en ESLint, la validación de TypeScript durante el build de producción de Next.js y la validación del esquema y las migraciones de Prisma. El repositorio todavía no incluye una suite automatizada de pruebas unitarias, de integración o end-to-end.",
+            "Varias utilidades de base de datos facilitan la verificación operativa: permiten listar sesiones y reservas, consultar recuentos y detalles de una sesión, crear sesiones futuras y limpiar o forzar la expiración de bloqueos temporales.",
+          ],
+          deployment: [
+            "La aplicación se empaqueta para producción mediante un build Docker multi-stage. La imagen instala las dependencias, genera el cliente de Prisma, valida el build de producción de Next.js y aplica automáticamente las migraciones pendientes antes de iniciar la aplicación.",
+            "Docker Compose orquesta la aplicación y PostgreSQL, espera a que la base de datos supere su health check, conserva sus datos y mantiene ambos servicios reiniciables. Traefik publica el dominio mediante HTTPS y gestiona los certificados TLS con Let's Encrypt. Actualmente el repositorio no define un workflow de GitHub Actions que despliegue automáticamente con cada push.",
           ],
         },
       },
