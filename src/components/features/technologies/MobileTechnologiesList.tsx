@@ -53,14 +53,23 @@ const MobileTechnologiesList = () => {
         initialNodes,
         cheap
           ? { opacity: 0, y: 26, scale: 0.98 }
-          : { opacity: 0, y: 26, scale: 0.98, filter: "blur(8px)" },
+          : {
+              opacity: 0,
+              y: 26,
+              scale: 0.98,
+              filter: "blur(8px)",
+            },
         {
           opacity: 1,
           y: 0,
           scale: 1,
           ...(cheap ? {} : { filter: "blur(0px)" }),
-          duration: 0.9,
-          stagger: 0.08,
+          duration: 0.24,
+          stagger: {
+            amount: 0.96,
+            grid: "auto",
+            from: "start",
+          },
           ease: revealEase,
           clearProps: cheap ? "opacity,transform" : "opacity,transform,filter",
         },
@@ -114,14 +123,23 @@ const MobileTechnologiesList = () => {
       extraNodes,
       cheap
         ? { opacity: 0, y: 26, scale: 0.98 }
-        : { opacity: 0, y: 26, scale: 0.98, filter: "blur(8px)" },
+        : {
+            opacity: 0,
+            y: 26,
+            scale: 0.98,
+            filter: "blur(8px)",
+          },
       {
         opacity: 1,
         y: 0,
         scale: 1,
         ...(cheap ? {} : { filter: "blur(0px)" }),
-        duration: 0.9,
-        stagger: 0.08,
+        duration: 0.24,
+        stagger: {
+          amount: 0.96,
+          grid: "auto",
+          from: "start",
+        },
         ease: revealEase,
         clearProps: cheap ? "opacity,transform" : "opacity,transform,filter",
         onComplete,
