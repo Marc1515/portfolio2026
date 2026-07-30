@@ -74,7 +74,7 @@ export function RevealOnScroll({
           clearProps: cheap ? "transform" : "transform,filter",
           scrollTrigger: {
             trigger: node,
-            start: "top 82%",
+            start: "top 90%",
             once: true,
           },
         },
