@@ -13,6 +13,6 @@ export interface Project {
   details?: ProjectDetails;
   repoUrl?: string;
   liveUrl?: string;
-  image: string;
+  images: string[];
   featured: boolean;
 }

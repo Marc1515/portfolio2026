@@ -68,13 +68,13 @@ export function RevealOnScroll({
             : {
                 filter: "blur(0px)",
               }),
-          duration: 0.9,
+          duration: 0.2,
           delay: delayMs / 1000,
           ease: "cubic-bezier(0.22, 1, 0.36, 1)",
           clearProps: cheap ? "transform" : "transform,filter",
           scrollTrigger: {
             trigger: node,
-            start: "top 82%",
+            start: "top 95%",
             once: true,
           },
         },

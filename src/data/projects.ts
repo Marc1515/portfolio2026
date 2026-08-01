@@ -36,7 +36,12 @@ export const projects = [
     },
     repoUrl: "https://github.com/Marc1515/ai-code-review-trainer",
     liveUrl: "https://trainer.marcespana.com/",
-    image: "/images/projects/ai_code_reviwer_trainer.png",
+    images: [
+      "/images/projects/ai_code_reviwer_trainer.png",
+      "/images/projects/ai_code_reviwer_trainer_2.png",
+      "/images/projects/ai_code_reviwer_trainer_3.png",
+      "/images/projects/ai_code_reviwer_trainer_4.png",
+    ],
     featured: true,
   },
   {
@@ -70,7 +75,12 @@ export const projects = [
     },
     repoUrl: "https://github.com/Marc1515/casetamartiicarmeta",
     liveUrl: "https://casetamartiicarmeta.com",
-    image: "/images/projects/caseta.png",
+    images: [
+      "/images/projects/caseta.png",
+      "/images/projects/caseta_2.png",
+      "/images/projects/caseta_3.png",
+      "/images/projects/caseta_4.png",
+    ],
     featured: true,
   },
   {
@@ -99,7 +109,11 @@ export const projects = [
     },
     repoUrl: "https://github.com/Marc1515/deltaroutes",
     liveUrl: "https://deltaroutes.marcespana.com/",
-    image: "/images/projects/deltaroutes.png",
+    images: [
+      "/images/projects/deltaroutes.png",
+      "/images/projects/deltaroutes_2.png",
+      "/images/projects/deltaroutes_3.png",
+    ],
     featured: false,
   },
 ] satisfies Project[];

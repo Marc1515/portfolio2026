@@ -12,6 +12,7 @@ import {
 } from "react";
 import { FiArrowUpRight, FiGithub, FiMaximize2, FiX } from "react-icons/fi";
 
+import { ProjectImageCarousel } from "@/components/features/projects/ProjectImageCarousel";
 import type { Project } from "@/types/project";
 
 interface ProjectDetailsModalProps {
@@ -145,7 +146,7 @@ export function ProjectDetailsModal({
         className="group relative block aspect-video w-full cursor-pointer overflow-hidden rounded-lg border border-(--surface-border) bg-(--surface) text-left focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-(--accent)"
       >
         <Image
-          src={project.image}
+          src={project.images[0]}
           className="block h-full w-full object-cover transition-[transform,filter] duration-300 ease-out group-hover:scale-[1.015] group-hover:brightness-90 group-focus-visible:scale-[1.015] group-focus-visible:brightness-90 motion-reduce:transform-none motion-reduce:transition-none"
           alt={t("previewAlt", { title })}
           loading={project.featured ? "eager" : "lazy"}
@@ -195,19 +196,9 @@ export function ProjectDetailsModal({
             </button>
           </div>
 
-          <div className="aspect-video overflow-hidden border-b border-(--surface-border) bg-(--background)">
-            {isOpen ? (
-              <Image
-                src={project.image}
-                className="block h-full w-full object-cover"
-                alt={t("previewAlt", { title })}
-                loading="eager"
-                width={1280}
-                height={720}
-                sizes="(max-width: 640px) calc(100vw - 1rem), 896px"
-              />
-            ) : null}
-          </div>
+          {isOpen ? (
+            <ProjectImageCarousel images={project.images} title={title} />
+          ) : null}
 
           <div className="p-5! sm:p-7! md:p-9!">
             <h2
