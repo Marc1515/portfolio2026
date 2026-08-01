@@ -39,6 +39,13 @@ const en = {
     repository: "Repository",
     modal: {
       closeAria: "Close project details",
+      carousel: {
+        regionAria: "{title} image gallery",
+        previousAria: "Show the previous image of {title}",
+        nextAria: "Show the next image of {title}",
+        indicatorAria: "Show image {index} of {total} for {title}",
+        imageAlt: "{title} – image {index} of {total}",
+      },
       sections: {
         overview: "Overview",
         keyFeatures: "Key features",

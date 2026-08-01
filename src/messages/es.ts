@@ -40,6 +40,13 @@ const es = {
     repository: "Repositorio",
     modal: {
       closeAria: "Cerrar detalles del proyecto",
+      carousel: {
+        regionAria: "Galería de imágenes de {title}",
+        previousAria: "Mostrar la imagen anterior de {title}",
+        nextAria: "Mostrar la imagen siguiente de {title}",
+        indicatorAria: "Mostrar la imagen {index} de {total} de {title}",
+        imageAlt: "{title} – imagen {index} de {total}",
+      },
       sections: {
         overview: "Resumen",
         keyFeatures: "Funcionalidades principales",
