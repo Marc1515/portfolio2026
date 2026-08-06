@@ -41,6 +41,22 @@ All files are validated by TypeScript through `satisfies` and strict typing.
 
 ## Run locally
 
-1. Install dependencies: `npm install`
-2. Start development server: `npm run dev`
+1. Install dependencies: `pnpm install`
+2. Start development server: `pnpm dev`
 3. Open `http://localhost:3000`
+
+## Recruiter AI chat (Phase 1)
+
+The bilingual recruiter chat answers questions about Marc's verified professional experience, projects, skills, education, languages, availability, and public contact options. It can also compare the curated profile with a role description while clearly identifying unsupported requirements.
+
+Phase 1 uses Cloudflare Workers AI exclusively. Copy `.env.example` to `.env.local` and configure:
+
+```env
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_AI_MODEL=@cf/zai-org/glm-4.7-flash
+```
+
+Then run `pnpm dev` and open `/en` or `/es`. Credentials remain server-side, and the production build does not require them; an unconfigured chat request returns a controlled unavailable response.
+
+Answers are grounded only in the curated professional information in `src/data/recruiterKnowledge.ts`. Conversation history is kept in the visitor's `sessionStorage` and is not persisted on the server. An Ollama fallback is intentionally postponed to Phase 2.

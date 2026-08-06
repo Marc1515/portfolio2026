@@ -6,6 +6,41 @@ const es = {
   common: {
     languageSwitchAriaLabel: "Cambiar idioma entre español e inglés",
   },
+  chat: {
+    launcherLabel: "Abrir el asistente profesional de Marc",
+    panelTitle: "Asistente profesional de Marc",
+    panelDescription:
+      "Respuestas verificadas para recruiters y posibles clientes.",
+    assistantBadge: "IA del portfolio",
+    greeting:
+      "¡Hola! Pregúntame por la experiencia, los proyectos y las habilidades técnicas de Marc, o por cómo encaja su perfil verificado en un puesto.",
+    suggestedQuestions: [
+      "¿Cuál es la principal experiencia profesional de Marc?",
+      "¿Qué proyecto debería revisar primero?",
+      "¿Qué tecnologías utiliza Marc?",
+      "¿Cómo prueba y despliega sus aplicaciones?",
+      "¿Cómo puedo contactar con Marc?",
+    ],
+    suggestionsLabel: "Preguntas sugeridas para recruiters",
+    inputLabel: "Mensaje para el asistente profesional de Marc",
+    inputPlaceholder:
+      "Pregunta por experiencia, proyectos o encaje profesional…",
+    sendLabel: "Enviar",
+    closeLabel: "Cerrar el asistente profesional",
+    clearLabel: "Borrar conversación",
+    loading: "Consultando el perfil verificado de Marc…",
+    characterCounter: "{count}/{max} caracteres",
+    emptyInput: "Escribe una pregunta antes de enviarla.",
+    emptyConversation:
+      "Empieza con una pregunta sobre el perfil profesional de Marc.",
+    genericApiError: "No se ha podido responder a tu pregunta ahora mismo.",
+    providerUnavailableError:
+      "El asistente profesional no está disponible temporalmente.",
+    retryGuidance:
+      "Inténtalo de nuevo en unos instantes o contacta directamente con Marc.",
+    userMessageLabel: "Tu mensaje",
+    assistantMessageLabel: "Asistente profesional de Marc",
+  },
   layout: {
     primaryNav: "Principal",
     menuToggle: "Abrir o cerrar menú de navegación",

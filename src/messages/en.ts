@@ -6,6 +6,38 @@ const en = {
   common: {
     languageSwitchAriaLabel: "Switch language between Spanish and English",
   },
+  chat: {
+    launcherLabel: "Open Marc's professional assistant",
+    panelTitle: "Marc's professional assistant",
+    panelDescription: "Verified answers for recruiters and potential clients.",
+    assistantBadge: "Portfolio AI",
+    greeting:
+      "Hi! Ask me about Marc's experience, projects, technical skills, or how his verified profile fits a role.",
+    suggestedQuestions: [
+      "What is Marc's main professional experience?",
+      "Which project should I review first?",
+      "What technologies does Marc use?",
+      "How does Marc test and deploy his applications?",
+      "How can I contact Marc?",
+    ],
+    suggestionsLabel: "Suggested recruiter questions",
+    inputLabel: "Message Marc's professional assistant",
+    inputPlaceholder: "Ask about experience, projects, or role fit…",
+    sendLabel: "Send",
+    closeLabel: "Close professional assistant",
+    clearLabel: "Clear conversation",
+    loading: "Reviewing Marc's verified profile…",
+    characterCounter: "{count}/{max} characters",
+    emptyInput: "Enter a question before sending.",
+    emptyConversation:
+      "Start with a question about Marc's professional profile.",
+    genericApiError: "Your question could not be answered right now.",
+    providerUnavailableError:
+      "The professional assistant is temporarily unavailable.",
+    retryGuidance: "Please try again in a moment or contact Marc directly.",
+    userMessageLabel: "Your message",
+    assistantMessageLabel: "Marc's professional assistant",
+  },
   layout: {
     primaryNav: "Primary",
     menuToggle: "Toggle navigation menu",

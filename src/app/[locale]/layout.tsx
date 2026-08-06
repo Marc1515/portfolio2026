@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { RecruiterChat } from "@/components/features/chat/RecruiterChat";
 import { HtmlLangSync } from "@/components/features/i18n/HtmlLangSync";
 import { routing } from "@/i18n/routing";
 
@@ -11,7 +16,9 @@ type Props = Readonly<{
   params: Promise<{ locale: string }>;
 }>;
 
-export async function generateMetadata({ params }: Omit<Props, "children">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Omit<Props, "children">): Promise<Metadata> {
   const { locale } = await params;
 
   if (!hasLocale(routing.locales, locale)) {
@@ -39,6 +46,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     <NextIntlClientProvider messages={messages}>
       <HtmlLangSync />
       {children}
+      <RecruiterChat key={locale} />
     </NextIntlClientProvider>
   );
 }
