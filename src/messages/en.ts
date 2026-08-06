@@ -34,7 +34,12 @@ const en = {
     genericApiError: "Your question could not be answered right now.",
     providerUnavailableError:
       "The professional assistant is temporarily unavailable.",
+    assistantBusyError: "The professional assistant is busy right now.",
+    rateLimitedError: "You have sent several questions in a short time.",
+    requestRejectedError:
+      "This request was rejected by the site's security configuration.",
     retryGuidance: "Please try again in a moment or contact Marc directly.",
+    rateLimitRetryGuidance: "Please try again in about {seconds} seconds.",
     userMessageLabel: "Your message",
     assistantMessageLabel: "Marc's professional assistant",
   },

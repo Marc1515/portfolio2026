@@ -19,13 +19,16 @@ export interface RecruiterKnowledge {
     demonstratedWork: string[];
   }>;
   projects: KnowledgeProject[];
-  capabilities: string[];
+  commerciallyDemonstratedSkills: string[];
+  publiclyListedTechnologies: string[];
+  selfDescribedKnowledge: string[];
   testingAndQuality: string[];
   deploymentAndInfrastructure: string[];
   educationAndTraining: string[];
   languages: string[];
   locationAndAvailability: string[];
-  publicContact: string[];
+  preferredProfessionalContact: string[];
+  directContactOnRequest: string[];
 }
 
 function projectLinks(id: string) {
@@ -150,44 +153,48 @@ export const recruiterKnowledge = {
         ...sharedLinks.deltaRoutes,
       },
     ],
-    capabilities: [
-      "Frontend and UI: React, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, responsive layouts, accessibility, and design-system maintenance.",
-      "Backend and APIs: Node.js, NestJS, REST APIs, validation, authentication, authorization, third-party integrations, and database-backed business flows.",
-      "Data tools shown publicly: PostgreSQL, MySQL, MongoDB, Prisma, Python, and QGIS.",
-      "Architecture and quality: Clean, Hexagonal, and Onion architecture; modular design; Factory and Singleton patterns; DRY, KISS, and YAGNI.",
-      "Tools shown publicly: Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code, Codex, and other AI-assisted development workflows. These entries demonstrate use or familiarity, not an expert-level claim.",
+    commerciallyDemonstratedSkills: [
+      "Published professional roles explicitly demonstrate work with Next.js, React, JavaScript, HTML, CSS, REST API integrations, backend web services, responsive interfaces, QGIS, Python, and application testing.",
+      "Commercial experience must not be inferred from a technology appearing elsewhere in the portfolio.",
+    ],
+    publiclyListedTechnologies: [
+      "The portfolio Technologies section lists React, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, REST APIs, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code, and Codex.",
+      "A listed technology indicates public knowledge or familiarity only unless a professional role or named project separately demonstrates its use.",
+    ],
+    selfDescribedKnowledge: [
+      "The public profile describes familiarity with validation, authentication, authorization, third-party integrations, database-backed flows, modular design, Clean, Hexagonal and Onion architecture, Factory and Singleton patterns, and DRY, KISS and YAGNI.",
+      "These are self-described knowledge areas, not expert-level or commercial-experience claims by themselves.",
     ],
     testingAndQuality: [
-      "Marc has led application testing professionally and applies automated tests, validation, linting, formatting, TypeScript checks, production-build checks, pre-commit checks, manual responsive and keyboard verification, and production error monitoring where documented per project.",
+      "Marc's Delinternet role explicitly includes leading application testing. Automated tests, validation, linting, formatting, TypeScript checks, build checks, pre-commit checks, manual verification, and monitoring are demonstrated only by the personal projects that document them.",
       "Testing maturity differs by project; DeltaRoutes is explicitly documented as not yet having an automated unit, integration, or end-to-end test suite.",
     ],
     deploymentAndInfrastructure: [
-      "Demonstrated experience includes CI/CD pipelines, GitHub Actions, self-hosted runners, multi-stage Docker images, Docker Compose, persistent PostgreSQL services, Prisma migrations, Traefik reverse proxying, HTTPS/TLS certificates, Linux, and Sentry.",
+      "Selected personal projects demonstrate CI/CD pipelines, GitHub Actions, self-hosted runners, multi-stage Docker images, Docker Compose, persistent PostgreSQL services, Prisma migrations, Traefik reverse proxying, HTTPS/TLS certificates, Linux, and Sentry.",
       "Deployment details are project-specific and should not be generalized to every project.",
     ],
     educationAndTraining: [
       "Master's Degree in AI Development — in progress, 2026–present.",
       "English Language Training, EF Education First, Australia — 2024.",
-      "Higher National Diploma in Web Application Development (DAW) — 2020.",
-      "Higher National Diploma in Systems and Network Administration (ASIR) — 2019.",
+      "Studies in Web Application Development (DAW) — 2020. The public evidence does not establish completion of a diploma.",
+      "Studies in Systems and Network Administration (ASIR) — 2019. The public evidence does not establish completion of a diploma.",
     ],
     languages: [
       "Spanish: native.",
       "Catalan: native.",
-      "English: intermediate / B2 coursework, with strong reading and listening comprehension; spoken English is improving through daily practice in Dublin.",
+      "English: intermediate / B2 coursework, with strong reading and listening comprehension according to the public profile.",
     ],
     locationAndAvailability: [
-      "Based in Dublin, Ireland, and an EU citizen eligible to work in Ireland.",
-      "The public CV states availability in Dublin for full-time web development, frontend, full-stack, junior-to-mid, and product-oriented engineering roles.",
+      "Based in Dublin, Ireland. The current public CV explicitly states EU citizenship and eligibility to work in Ireland; this is reported from that document rather than inferred from nationality.",
+      "Current availability and suitable role level should be confirmed directly with Marc.",
     ],
-    publicContact: [
+    preferredProfessionalContact: [
       "Email: meq.1515@gmail.com",
-      "Phone and WhatsApp: +353 87 004 1006",
       "LinkedIn: https://www.linkedin.com/in/marc-espa%C3%B1a-833924141/",
       "GitHub: https://github.com/Marc1515",
-      "Instagram: https://www.instagram.com/marc_espp/",
       "Public CV: /Marc_Espana_CV_Full_Stack.pdf",
     ],
+    directContactOnRequest: ["Phone and WhatsApp: +353 87 004 1006"],
   },
   es: {
     professionalSummary: [
@@ -295,43 +302,47 @@ export const recruiterKnowledge = {
         ...sharedLinks.deltaRoutes,
       },
     ],
-    capabilities: [
-      "Frontend e interfaz: React, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, layouts responsive, accesibilidad y mantenimiento de sistemas de diseño.",
-      "Backend y APIs: Node.js, NestJS, APIs REST, validación, autenticación, autorización, integraciones de terceros y flujos de negocio con base de datos.",
-      "Herramientas de datos mostradas públicamente: PostgreSQL, MySQL, MongoDB, Prisma, Python y QGIS.",
-      "Arquitectura y calidad: arquitectura Clean, Hexagonal y Onion; diseño modular; patrones Factory y Singleton; DRY, KISS y YAGNI.",
-      "Herramientas mostradas públicamente: Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code, Codex y otros flujos asistidos por IA. Estas menciones demuestran uso o familiaridad, no un nivel experto.",
+    commerciallyDemonstratedSkills: [
+      "Los puestos profesionales publicados demuestran explícitamente trabajo con Next.js, React, JavaScript, HTML, CSS, integraciones con APIs REST, servicios web backend, interfaces responsive, QGIS, Python y pruebas de aplicaciones.",
+      "No se debe inferir experiencia comercial porque una tecnología aparezca en otra sección del portfolio.",
+    ],
+    publiclyListedTechnologies: [
+      "La sección Tecnologías del portfolio enumera React, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, APIs REST, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code y Codex.",
+      "Una tecnología enumerada indica conocimiento o familiaridad pública, salvo que un puesto profesional o proyecto concreto demuestre su uso por separado.",
+    ],
+    selfDescribedKnowledge: [
+      "El perfil público describe familiaridad con validación, autenticación, autorización, integraciones de terceros, flujos con bases de datos, diseño modular, arquitecturas Clean, Hexagonal y Onion, patrones Factory y Singleton, y DRY, KISS y YAGNI.",
+      "Son áreas de conocimiento autodeclaradas, no afirmaciones de nivel experto ni de experiencia comercial por sí solas.",
     ],
     testingAndQuality: [
-      "Marc ha liderado pruebas de aplicaciones profesionalmente y aplica tests automatizados, validación, linting, formato, comprobación de TypeScript, builds de producción, controles pre-commit, verificación manual responsive y por teclado y monitorización de errores cuando está documentado en cada proyecto.",
+      "El puesto de Marc en Delinternet incluye explícitamente liderar pruebas de aplicaciones. Los tests automatizados, validación, linting, formato, comprobaciones de TypeScript y build, controles pre-commit, verificación manual y monitorización solo están demostrados por los proyectos personales que los documentan.",
       "La madurez de testing depende del proyecto; se documenta expresamente que DeltaRoutes aún no tiene una suite automatizada unitaria, de integración o end-to-end.",
     ],
     deploymentAndInfrastructure: [
-      "La experiencia demostrada incluye pipelines CI/CD, GitHub Actions, runners self-hosted, imágenes Docker multi-stage, Docker Compose, PostgreSQL persistente, migraciones Prisma, reverse proxy con Traefik, certificados HTTPS/TLS, Linux y Sentry.",
+      "Algunos proyectos personales demuestran pipelines CI/CD, GitHub Actions, runners self-hosted, imágenes Docker multi-stage, Docker Compose, PostgreSQL persistente, migraciones Prisma, reverse proxy con Traefik, certificados HTTPS/TLS, Linux y Sentry.",
       "Los detalles de despliegue dependen de cada proyecto y no deben generalizarse a todos.",
     ],
     educationAndTraining: [
       "Máster en Desarrollo de IA — en curso, 2026–presente.",
       "Formación de inglés, EF Education First, Australia — 2024.",
-      "Ciclo Formativo de Grado Superior en Desarrollo de Aplicaciones Web (DAW) — 2020.",
-      "Ciclo Formativo de Grado Superior en Administración de Sistemas Informáticos en Red (ASIR) — 2019.",
+      "Estudios en Desarrollo de Aplicaciones Web (DAW) — 2020. La evidencia pública no acredita la finalización de un título.",
+      "Estudios en Administración de Sistemas Informáticos en Red (ASIR) — 2019. La evidencia pública no acredita la finalización de un título.",
     ],
     languages: [
       "Español: nativo.",
       "Catalán: nativo.",
-      "Inglés: intermedio / formación B2, con buena comprensión lectora y auditiva; mejora la expresión oral mediante práctica diaria en Dublín.",
+      "Inglés: intermedio / formación B2, con buena comprensión lectora y auditiva según el perfil público.",
     ],
     locationAndAvailability: [
-      "Reside en Dublín, Irlanda, y es ciudadano de la UE con permiso para trabajar en Irlanda.",
-      "El CV público indica disponibilidad en Dublín para puestos full-time de desarrollo web, frontend, full stack, junior-mid y orientados a producto.",
+      "Reside en Dublín, Irlanda. El CV público actual indica expresamente ciudadanía de la UE y permiso para trabajar en Irlanda; se informa desde ese documento y no se infiere de la nacionalidad.",
+      "La disponibilidad actual y el nivel de puesto adecuado deben confirmarse directamente con Marc.",
     ],
-    publicContact: [
+    preferredProfessionalContact: [
       "Email: meq.1515@gmail.com",
-      "Teléfono y WhatsApp: +353 87 004 1006",
       "LinkedIn: https://www.linkedin.com/in/marc-espa%C3%B1a-833924141/",
       "GitHub: https://github.com/Marc1515",
-      "Instagram: https://www.instagram.com/marc_espp/",
       "CV público: /Marc_Espana_CV_Full_Stack.pdf",
     ],
+    directContactOnRequest: ["Teléfono y WhatsApp: +353 87 004 1006"],
   },
 } satisfies Record<ChatLocale, RecruiterKnowledge>;

@@ -36,8 +36,14 @@ const es = {
     genericApiError: "No se ha podido responder a tu pregunta ahora mismo.",
     providerUnavailableError:
       "El asistente profesional no está disponible temporalmente.",
+    assistantBusyError: "El asistente profesional está ocupado ahora mismo.",
+    rateLimitedError: "Has enviado varias preguntas en poco tiempo.",
+    requestRejectedError:
+      "La configuración de seguridad del sitio ha rechazado esta solicitud.",
     retryGuidance:
       "Inténtalo de nuevo en unos instantes o contacta directamente con Marc.",
+    rateLimitRetryGuidance:
+      "Inténtalo de nuevo dentro de unos {seconds} segundos.",
     userMessageLabel: "Tu mensaje",
     assistantMessageLabel: "Asistente profesional de Marc",
   },

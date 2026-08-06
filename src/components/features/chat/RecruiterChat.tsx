@@ -18,7 +18,10 @@ import type {
 
 const PANEL_ID = "recruiter-chat-panel";
 
-type RequestError = "generic" | "unavailable";
+type RequestError = {
+  type: "generic" | "unavailable" | "busy" | "rate_limited" | "forbidden";
+  retryAfterSeconds?: number;
+};
 
 function createMessage(
   role: ChatDisplayMessage["role"],
@@ -232,7 +235,24 @@ export function RecruiterChat() {
         }
 
         if (!response.ok || !isChatResponse(payload)) {
-          setRequestError(response.status === 503 ? "unavailable" : "generic");
+          if (response.status === 429) {
+            const retryAfterSeconds = Number(
+              response.headers.get("retry-after"),
+            );
+            setRequestError({
+              type: "rate_limited",
+              retryAfterSeconds:
+                Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+                  ? Math.ceil(retryAfterSeconds)
+                  : undefined,
+            });
+          } else if (response.status === 403) {
+            setRequestError({ type: "forbidden" });
+          } else if (response.status === 503) {
+            setRequestError({ type: "busy" });
+          } else {
+            setRequestError({ type: "generic" });
+          }
           return;
         }
 
@@ -244,7 +264,7 @@ export function RecruiterChat() {
           [...current, assistantMessage].slice(-MAX_HISTORY_MESSAGES),
         );
       } catch {
-        setRequestError("generic");
+        setRequestError({ type: "unavailable" });
       } finally {
         setIsLoading(false);
       }
@@ -280,7 +300,12 @@ export function RecruiterChat() {
     inputLabel: t("inputLabel"),
     loading: t("loading"),
     placeholder: t("inputPlaceholder"),
-    retryGuidance: t("retryGuidance"),
+    retryGuidance:
+      requestError?.type === "rate_limited" && requestError.retryAfterSeconds
+        ? t("rateLimitRetryGuidance", {
+            seconds: requestError.retryAfterSeconds,
+          })
+        : t("retryGuidance"),
     send: t("sendLabel"),
     suggestions: t("suggestionsLabel"),
     title: t("panelTitle"),
@@ -309,11 +334,17 @@ export function RecruiterChat() {
           isLoading={isLoading}
           showSuggestions={showSuggestions}
           errorMessage={
-            requestError === "unavailable"
+            requestError?.type === "unavailable"
               ? t("providerUnavailableError")
-              : requestError === "generic"
-                ? t("genericApiError")
-                : null
+              : requestError?.type === "busy"
+                ? t("assistantBusyError")
+                : requestError?.type === "rate_limited"
+                  ? t("rateLimitedError")
+                  : requestError?.type === "forbidden"
+                    ? t("requestRejectedError")
+                    : requestError?.type === "generic"
+                      ? t("genericApiError")
+                      : null
           }
           onInputChange={(value) => {
             setInput(value);

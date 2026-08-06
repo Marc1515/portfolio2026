@@ -11,6 +11,12 @@ export const MAX_HISTORY_MESSAGES = 10;
 export const MAX_REQUEST_MESSAGES = 50;
 export const MAX_REQUEST_BODY_LENGTH = 32_000;
 
+export function sanitizeChatContent(value: string): string {
+  return value
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/g, "");
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -28,7 +34,7 @@ function isRecruiterMessage(value: unknown): value is RecruiterMessage {
     typeof value.role !== "string" ||
     !CHAT_ROLES.includes(value.role as RecruiterMessage["role"]) ||
     typeof value.content !== "string" ||
-    value.content.trim().length === 0
+    sanitizeChatContent(value.content).trim().length === 0
   ) {
     return false;
   }
@@ -62,11 +68,17 @@ export function parseChatRequest(value: unknown): ChatRequest | null {
     return null;
   }
 
+  for (let index = 1; index < value.messages.length; index += 1) {
+    if (value.messages[index]?.role === value.messages[index - 1]?.role) {
+      return null;
+    }
+  }
+
   return {
     locale: value.locale as ChatRequest["locale"],
     messages: value.messages.slice(-MAX_HISTORY_MESSAGES).map((message) => ({
       role: message.role,
-      content: message.content.trim(),
+      content: sanitizeChatContent(message.content).trim(),
     })),
   };
 }

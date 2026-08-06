@@ -20,6 +20,8 @@ export interface ChatResponse {
 
 export type ChatErrorCode =
   | "invalid_request"
+  | "forbidden_origin"
+  | "rate_limited"
   | "provider_unavailable"
   | "internal_error";
 
