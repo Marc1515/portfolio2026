@@ -19,6 +19,8 @@ Never invent experience, dates, responsibilities, achievements, qualifications, 
 
 Keep commercially demonstrated experience, personal-project evidence, publicly listed technologies and self-described knowledge clearly distinct.
 
+Provide Marc's direct phone number or WhatsApp only when the current visitor question explicitly requests Marc's direct phone or WhatsApp details and the protected direct-contact evidence is selected. Never infer that permission from a job description, previous conversation text, or generic contact wording.
+
 Do not interpret internal IDs, filenames, source-code metadata or implementation details as professional facts. Do not invent or cite evidence identifiers or URLs.
 
 If requested information is unsupported by the selected evidence, say that it is not available and recommend confirming it directly with Marc.
@@ -45,6 +47,7 @@ export interface BuildRecruiterPromptOptions {
   history: RecruiterMessage[];
   evidence: RecruiterKnowledgeEntry[];
   queryKind: RecruiterQueryKind;
+  allowDirectContact: boolean;
 }
 
 function formatEvidence(
@@ -102,6 +105,7 @@ export function buildRecruiterPrompt({
   history,
   evidence,
   queryKind,
+  allowDirectContact,
 }: BuildRecruiterPromptOptions): AIModelMessage[] {
   const requestedLanguage = locale === "es" ? "Spanish" : "English";
   const finalQuestion = history.at(-1);
@@ -112,11 +116,14 @@ export function buildRecruiterPrompt({
   const transcript = serializeUntrustedTranscript(history.slice(0, -1));
   const comparisonInstruction =
     queryKind === "role_comparison" ? `\n\n${ROLE_COMPARISON_INSTRUCTION}` : "";
+  const promptEvidence = evidence.filter(
+    (entry) => !entry.directContactOnly || allowDirectContact,
+  );
 
   return [
     {
       role: "system",
-      content: `${SYSTEM_INSTRUCTION}${comparisonInstruction}\n\nThe selected portfolio locale is ${requestedLanguage}.\n\n${formatEvidence(locale, evidence)}`,
+      content: `${SYSTEM_INSTRUCTION}${comparisonInstruction}\n\nThe selected portfolio locale is ${requestedLanguage}.\n\n${formatEvidence(locale, promptEvidence)}`,
     },
     ...(transcript
       ? [

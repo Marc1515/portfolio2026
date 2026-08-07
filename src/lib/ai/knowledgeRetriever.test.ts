@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { recruiterKnowledgeEntries } from "@/data/recruiterKnowledge";
 import {
   buildPublicEvidenceSources,
   detectRecruiterQueryKind,
@@ -69,11 +70,90 @@ describe("retrieveRecruiterKnowledge", () => {
     );
   });
 
-  it("retrieves direct contact only for explicit phone or WhatsApp intent", () => {
-    expect(ids("What is Marc's phone number?")).toContain("contact-direct");
-    expect(ids("How can I contact Marc?")).toContain("contact-professional");
-    expect(ids("How can I contact Marc?")).not.toContain("contact-direct");
-  });
+  it.each([
+    ["What is Marc's phone number?", "en"],
+    ["What's his mobile number?", "en"],
+    ["What is Marc's WhatsApp?", "en"],
+    ["How can I reach Marc by phone?", "en"],
+    ["¿Cuál es su número de teléfono?", "es"],
+    ["¿Cuál es su WhatsApp?", "es"],
+    ["¿Cuál es el móvil de Marc?", "es"],
+  ] as const)(
+    "allows direct contact for explicit request: %s",
+    (question, locale) => {
+      const result = retrieve(question, locale);
+
+      expect(result.allowDirectContact).toBe(true);
+      expect(result.entries.map((entry) => entry.id)).toContain(
+        "contact-direct",
+      );
+    },
+  );
+
+  it.each([
+    "This role involves mobile development.",
+    "We need experience building mobile applications.",
+    "Responsibilities include direct contact with clients.",
+    "The engineer provides phone support to customers.",
+    "Experience with telephone customer support is desirable.",
+    "mobile developer",
+    "mobile app",
+    "Marc's phone support experience",
+    "His mobile development experience",
+    "direct contact with stakeholders",
+    "customer phone calls",
+    "What is required? Experience with WhatsApp integrations.",
+  ])(
+    "does not unlock direct contact for ambiguous English text: %s",
+    (question) => {
+      const result = retrieve(question);
+
+      expect(result.allowDirectContact).toBe(false);
+      expect(result.entries.map((entry) => entry.id)).not.toContain(
+        "contact-direct",
+      );
+    },
+  );
+
+  it.each([
+    "Buscamos experiencia en desarrollo móvil.",
+    "Tendrá contacto directo con clientes.",
+    "Dará soporte telefónico a usuarios.",
+  ])(
+    "does not unlock direct contact for ambiguous Spanish text: %s",
+    (question) => {
+      const result = retrieve(question, "es");
+
+      expect(result.allowDirectContact).toBe(false);
+      expect(result.entries.map((entry) => entry.id)).not.toContain(
+        "contact-direct",
+      );
+    },
+  );
+
+  it.each([
+    ["How can I contact Marc?", "en"],
+    ["Where can I find Marc's LinkedIn?", "en"],
+    ["Does Marc have GitHub?", "en"],
+    ["Where is his CV?", "en"],
+    ["¿Cómo puedo contactar con Marc?", "es"],
+  ] as const)(
+    "keeps generic professional contact private: %s",
+    (question, locale) => {
+      const result = retrieve(question, locale);
+      const selectedIds = result.entries.map((entry) => entry.id);
+      const sources = buildPublicEvidenceSources(result.entries, locale, {
+        allowDirectContact: result.allowDirectContact,
+      });
+
+      expect(result.allowDirectContact).toBe(false);
+      expect(selectedIds).toContain("contact-professional");
+      expect(selectedIds).not.toContain("contact-direct");
+      expect(sources.map((source) => source.id)).not.toContain(
+        "contact-whatsapp",
+      );
+    },
+  );
 
   it.each([
     ["¿Qué hizo Marc en Delinternet?", "experience-delinternet"],
@@ -145,6 +225,34 @@ Responsibilities include building full-stack products and maintaining deployment
     ).toBe(false);
   });
 
+  it("keeps misleading direct-contact words unprivileged in a role comparison", () => {
+    const description = `Frontend Developer
+
+Responsibilities:
+- Build responsive web and mobile interfaces.
+- Maintain direct contact with product stakeholders.
+- Support customer teams by phone when necessary.
+
+Requirements:
+- React
+- TypeScript
+- Next.js
+- REST APIs`;
+    const result = retrieve(description);
+    const sources = buildPublicEvidenceSources(result.entries, "en", {
+      allowDirectContact: result.allowDirectContact,
+    });
+
+    expect(result.queryKind).toBe("role_comparison");
+    expect(result.allowDirectContact).toBe(false);
+    expect(result.entries.map((entry) => entry.id)).not.toContain(
+      "contact-direct",
+    );
+    expect(sources.map((source) => source.id)).not.toContain(
+      "contact-whatsapp",
+    );
+  });
+
   it("detects comparison intent without an AI call", () => {
     expect(
       detectRecruiterQueryKind(
@@ -158,7 +266,9 @@ Responsibilities include building full-stack products and maintaining deployment
 
   it("deduplicates and bounds localized public sources", () => {
     const result = retrieve("What commercial experience does Marc have?");
-    const sources = buildPublicEvidenceSources(result.entries, "en");
+    const sources = buildPublicEvidenceSources(result.entries, "en", {
+      allowDirectContact: result.allowDirectContact,
+    });
 
     expect(sources.length).toBeLessThanOrEqual(4);
     expect(new Set(sources.map((source) => source.id)).size).toBe(
@@ -167,5 +277,21 @@ Responsibilities include building full-stack products and maintaining deployment
     expect(
       sources.every((source) => !source.label.includes("experience-")),
     ).toBe(true);
+  });
+
+  it("defensively requires permission before returning WhatsApp evidence", () => {
+    const directEntry = recruiterKnowledgeEntries.find(
+      (entry) => entry.id === "contact-direct",
+    )!;
+
+    const denied = buildPublicEvidenceSources([directEntry], "en", {
+      allowDirectContact: false,
+    });
+    const allowed = buildPublicEvidenceSources([directEntry], "en", {
+      allowDirectContact: true,
+    });
+
+    expect(denied.map((source) => source.id)).not.toContain("contact-whatsapp");
+    expect(allowed.map((source) => source.id)).toContain("contact-whatsapp");
   });
 });

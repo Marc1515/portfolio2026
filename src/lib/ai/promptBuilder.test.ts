@@ -18,6 +18,7 @@ function build(
     history,
     evidence: retrieval.entries,
     queryKind,
+    allowDirectContact: retrieval.allowDirectContact,
   });
 }
 
@@ -100,6 +101,7 @@ describe("buildRecruiterPrompt", () => {
       history,
       evidence: retrieval.entries,
       queryKind: retrieval.queryKind,
+      allowDirectContact: retrieval.allowDirectContact,
     });
     const system = prompt[0]?.content ?? "";
 
@@ -127,6 +129,64 @@ describe("buildRecruiterPrompt", () => {
     expect(system).toContain("Strong verified matches");
     expect(system).toContain("Not demonstrated in the verified information");
     expect(system).toContain("Do not provide a percentage");
+  });
+
+  it("keeps ambiguous contact wording out of verified role evidence", () => {
+    const history: RecruiterMessage[] = [
+      {
+        role: "user",
+        content: `Compare Marc with this Frontend Developer job description.
+Responsibilities: build mobile interfaces, maintain direct contact with clients, and provide phone support.
+Requirements: React, TypeScript, Next.js and REST APIs.`,
+      },
+    ];
+    const retrieval = retrieveRecruiterKnowledge("en", history);
+    const prompt = buildRecruiterPrompt({
+      locale: "en",
+      history,
+      evidence: retrieval.entries,
+      queryKind: retrieval.queryKind,
+      allowDirectContact: retrieval.allowDirectContact,
+    });
+
+    expect(retrieval.queryKind).toBe("role_comparison");
+    expect(retrieval.allowDirectContact).toBe(false);
+    expect(prompt[0]?.content).not.toContain("+353 87 004 1006");
+  });
+
+  it("allows protected direct-contact evidence for an explicit request", () => {
+    const history: RecruiterMessage[] = [
+      { role: "user", content: "What is Marc's phone number?" },
+    ];
+    const retrieval = retrieveRecruiterKnowledge("en", history);
+    const prompt = buildRecruiterPrompt({
+      locale: "en",
+      history,
+      evidence: retrieval.entries,
+      queryKind: retrieval.queryKind,
+      allowDirectContact: retrieval.allowDirectContact,
+    });
+
+    expect(retrieval.allowDirectContact).toBe(true);
+    expect(prompt[0]?.content).toContain("+353 87 004 1006");
+  });
+
+  it("filters accidentally supplied direct evidence without permission", () => {
+    const directEntry = recruiterKnowledgeEntries.find(
+      (entry) => entry.id === "contact-direct",
+    )!;
+    const history: RecruiterMessage[] = [
+      { role: "user", content: "How can I contact Marc?" },
+    ];
+    const prompt = buildRecruiterPrompt({
+      locale: "en",
+      history,
+      evidence: [directEntry],
+      queryKind: "contact",
+      allowDirectContact: false,
+    });
+
+    expect(prompt[0]?.content).not.toContain("+353 87 004 1006");
   });
 
   it("removes null bytes and unsafe control characters but preserves line breaks", () => {

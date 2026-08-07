@@ -21,6 +21,7 @@ export type RecruiterQueryKind = "general" | "role_comparison" | "contact";
 export interface KnowledgeRetrievalResult {
   entries: RecruiterKnowledgeEntry[];
   queryKind: RecruiterQueryKind;
+  allowDirectContact: boolean;
 }
 
 interface IndexedEntry {
@@ -117,18 +118,56 @@ const ROLE_COMPARISON_SIGNALS = [
   "vacancy",
 ];
 
-const DIRECT_CONTACT_PHRASES = [
-  "contacto directo",
-  "direct contact",
+const DIRECT_CONTACT_SHORT_QUERIES = new Set([
   "direct number",
-  "mobile",
-  "movil",
+  "his direct number",
+  "his mobile number",
+  "his phone number",
+  "his telephone number",
+  "his whatsapp",
+  "marc phone number",
+  "marc s direct number",
+  "marc s mobile number",
+  "marc s phone",
+  "marc s phone number",
+  "marc s telephone number",
+  "marc s whatsapp",
+  "mobile number",
+  "movil de marc",
+  "numero de movil",
+  "numero de movil de marc",
   "numero de telefono",
-  "phone",
+  "numero de telefono de marc",
+  "numero directo",
+  "numero directo de marc",
   "phone number",
-  "telephone",
-  "telefono",
+  "su movil",
+  "su numero de movil",
+  "su numero de telefono",
+  "su numero directo",
+  "su telefono",
+  "su whatsapp",
+  "telephone number",
+  "telefono de marc",
   "whatsapp",
+  "whatsapp de marc",
+  "whatsapp number",
+]);
+
+const DIRECT_CONTACT_REQUEST_PATTERNS = [
+  /\b(?:what is|what s|which is) (?:marc s |marc |his |the )?(?:direct number|mobile number|phone number|telephone number|whatsapp(?: number)?)\b/,
+  /\b(?:can i have|could i have|give me|send me|share|show me) (?:marc s |his |the )?(?:direct number|mobile number|phone number|telephone number|whatsapp(?: number)?)\b/,
+  /\bcan you (?:give|send|share|show) me (?:marc s |his |the )?(?:direct number|mobile number|phone number|telephone number|whatsapp(?: number)?)\b/,
+  /\b(?:how (?:can|do) i (?:find|get)|where (?:can|do) i find) (?:marc s |his |the )?(?:direct number|mobile number|phone number|telephone number|whatsapp(?: number)?)\b/,
+  /\b(?:cual es|dame|muestrame) (?:el |la )?(?:movil de marc|numero de movil(?: de marc)?|numero de telefono(?: de marc)?|numero directo(?: de marc)?|su movil|su numero de movil|su numero de telefono|su numero directo|su telefono|su whatsapp|telefono de marc|whatsapp de marc)\b/,
+  /\bpuedes (?:compartir|darme|mostrarme) (?:el |la )?(?:movil de marc|numero de movil(?: de marc)?|numero de telefono(?: de marc)?|numero directo(?: de marc)?|su movil|su numero de movil|su numero de telefono|su numero directo|su telefono|su whatsapp|telefono de marc|whatsapp de marc)\b/,
+];
+
+const DIRECT_CONTACT_CALL_PATTERNS = [
+  /\bhow can i (?:call|phone) marc\b/,
+  /\b(?:how can i |how do i )?reach marc (?:by|on|via) (?:phone|telephone|whatsapp)\b/,
+  /\bcomo puedo llamar a marc\b/,
+  /\bcomo (?:contacto|puedo contactar) con marc por (?:telefono|whatsapp)\b/,
 ];
 
 const CATEGORY_TERMS: Partial<Record<RecruiterKnowledgeCategory, string[]>> = {
@@ -262,9 +301,18 @@ export function detectRecruiterQueryKind(question: string): RecruiterQueryKind {
 
 export function hasExplicitDirectContactIntent(question: string): boolean {
   const normalized = normalizeRetrievalText(question);
-  return DIRECT_CONTACT_PHRASES.some((phrase) =>
-    normalized.includes(normalizeRetrievalText(phrase)),
-  );
+  const withoutPoliteness = normalized
+    .replace(/^(?:please|por favor)\s+/, "")
+    .replace(/\s+(?:please|por favor)$/, "");
+
+  if (
+    DIRECT_CONTACT_CALL_PATTERNS.some((pattern) => pattern.test(normalized)) ||
+    DIRECT_CONTACT_REQUEST_PATTERNS.some((pattern) => pattern.test(normalized))
+  ) {
+    return true;
+  }
+
+  return DIRECT_CONTACT_SHORT_QUERIES.has(withoutPoliteness);
 }
 
 function scoreEntry(indexed: IndexedEntry, query: string, weight: number) {
@@ -360,19 +408,33 @@ export function retrieveRecruiterKnowledge(
     if (summary) selected.push(summary);
   }
 
-  return { entries: selected, queryKind };
+  const protectedEntries = selected.filter(
+    (entry) => !entry.directContactOnly || allowDirectContact,
+  );
+
+  return {
+    entries: protectedEntries,
+    queryKind,
+    allowDirectContact,
+  };
 }
 
 export function buildPublicEvidenceSources(
   entries: RecruiterKnowledgeEntry[],
   locale: ChatLocale,
+  options: { allowDirectContact: boolean },
 ): ChatEvidenceSource[] {
   const sources: ChatEvidenceSource[] = [];
   const seen = new Set<string>();
 
   for (const entry of entries) {
+    if (entry.directContactOnly && !options.allowDirectContact) continue;
+
     for (const source of entry.sources) {
       if (sources.length >= MAX_PUBLIC_SOURCES) return sources;
+      if (source.id === "contact-whatsapp" && !options.allowDirectContact) {
+        continue;
+      }
       if (seen.has(source.id)) continue;
 
       const href = localizedHref(source.href, locale);

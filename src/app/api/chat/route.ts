@@ -121,12 +121,14 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
         history: chatRequest.messages,
         evidence: retrieval.entries,
         queryKind: retrieval.queryKind,
+        allowDirectContact: retrieval.allowDirectContact,
       });
       const provider = await dependencies.providerFactory();
       const message = await provider.generate(messages);
       const sources = buildPublicEvidenceSources(
         retrieval.entries,
         chatRequest.locale,
+        { allowDirectContact: retrieval.allowDirectContact },
       );
 
       return Response.json({ message, sources } satisfies ChatResponse, {
