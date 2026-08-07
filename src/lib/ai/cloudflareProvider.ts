@@ -6,6 +6,8 @@ import type { AIModelMessage } from "@/lib/ai/promptBuilder";
 import { MAX_ASSISTANT_MESSAGE_LENGTH } from "@/lib/ai/validation";
 
 const REQUEST_TIMEOUT_MS = 15_000;
+const CLOUDFLARE_MAX_COMPLETION_TOKENS = 800;
+const CLOUDFLARE_REASONING_EFFORT = "low";
 
 interface CloudflareConfiguration {
   accountId: string;
@@ -110,7 +112,8 @@ export class CloudflareAIProvider implements AIProvider {
           body: JSON.stringify({
             messages,
             temperature: 0.2,
-            max_completion_tokens: 350,
+            reasoning_effort: CLOUDFLARE_REASONING_EFFORT,
+            max_completion_tokens: CLOUDFLARE_MAX_COMPLETION_TOKENS,
             stream: false,
           }),
           cache: "no-store",
