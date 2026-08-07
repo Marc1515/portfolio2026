@@ -89,7 +89,18 @@ describe("parseChatRequest", () => {
     expect(parseChatRequest(value)).toBeNull();
   });
 
-  it("rejects an oversized user message", () => {
+  it("accepts a user message at the 4,000 character limit", () => {
+    expect(
+      parseChatRequest({
+        locale: "en",
+        messages: [
+          { role: "user", content: "x".repeat(MAX_USER_MESSAGE_LENGTH) },
+        ],
+      }),
+    ).not.toBeNull();
+  });
+
+  it("rejects a user message above the 4,000 character limit", () => {
     expect(
       parseChatRequest({
         locale: "en",

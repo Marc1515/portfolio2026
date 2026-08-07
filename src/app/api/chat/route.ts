@@ -1,4 +1,9 @@
 import { buildRecruiterPrompt } from "@/lib/ai/promptBuilder";
+import {
+  buildPublicEvidenceSources,
+  retrieveRecruiterKnowledge,
+  type KnowledgeRetrievalResult,
+} from "@/lib/ai/knowledgeRetriever";
 import { createAIProvider, type AIProvider } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
 import { MAX_REQUEST_BODY_LENGTH, parseChatRequest } from "@/lib/ai/validation";
@@ -11,6 +16,7 @@ import { isRequestOriginAllowed } from "@/lib/security/originProtection";
 import type {
   ChatErrorCode,
   ChatErrorResponse,
+  ChatRequest,
   ChatResponse,
 } from "@/types/chat";
 
@@ -24,6 +30,11 @@ interface ChatHandlerDependencies {
   rateLimiter: { check(clientIdentifier: string): RateLimitResult };
   clientIdentifier: (request: Request) => string;
   originAllowed: (request: Request) => boolean;
+  retrieveKnowledge?: (
+    locale: ChatRequest["locale"],
+    messages: ChatRequest["messages"],
+  ) => KnowledgeRetrievalResult;
+  promptBuilder?: typeof buildRecruiterPrompt;
 }
 
 function errorResponse(
@@ -102,14 +113,23 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
     }
 
     try {
-      const messages = buildRecruiterPrompt(
-        chatRequest.locale,
-        chatRequest.messages,
-      );
+      const retrieval = (
+        dependencies.retrieveKnowledge ?? retrieveRecruiterKnowledge
+      )(chatRequest.locale, chatRequest.messages);
+      const messages = (dependencies.promptBuilder ?? buildRecruiterPrompt)({
+        locale: chatRequest.locale,
+        history: chatRequest.messages,
+        evidence: retrieval.entries,
+        queryKind: retrieval.queryKind,
+      });
       const provider = await dependencies.providerFactory();
       const message = await provider.generate(messages);
+      const sources = buildPublicEvidenceSources(
+        retrieval.entries,
+        chatRequest.locale,
+      );
 
-      return Response.json({ message } satisfies ChatResponse, {
+      return Response.json({ message, sources } satisfies ChatResponse, {
         headers: RESPONSE_HEADERS,
       });
     } catch (error) {

@@ -1,7 +1,9 @@
 import type { ChatDisplayMessage } from "@/types/chat";
+import { EvidenceSources } from "@/components/features/chat/EvidenceSources";
 
 interface ChatMessageProps {
   assistantLabel: string;
+  evidenceLabel: string;
   isLatestAssistant: boolean;
   message: ChatDisplayMessage;
   userLabel: string;
@@ -9,6 +11,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({
   assistantLabel,
+  evidenceLabel,
   isLatestAssistant,
   message,
   userLabel,
@@ -31,6 +34,9 @@ export function ChatMessage({
       >
         <span className="sr-only">{accessibleLabel}: </span>
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        {!isUser && message.sources && message.sources.length > 0 ? (
+          <EvidenceSources label={evidenceLabel} sources={message.sources} />
+        ) : null}
       </div>
     </article>
   );

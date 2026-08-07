@@ -14,8 +14,28 @@ export interface ChatRequest {
   messages: RecruiterMessage[];
 }
 
+export const CHAT_EVIDENCE_KINDS = [
+  "portfolio",
+  "experience",
+  "project",
+  "repository",
+  "live",
+  "cv",
+  "contact",
+] as const;
+
+export type ChatEvidenceKind = (typeof CHAT_EVIDENCE_KINDS)[number];
+
+export interface ChatEvidenceSource {
+  id: string;
+  label: string;
+  kind: ChatEvidenceKind;
+  href?: string;
+}
+
 export interface ChatResponse {
   message: string;
+  sources: ChatEvidenceSource[];
 }
 
 export type ChatErrorCode =
@@ -31,4 +51,5 @@ export interface ChatErrorResponse {
 
 export interface ChatDisplayMessage extends RecruiterMessage {
   id: string;
+  sources?: ChatEvidenceSource[];
 }

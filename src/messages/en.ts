@@ -14,15 +14,15 @@ const en = {
     greeting:
       "Hi! Ask me about Marc's experience, projects, technical skills, or how his verified profile fits a role.",
     suggestedQuestions: [
-      "What is Marc's main professional experience?",
-      "Which project should I review first?",
-      "What technologies does Marc use?",
-      "How does Marc test and deploy his applications?",
+      "What professional React experience does Marc have?",
+      "Tell me about the AI Code Review Trainer.",
+      "What testing experience does Marc demonstrate?",
+      "How does Marc compare with this job description?",
       "How can I contact Marc?",
     ],
     suggestionsLabel: "Suggested recruiter questions",
     inputLabel: "Message Marc's professional assistant",
-    inputPlaceholder: "Ask about experience, projects, or role fit…",
+    inputPlaceholder: "Ask about Marc or paste a job description…",
     sendLabel: "Send",
     closeLabel: "Close professional assistant",
     clearLabel: "Clear conversation",
@@ -31,6 +31,7 @@ const en = {
     emptyInput: "Enter a question before sending.",
     emptyConversation:
       "Start with a question about Marc's professional profile.",
+    evidenceLabel: "Relevant evidence",
     genericApiError: "Your question could not be answered right now.",
     providerUnavailableError:
       "The professional assistant is temporarily unavailable.",

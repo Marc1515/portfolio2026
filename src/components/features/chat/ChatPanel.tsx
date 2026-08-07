@@ -13,6 +13,7 @@ interface ChatPanelLabels {
   description: string;
   emptyConversation: string;
   emptyInput: string;
+  evidence: string;
   inputLabel: string;
   loading: string;
   placeholder: string;
@@ -129,6 +130,7 @@ export function ChatPanel({
                 message={message}
                 userLabel={labels.userMessage}
                 assistantLabel={labels.assistantMessage}
+                evidenceLabel={labels.evidence}
                 isLatestAssistant={
                   message.role === "assistant" && index === messages.length - 1
                 }

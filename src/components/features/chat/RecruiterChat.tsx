@@ -7,15 +7,19 @@ import { ChatLauncher } from "@/components/features/chat/ChatLauncher";
 import { ChatPanel } from "@/components/features/chat/ChatPanel";
 import {
   confirmPendingChatHistory,
+  parseStoredChatMessages,
   preparePendingChatHistory,
   recoverPendingChatHistory,
+  toApiRequestMessages,
 } from "@/components/features/chat/chatHistory";
+import { isChatEvidenceSource, MAX_PUBLIC_SOURCES } from "@/lib/chatEvidence";
 import {
   MAX_ASSISTANT_MESSAGE_LENGTH,
   MAX_HISTORY_MESSAGES,
   MAX_USER_MESSAGE_LENGTH,
 } from "@/lib/ai/validation";
 import type {
+  ChatEvidenceSource,
   ChatDisplayMessage,
   ChatLocale,
   ChatResponse,
@@ -31,58 +35,14 @@ type RequestError = {
 function createMessage(
   role: ChatDisplayMessage["role"],
   content: string,
+  sources?: ChatEvidenceSource[],
 ): ChatDisplayMessage {
   return {
     id: crypto.randomUUID(),
     role,
     content,
+    ...(sources && sources.length > 0 ? { sources } : {}),
   };
-}
-
-function parseStoredMessages(value: string): ChatDisplayMessage[] | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(value);
-  } catch {
-    return null;
-  }
-
-  if (!Array.isArray(parsed) || parsed.length > MAX_HISTORY_MESSAGES) {
-    return null;
-  }
-
-  const messages: ChatDisplayMessage[] = [];
-  for (const item of parsed) {
-    if (
-      typeof item !== "object" ||
-      item === null ||
-      !("id" in item) ||
-      !("role" in item) ||
-      !("content" in item) ||
-      typeof item.id !== "string" ||
-      (item.role !== "user" && item.role !== "assistant") ||
-      typeof item.content !== "string" ||
-      item.content.trim().length === 0
-    ) {
-      return null;
-    }
-
-    const maximumLength =
-      item.role === "user"
-        ? MAX_USER_MESSAGE_LENGTH
-        : MAX_ASSISTANT_MESSAGE_LENGTH;
-    if (item.content.length > maximumLength) {
-      return null;
-    }
-
-    messages.push({
-      id: item.id,
-      role: item.role,
-      content: item.content,
-    });
-  }
-
-  return messages.length > 0 ? messages : null;
 }
 
 function isChatResponse(value: unknown): value is ChatResponse {
@@ -92,7 +52,11 @@ function isChatResponse(value: unknown): value is ChatResponse {
     "message" in value &&
     typeof value.message === "string" &&
     value.message.trim().length > 0 &&
-    value.message.length <= MAX_ASSISTANT_MESSAGE_LENGTH
+    value.message.length <= MAX_ASSISTANT_MESSAGE_LENGTH &&
+    "sources" in value &&
+    Array.isArray(value.sources) &&
+    value.sources.length <= MAX_PUBLIC_SOURCES &&
+    value.sources.every(isChatEvidenceSource)
   );
 }
 
@@ -145,7 +109,7 @@ export function RecruiterChat() {
         if (!stored) {
           setMessages([greetingMessage]);
         } else {
-          const restored = parseStoredMessages(stored);
+          const restored = parseStoredChatMessages(stored);
           if (restored) {
             setMessages(restored);
           } else {
@@ -245,12 +209,7 @@ export function RecruiterChat() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             locale,
-            messages: pendingHistory.requestMessages.map(
-              ({ role, content: messageContent }) => ({
-                role,
-                content: messageContent,
-              }),
-            ),
+            messages: toApiRequestMessages(pendingHistory.requestMessages),
           }),
         });
 
@@ -287,6 +246,7 @@ export function RecruiterChat() {
         const assistantMessage = createMessage(
           "assistant",
           payload.message.trim(),
+          payload.sources,
         );
         setMessages(
           confirmPendingChatHistory(pendingHistory, assistantMessage),
@@ -329,6 +289,7 @@ export function RecruiterChat() {
     description: t("panelDescription"),
     emptyConversation: t("emptyConversation"),
     emptyInput: t("emptyInput"),
+    evidence: t("evidenceLabel"),
     inputLabel: t("inputLabel"),
     loading: t("loading"),
     placeholder: t("inputPlaceholder"),

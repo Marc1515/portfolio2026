@@ -15,16 +15,15 @@ const es = {
     greeting:
       "¡Hola! Pregúntame por la experiencia, los proyectos y las habilidades técnicas de Marc, o por cómo encaja su perfil verificado en un puesto.",
     suggestedQuestions: [
-      "¿Cuál es la principal experiencia profesional de Marc?",
-      "¿Qué proyecto debería revisar primero?",
-      "¿Qué tecnologías utiliza Marc?",
-      "¿Cómo prueba y despliega sus aplicaciones?",
+      "¿Qué experiencia profesional tiene Marc con React?",
+      "Háblame de AI Code Review Trainer.",
+      "¿Qué experiencia demuestra Marc con pruebas?",
+      "¿Cómo encaja Marc con esta oferta de empleo?",
       "¿Cómo puedo contactar con Marc?",
     ],
     suggestionsLabel: "Preguntas sugeridas para recruiters",
     inputLabel: "Mensaje para el asistente profesional de Marc",
-    inputPlaceholder:
-      "Pregunta por experiencia, proyectos o encaje profesional…",
+    inputPlaceholder: "Pregunta sobre Marc o pega una oferta de empleo…",
     sendLabel: "Enviar",
     closeLabel: "Cerrar el asistente profesional",
     clearLabel: "Borrar conversación",
@@ -33,6 +32,7 @@ const es = {
     emptyInput: "Escribe una pregunta antes de enviarla.",
     emptyConversation:
       "Empieza con una pregunta sobre el perfil profesional de Marc.",
+    evidenceLabel: "Evidencias relacionadas",
     genericApiError: "No se ha podido responder a tu pregunta ahora mismo.",
     providerUnavailableError:
       "El asistente profesional no está disponible temporalmente.",
