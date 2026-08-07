@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createChatPostHandler } from "@/app/api/chat/route";
+import { AIProviderError } from "@/lib/ai/providerErrors";
 
 function request(origin?: string) {
   return new Request("https://portfolio.test/api/chat", {
@@ -51,5 +52,43 @@ describe("chat route protections", () => {
     });
     expect(rateLimitCheck).not.toHaveBeenCalled();
     expect(providerFactory).not.toHaveBeenCalled();
+  });
+
+  it("returns 503 for a known provider failure", async () => {
+    const post = createChatPostHandler({
+      providerFactory: async () => ({
+        generate: vi.fn().mockRejectedValue(
+          new AIProviderError("resilient", "unavailable", {
+            fallbackAllowed: false,
+          }),
+        ),
+      }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+    });
+
+    const response = await post(request());
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      error: "provider_unavailable",
+    });
+  });
+
+  it("returns 500 for an unexpected provider exception", async () => {
+    const post = createChatPostHandler({
+      providerFactory: async () => ({
+        generate: vi.fn().mockRejectedValue(new TypeError("unexpected bug")),
+      }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+    });
+
+    const response = await post(request());
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({
+      error: "internal_error",
+    });
   });
 });

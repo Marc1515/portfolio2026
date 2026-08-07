@@ -3,6 +3,7 @@ import "server-only";
 const DEFAULT_PER_MINUTE = 8;
 const DEFAULT_PER_DAY = 40;
 const DEFAULT_GLOBAL_PER_DAY = 250;
+const DEFAULT_MAX_TRACKED_CLIENTS = 10_000;
 const MINUTE_MS = 60_000;
 const DAY_MS = 86_400_000;
 
@@ -26,6 +27,7 @@ interface ChatRateLimiterOptions {
   now?: () => number;
   staleEntryMs?: number;
   cleanupIntervalMs?: number;
+  maxTrackedClients?: number;
 }
 
 function positiveInteger(value: string | undefined, fallback: number): number {
@@ -55,6 +57,7 @@ export class ChatRateLimiter {
   private readonly now: () => number;
   private readonly staleEntryMs: number;
   private readonly cleanupIntervalMs: number;
+  private readonly maxTrackedClients: number;
   private lastCleanup = 0;
   private globalDay: string;
   private globalCount = 0;
@@ -66,6 +69,13 @@ export class ChatRateLimiter {
     this.now = options.now ?? Date.now;
     this.staleEntryMs = options.staleEntryMs ?? 2 * DAY_MS;
     this.cleanupIntervalMs = options.cleanupIntervalMs ?? MINUTE_MS;
+    const maxTrackedClients = options.maxTrackedClients;
+    this.maxTrackedClients =
+      maxTrackedClients !== undefined &&
+      Number.isSafeInteger(maxTrackedClients) &&
+      maxTrackedClients > 0
+        ? maxTrackedClients
+        : DEFAULT_MAX_TRACKED_CLIENTS;
     this.globalDay = utcDay(this.now());
   }
 
@@ -101,7 +111,18 @@ export class ChatRateLimiter {
       this.globalCount = 0;
     }
 
+    if (this.globalCount >= this.globalPerDay) {
+      return {
+        allowed: false,
+        retryAfterSeconds: secondsUntilNextUtcDay(timestamp),
+      };
+    }
+
     const previous = this.clients.get(clientIdentifier);
+    if (!previous && this.clients.size >= this.maxTrackedClients) {
+      return { allowed: false, retryAfterSeconds: 60 };
+    }
+
     const usage: ClientUsage = previous ?? {
       minuteWindow,
       minuteCount: 0,
@@ -130,10 +151,6 @@ export class ChatRateLimiter {
     if (usage.dayCount >= this.perDay) {
       retryAfterCandidates.push(secondsUntilNextUtcDay(timestamp));
     }
-    if (this.globalCount >= this.globalPerDay) {
-      retryAfterCandidates.push(secondsUntilNextUtcDay(timestamp));
-    }
-
     if (retryAfterCandidates.length > 0) {
       return {
         allowed: false,

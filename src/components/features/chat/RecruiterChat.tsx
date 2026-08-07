@@ -6,6 +6,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatLauncher } from "@/components/features/chat/ChatLauncher";
 import { ChatPanel } from "@/components/features/chat/ChatPanel";
 import {
+  confirmPendingChatHistory,
+  preparePendingChatHistory,
+  recoverPendingChatHistory,
+} from "@/components/features/chat/chatHistory";
+import {
   MAX_ASSISTANT_MESSAGE_LENGTH,
   MAX_HISTORY_MESSAGES,
   MAX_USER_MESSAGE_LENGTH,
@@ -111,15 +116,27 @@ export function RecruiterChat() {
   const [messages, setMessages] = useState<ChatDisplayMessage[]>([
     greetingMessage,
   ]);
+  const [pendingUserMessage, setPendingUserMessage] =
+    useState<ChatDisplayMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [requestError, setRequestError] = useState<RequestError | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [hasRestored, setHasRestored] = useState(false);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const requestInFlightRef = useRef(false);
 
   const questions = toStringList(t.raw("suggestedQuestions"));
-  const showSuggestions = !messages.some((message) => message.role === "user");
+  const displayedMessages = useMemo(
+    () =>
+      pendingUserMessage
+        ? [...messages, pendingUserMessage].slice(-MAX_HISTORY_MESSAGES)
+        : messages,
+    [messages, pendingUserMessage],
+  );
+  const showSuggestions = !displayedMessages.some(
+    (message) => message.role === "user",
+  );
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -181,7 +198,7 @@ export function RecruiterChat() {
 
     const anchor = document.getElementById(`${PANEL_ID}-scroll-anchor`);
     anchor?.scrollIntoView({ block: "nearest" });
-  }, [isLoading, isOpen, messages]);
+  }, [displayedMessages, isLoading, isOpen]);
 
   const close = useCallback(() => {
     setIsOpen(false);
@@ -197,20 +214,30 @@ export function RecruiterChat() {
         return;
       }
 
-      if (normalizedContent.length > MAX_USER_MESSAGE_LENGTH || isLoading) {
+      if (
+        normalizedContent.length > MAX_USER_MESSAGE_LENGTH ||
+        requestInFlightRef.current
+      ) {
         return;
       }
 
       const userMessage = createMessage("user", normalizedContent);
-      const requestMessages = [...messages, userMessage].slice(
-        -MAX_HISTORY_MESSAGES,
-      );
+      const pendingHistory = preparePendingChatHistory(messages, userMessage);
 
+      requestInFlightRef.current = true;
       setInput("");
       setInputError(null);
       setRequestError(null);
       setIsLoading(true);
-      setMessages(requestMessages);
+      setPendingUserMessage(userMessage);
+
+      const recoverFailedRequest = () => {
+        const recovered = recoverPendingChatHistory(pendingHistory);
+        setMessages(recovered.confirmedMessages);
+        setPendingUserMessage(null);
+        setInput(recovered.retryInput);
+        requestAnimationFrame(() => inputRef.current?.focus());
+      };
 
       try {
         const response = await fetch("/api/chat", {
@@ -218,7 +245,7 @@ export function RecruiterChat() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             locale,
-            messages: requestMessages.map(
+            messages: pendingHistory.requestMessages.map(
               ({ role, content: messageContent }) => ({
                 role,
                 content: messageContent,
@@ -253,6 +280,7 @@ export function RecruiterChat() {
           } else {
             setRequestError({ type: "generic" });
           }
+          recoverFailedRequest();
           return;
         }
 
@@ -260,20 +288,24 @@ export function RecruiterChat() {
           "assistant",
           payload.message.trim(),
         );
-        setMessages((current) =>
-          [...current, assistantMessage].slice(-MAX_HISTORY_MESSAGES),
+        setMessages(
+          confirmPendingChatHistory(pendingHistory, assistantMessage),
         );
+        setPendingUserMessage(null);
       } catch {
         setRequestError({ type: "unavailable" });
+        recoverFailedRequest();
       } finally {
+        requestInFlightRef.current = false;
         setIsLoading(false);
       }
     },
-    [isLoading, locale, messages, t],
+    [locale, messages, t],
   );
 
   const clearConversation = useCallback(() => {
     setMessages([greetingMessage]);
+    setPendingUserMessage(null);
     setInput("");
     setInputError(null);
     setRequestError(null);
@@ -327,7 +359,7 @@ export function RecruiterChat() {
           input={input}
           inputRef={inputRef}
           inputError={inputError}
-          messages={messages}
+          messages={displayedMessages}
           questions={questions}
           labels={labels}
           maxLength={MAX_USER_MESSAGE_LENGTH}

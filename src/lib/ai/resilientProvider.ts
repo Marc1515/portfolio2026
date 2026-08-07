@@ -50,10 +50,14 @@ export class ResilientAIProvider implements AIProvider {
     try {
       return await this.ollama.generate(messages);
     } catch (error) {
-      throw new AIProviderError("resilient", "unavailable", {
-        fallbackAllowed: false,
-        cause: error,
-      });
+      if (error instanceof AIProviderError) {
+        throw new AIProviderError("resilient", "unavailable", {
+          fallbackAllowed: false,
+          cause: error,
+        });
+      }
+
+      throw error;
     }
   }
 }

@@ -57,7 +57,7 @@ describe("ResilientAIProvider", () => {
     expect(ollama).toHaveBeenCalledOnce();
   });
 
-  it("returns one generic internal provider error when both fail", async () => {
+  it("converts a known Ollama failure to the generic resilient error", async () => {
     const cloudflare = vi.fn().mockRejectedValue(
       new AIProviderError("cloudflare", "unavailable", {
         fallbackAllowed: true,
@@ -66,7 +66,7 @@ describe("ResilientAIProvider", () => {
     const ollama = vi
       .fn()
       .mockRejectedValue(
-        new AIProviderError("ollama", "busy", { fallbackAllowed: false }),
+        new AIProviderError("ollama", "timeout", { fallbackAllowed: false }),
       );
     const resilient = new ResilientAIProvider(
       provider(cloudflare),
@@ -77,6 +77,24 @@ describe("ResilientAIProvider", () => {
       provider: "resilient",
       reason: "unavailable",
     });
+    expect(cloudflare).toHaveBeenCalledOnce();
+    expect(ollama).toHaveBeenCalledOnce();
+  });
+
+  it("propagates an unexpected Ollama programming error unchanged", async () => {
+    const cloudflare = vi.fn().mockRejectedValue(
+      new AIProviderError("cloudflare", "unavailable", {
+        fallbackAllowed: true,
+      }),
+    );
+    const unexpectedError = new TypeError("unexpected bug");
+    const ollama = vi.fn().mockRejectedValue(unexpectedError);
+    const resilient = new ResilientAIProvider(
+      provider(cloudflare),
+      provider(ollama),
+    );
+
+    await expect(resilient.generate(prompt)).rejects.toBe(unexpectedError);
     expect(cloudflare).toHaveBeenCalledOnce();
     expect(ollama).toHaveBeenCalledOnce();
   });

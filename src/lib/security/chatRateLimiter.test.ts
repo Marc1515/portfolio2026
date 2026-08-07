@@ -49,6 +49,45 @@ describe("ChatRateLimiter", () => {
     expect(limiter.check("three").allowed).toBe(false);
   });
 
+  it("does not allocate new clients after global exhaustion", () => {
+    const limiter = new ChatRateLimiter({
+      perMinute: 10,
+      perDay: 10,
+      globalPerDay: 1,
+      now: () => Date.UTC(2026, 7, 6, 12),
+    });
+
+    expect(limiter.check("client-a").allowed).toBe(true);
+    expect(limiter.clientCount).toBe(1);
+
+    for (const identifier of ["client-b", "client-c", "client-d"]) {
+      expect(limiter.check(identifier).allowed).toBe(false);
+      expect(limiter.clientCount).toBe(1);
+    }
+  });
+
+  it("caps tracked clients without disrupting existing identifiers", () => {
+    const limiter = new ChatRateLimiter({
+      perMinute: 10,
+      perDay: 10,
+      globalPerDay: 100,
+      maxTrackedClients: 2,
+      now: () => Date.UTC(2026, 7, 6, 12),
+    });
+
+    expect(limiter.check("client-a").allowed).toBe(true);
+    expect(limiter.check("client-b").allowed).toBe(true);
+    expect(limiter.clientCount).toBe(2);
+
+    expect(limiter.check("client-c")).toEqual({
+      allowed: false,
+      retryAfterSeconds: 60,
+    });
+    expect(limiter.clientCount).toBe(2);
+    expect(limiter.check("client-a").allowed).toBe(true);
+    expect(limiter.clientCount).toBe(2);
+  });
+
   it("resets daily counters at midnight UTC", () => {
     let now = Date.UTC(2026, 7, 6, 23, 59, 59);
     const limiter = new ChatRateLimiter({
