@@ -18,6 +18,31 @@ function response(value: unknown, status = 200, headers: HeadersInit = {}) {
 }
 
 describe("CloudflareAIProvider", () => {
+  it("uses the production Cloudflare generation settings", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      response({
+        success: true,
+        result: { response: "Answer" },
+      }),
+    );
+    const provider = new CloudflareAIProvider({
+      fetch: fetchMock as unknown as typeof fetch,
+      environment,
+    });
+
+    await expect(provider.generate(messages)).resolves.toBe("Answer");
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(JSON.parse(request.body as string)).toEqual({
+      messages,
+      temperature: 0.2,
+      reasoning_effort: "low",
+      max_completion_tokens: 800,
+      stream: false,
+    });
+  });
+
   it("classifies missing configuration without calling fetch", async () => {
     const fetchMock = vi.fn();
     const provider = new CloudflareAIProvider({
@@ -107,5 +132,62 @@ describe("CloudflareAIProvider", () => {
     await expect(oversized.generate(messages)).rejects.toMatchObject({
       reason: "invalid_response",
     });
+  });
+
+  it("rejects an incomplete reasoning-only response without exposing reasoning", async () => {
+    const provider = new CloudflareAIProvider({
+      fetch: vi.fn().mockResolvedValue(
+        response({
+          success: true,
+          result: {
+            choices: [
+              {
+                message: {
+                  content: null,
+                  reasoning: "Internal reasoning",
+                  reasoning_content: "Internal reasoning content",
+                },
+                finish_reason: "length",
+              },
+            ],
+          },
+        }),
+      ) as unknown as typeof fetch,
+      environment,
+    });
+
+    await expect(provider.generate(messages)).rejects.toMatchObject({
+      provider: "cloudflare",
+      reason: "invalid_response",
+      fallbackAllowed: true,
+    });
+  });
+
+  it("returns valid GLM answer content and ignores reasoning fields", async () => {
+    const provider = new CloudflareAIProvider({
+      fetch: vi.fn().mockResolvedValue(
+        response({
+          success: true,
+          result: {
+            choices: [
+              {
+                message: {
+                  role: "assistant",
+                  content: "Verified concise answer",
+                  reasoning: "Internal reasoning",
+                  reasoning_content: "Internal reasoning content",
+                },
+                finish_reason: "stop",
+              },
+            ],
+          },
+        }),
+      ) as unknown as typeof fetch,
+      environment,
+    });
+
+    await expect(provider.generate(messages)).resolves.toBe(
+      "Verified concise answer",
+    );
   });
 });
