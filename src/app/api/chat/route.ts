@@ -4,9 +4,20 @@ import {
   retrieveRecruiterKnowledge,
   type KnowledgeRetrievalResult,
 } from "@/lib/ai/knowledgeRetriever";
-import { createAIProvider, type AIProvider } from "@/lib/ai/provider";
+import {
+  createAIProvider,
+  type AIProvider,
+  type AIProviderAttemptResult,
+} from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
 import { MAX_REQUEST_BODY_LENGTH, parseChatRequest } from "@/lib/ai/validation";
+import {
+  chatTelemetry,
+  type ChatTelemetry,
+  type ChatTelemetryEvent,
+  type ChatTelemetryFailureReason,
+  type ChatTelemetryFailureStage,
+} from "@/lib/observability/chatTelemetry";
 import {
   ChatRateLimiter,
   type RateLimitResult,
@@ -35,6 +46,8 @@ interface ChatHandlerDependencies {
     messages: ChatRequest["messages"],
   ) => KnowledgeRetrievalResult;
   promptBuilder?: typeof buildRecruiterPrompt;
+  telemetry?: ChatTelemetry;
+  performanceNow?: () => number;
 }
 
 function errorResponse(
@@ -50,8 +63,37 @@ function errorResponse(
 
 export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
   return async function post(request: Request) {
+    const telemetry = dependencies.telemetry ?? chatTelemetry;
+    const performanceNow =
+      dependencies.performanceNow ?? (() => performance.now());
+    const startedAt = performanceNow();
+    const durationMs = () =>
+      Math.max(0, Math.round(performanceNow() - startedAt));
+    const record = (event: ChatTelemetryEvent) => {
+      try {
+        telemetry.record(event);
+      } catch {
+        // Telemetry must never affect the public chat path.
+      }
+    };
+    const fail = (
+      error: ChatErrorCode,
+      status: number,
+      stage: ChatTelemetryFailureStage,
+      reason: ChatTelemetryFailureReason,
+      additionalHeaders: Record<string, string> = {},
+    ) => {
+      record({
+        type: "request_failed",
+        stage,
+        reason,
+        durationMs: durationMs(),
+      });
+      return errorResponse(error, status, additionalHeaders);
+    };
+
     if (!dependencies.originAllowed(request)) {
-      return errorResponse("forbidden_origin", 403);
+      return fail("forbidden_origin", 403, "origin", "forbidden_origin");
     }
 
     const contentType = request.headers
@@ -61,7 +103,7 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
       .toLowerCase();
 
     if (contentType !== "application/json") {
-      return errorResponse("invalid_request", 400);
+      return fail("invalid_request", 400, "validation", "invalid_request");
     }
 
     const declaredLength = Number(request.headers.get("content-length") ?? 0);
@@ -70,33 +112,33 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
       declaredLength < 0 ||
       declaredLength > MAX_REQUEST_BODY_LENGTH
     ) {
-      return errorResponse("invalid_request", 400);
+      return fail("invalid_request", 400, "validation", "invalid_request");
     }
 
     let rawBody: string;
     try {
       rawBody = await request.text();
     } catch {
-      return errorResponse("invalid_request", 400);
+      return fail("invalid_request", 400, "validation", "invalid_request");
     }
 
     if (
       rawBody.length === 0 ||
       new TextEncoder().encode(rawBody).byteLength > MAX_REQUEST_BODY_LENGTH
     ) {
-      return errorResponse("invalid_request", 400);
+      return fail("invalid_request", 400, "validation", "invalid_request");
     }
 
     let body: unknown;
     try {
       body = JSON.parse(rawBody);
     } catch {
-      return errorResponse("invalid_request", 400);
+      return fail("invalid_request", 400, "validation", "invalid_request");
     }
 
     const chatRequest = parseChatRequest(body);
     if (!chatRequest) {
-      return errorResponse("invalid_request", 400);
+      return fail("invalid_request", 400, "validation", "invalid_request");
     }
 
     const rateLimit = dependencies.rateLimiter.check(
@@ -107,11 +149,13 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
         1,
         Math.ceil(rateLimit.retryAfterSeconds ?? 60),
       );
-      return errorResponse("rate_limited", 429, {
+      return fail("rate_limited", 429, "rate_limit", "limit_exceeded", {
         "Retry-After": String(retryAfterSeconds),
       });
     }
 
+    let stage: "retrieval" | "provider" | "internal" = "retrieval";
+    let latestProviderAttempt: AIProviderAttemptResult | undefined;
     try {
       const retrieval = (
         dependencies.retrieveKnowledge ?? retrieveRecruiterKnowledge
@@ -123,23 +167,60 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
         queryKind: retrieval.queryKind,
         allowDirectContact: retrieval.allowDirectContact,
       });
+      stage = "provider";
       const provider = await dependencies.providerFactory();
-      const message = await provider.generate(messages);
+      const message = await provider.generate(messages, {
+        onAttempt: (attempt) => {
+          latestProviderAttempt = attempt;
+        },
+      });
+      stage = "internal";
       const sources = buildPublicEvidenceSources(
         retrieval.entries,
         chatRequest.locale,
         { allowDirectContact: retrieval.allowDirectContact },
       );
 
+      const successfulAttempt =
+        latestProviderAttempt?.outcome === "success"
+          ? latestProviderAttempt
+          : undefined;
+      if (successfulAttempt) {
+        record({
+          type: "request_completed",
+          queryKind: retrieval.queryKind,
+          provider: successfulAttempt.provider,
+          durationMs: durationMs(),
+          providerDurationMs: successfulAttempt.durationMs,
+          retrievedEntryCount: retrieval.entries.length,
+          sourceCount: sources.length,
+        });
+      }
+
       return Response.json({ message, sources } satisfies ChatResponse, {
         headers: RESPONSE_HEADERS,
       });
     } catch (error) {
       if (error instanceof AIProviderError) {
-        return errorResponse("provider_unavailable", 503);
+        const providerStage =
+          latestProviderAttempt?.provider ??
+          (error.provider === "cloudflare" || error.provider === "ollama"
+            ? error.provider
+            : "provider");
+        return fail(
+          "provider_unavailable",
+          503,
+          providerStage,
+          latestProviderAttempt?.reason ?? error.reason,
+        );
       }
 
-      return errorResponse("internal_error", 500);
+      return fail(
+        "internal_error",
+        500,
+        stage === "retrieval" ? "retrieval" : "internal",
+        "unexpected_exception",
+      );
     }
   };
 }

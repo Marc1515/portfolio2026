@@ -6,7 +6,7 @@ import type { SectionId } from "@/types/site";
 
 export function useActiveSection() {
   const [activeId, setActiveId] = useState<SectionId>(
-    siteConfig.navigation[0]?.id ?? "home"
+    siteConfig.navigation[0]?.id ?? "home",
   );
 
   useEffect(() => {

@@ -178,4 +178,32 @@ describe("OllamaAIProvider", () => {
     await expect(provider.generate(messages)).resolves.toBe("Answer");
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("does not consume budget for configuration failures but counts provider attempts", async () => {
+    const guard = new OllamaUsageGuard(1, 25);
+    const unconfigured = new OllamaAIProvider({
+      fetch: vi.fn() as unknown as typeof fetch,
+      environment: { NODE_ENV: "test" },
+      guard,
+    });
+
+    await expect(unconfigured.generate(messages)).rejects.toMatchObject({
+      reason: "configuration",
+    });
+    expect(guard.attempts).toBe(0);
+
+    const configured = new OllamaAIProvider({
+      fetch: vi
+        .fn()
+        .mockResolvedValue(
+          jsonResponse({ error: "failed" }, 503),
+        ) as unknown as typeof fetch,
+      environment,
+      guard,
+    });
+    await expect(configured.generate(messages)).rejects.toMatchObject({
+      provider: "ollama",
+    });
+    expect(guard.attempts).toBe(1);
+  });
 });

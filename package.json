@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:chat-evals": "vitest run src/lib/ai/evals",
+    "chat:smoke": "node scripts/chat-smoke.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

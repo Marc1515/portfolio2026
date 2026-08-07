@@ -61,6 +61,28 @@ describe("CloudflareAIProvider", () => {
     });
   });
 
+  it("classifies request timeouts as fallback eligible", async () => {
+    const fetchMock = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          );
+        }),
+    );
+    const provider = new CloudflareAIProvider({
+      fetch: fetchMock as unknown as typeof fetch,
+      environment,
+      timeoutMs: 1,
+    });
+
+    await expect(provider.generate(messages)).rejects.toMatchObject({
+      provider: "cloudflare",
+      reason: "timeout",
+      fallbackAllowed: true,
+    });
+  });
+
   it("rejects malformed and oversized successful payloads", async () => {
     const malformed = new CloudflareAIProvider({
       fetch: vi

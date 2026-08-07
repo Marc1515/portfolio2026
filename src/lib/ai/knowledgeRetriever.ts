@@ -285,10 +285,13 @@ export function detectRecruiterQueryKind(question: string): RecruiterQueryKind {
     [
       "contact",
       "contacto",
+      "curriculum",
+      "cv",
       "email",
       "linkedin",
       "github",
       "phone",
+      "resume",
       "telefono",
       "whatsapp",
     ].some((term) => normalized.includes(term))

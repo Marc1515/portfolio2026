@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createChatPostHandler } from "@/app/api/chat/route";
 import { recruiterKnowledgeEntries } from "@/data/recruiterKnowledge";
+import type { AIProviderGenerateOptions } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
 import { MAX_REQUEST_BODY_LENGTH } from "@/lib/ai/validation";
+import type { ChatTelemetryEvent } from "@/lib/observability/chatTelemetry";
 
 function request(origin?: string, content = "Question") {
   return new Request("https://portfolio.test/api/chat", {
@@ -21,11 +23,14 @@ function request(origin?: string, content = "Question") {
 
 describe("chat route protections", () => {
   it("does not create or call a provider after rate limiting rejects", async () => {
-    const providerFactory = vi.fn();
+    const generate = vi.fn();
+    const providerFactory = vi.fn(async () => ({ generate }));
     const retrieveKnowledge = vi.fn();
+    const promptBuilder = vi.fn();
     const post = createChatPostHandler({
       providerFactory,
       retrieveKnowledge,
+      promptBuilder,
       rateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 42 }) },
       clientIdentifier: () => "client",
       originAllowed: () => true,
@@ -38,6 +43,8 @@ describe("chat route protections", () => {
     await expect(response.json()).resolves.toEqual({ error: "rate_limited" });
     expect(providerFactory).not.toHaveBeenCalled();
     expect(retrieveKnowledge).not.toHaveBeenCalled();
+    expect(promptBuilder).not.toHaveBeenCalled();
+    expect(generate).not.toHaveBeenCalled();
   });
 
   it("rejects a forbidden origin before reading or rate limiting the request", async () => {
@@ -247,6 +254,126 @@ Requirements:
     expect(
       payload.sources.map((source: { id: string }) => source.id),
     ).toContain("contact-whatsapp");
+  });
+
+  it("records content-free success telemetry without exposing provider publicly", async () => {
+    const events: ChatTelemetryEvent[] = [];
+    const secretQuestion = "My secret job description is React and TypeScript";
+    const generate = vi.fn(
+      async (_messages, options?: AIProviderGenerateOptions) => {
+        options?.onAttempt?.({
+          provider: "cloudflare",
+          outcome: "success",
+          durationMs: 75,
+        });
+        return "Mock answer";
+      },
+    );
+    const times = [100, 225];
+    const post = createChatPostHandler({
+      providerFactory: async () => ({ generate }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+      telemetry: { record: (event) => events.push(event) },
+      performanceNow: () => times.shift() ?? 225,
+    });
+
+    const response = await post(request(undefined, secretQuestion));
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).not.toHaveProperty("provider");
+    expect(events).toEqual([
+      expect.objectContaining({
+        type: "request_completed",
+        provider: "cloudflare",
+        durationMs: 125,
+        providerDurationMs: 75,
+      }),
+    ]);
+    expect(JSON.stringify(events)).not.toContain(secretQuestion);
+    for (const forbidden of [
+      "messages",
+      "question",
+      "content",
+      "prompt",
+      "history",
+      "response",
+      "jobDescription",
+      "ip",
+    ]) {
+      expect(events[0]).not.toHaveProperty(forbidden);
+    }
+  });
+
+  it("sanitizes telemetry for unexpected internal exceptions", async () => {
+    const events: ChatTelemetryEvent[] = [];
+    const secretQuestion = "My secret job description is confidential";
+    const post = createChatPostHandler({
+      providerFactory: async () => ({
+        generate: vi
+          .fn()
+          .mockRejectedValue(new Error(`unexpected: ${secretQuestion}`)),
+      }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+      telemetry: { record: (event) => events.push(event) },
+    });
+
+    const response = await post(request(undefined, secretQuestion));
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({
+      error: "internal_error",
+    });
+    expect(events).toEqual([
+      expect.objectContaining({
+        type: "request_failed",
+        stage: "internal",
+        reason: "unexpected_exception",
+      }),
+    ]);
+    expect(JSON.stringify(events)).not.toContain(secretQuestion);
+  });
+
+  it("classifies provider failures without exposing upstream details", async () => {
+    const events: ChatTelemetryEvent[] = [];
+    const generate = vi.fn(
+      async (_messages, options?: AIProviderGenerateOptions) => {
+        options?.onAttempt?.({
+          provider: "ollama",
+          outcome: "failure",
+          durationMs: 30_000,
+          reason: "timeout",
+        });
+        throw new AIProviderError("resilient", "unavailable", {
+          fallbackAllowed: false,
+        });
+      },
+    );
+    const post = createChatPostHandler({
+      providerFactory: async () => ({ generate }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+      telemetry: { record: (event) => events.push(event) },
+    });
+
+    const response = await post(request());
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      error: "provider_unavailable",
+    });
+    expect(events).toEqual([
+      expect.objectContaining({
+        type: "request_failed",
+        stage: "ollama",
+        reason: "timeout",
+      }),
+    ]);
   });
 
   it("rejects a request body above the maximum before provider work", async () => {

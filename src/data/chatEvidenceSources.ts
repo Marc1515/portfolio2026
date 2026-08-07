@@ -153,7 +153,7 @@ export const trustedEvidenceSourceDefinitions = [
     id: "contact-whatsapp",
     kind: "contact",
     label: { en: "WhatsApp", es: "WhatsApp" },
-    href: "https://wa.me/+353870041006",
+    href: "https://wa.me/353870041006",
   },
 ] satisfies TrustedEvidenceSourceDefinition[];
 

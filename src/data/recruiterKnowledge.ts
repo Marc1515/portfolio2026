@@ -281,13 +281,14 @@ export const recruiterKnowledgeEntries = [
       es: "Tecnologías publicadas",
     },
     content: {
-      en: "The Technologies section lists React, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, REST APIs, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code, and Codex. A listed technology indicates public knowledge or familiarity only unless a professional role or named project separately demonstrates its use.",
-      es: "La sección Tecnologías enumera React, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, APIs REST, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code y Codex. Una tecnología enumerada indica conocimiento o familiaridad, salvo que un puesto profesional o proyecto demuestre su uso por separado.",
+      en: "The Technologies section lists React, Angular, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, REST APIs, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code, and Codex. A listed technology indicates public knowledge or familiarity only unless a professional role or named project separately demonstrates its use.",
+      es: "La sección Tecnologías enumera React, Angular, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, APIs REST, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code y Codex. Una tecnología enumerada indica conocimiento o familiaridad, salvo que un puesto profesional o proyecto demuestre su uso por separado.",
     },
     keywords: {
       en: [
         "technologies",
         "typescript",
+        "angular",
         "nestjs",
         "node.js",
         "databases",
@@ -298,6 +299,7 @@ export const recruiterKnowledgeEntries = [
       es: [
         "tecnologías",
         "typescript",
+        "angular",
         "nestjs",
         "node.js",
         "bases de datos",
@@ -433,12 +435,23 @@ export const recruiterKnowledgeEntries = [
       es: "Marc reside en Dublín, Irlanda. El CV público actual indica expresamente ciudadanía de la UE y permiso para trabajar en Irlanda; se informa desde ese documento y no se infiere. La disponibilidad actual y el nivel de puesto adecuado deben confirmarse directamente con Marc.",
     },
     keywords: {
-      en: ["availability", "location", "dublin", "ireland", "work eligibility"],
+      en: [
+        "availability",
+        "location",
+        "dublin",
+        "ireland",
+        "lives",
+        "where based",
+        "work eligibility",
+      ],
       es: [
         "disponibilidad",
         "ubicación",
         "dublín",
         "irlanda",
+        "dónde vive",
+        "reside",
+        "vive",
         "permiso de trabajo",
       ],
     },
