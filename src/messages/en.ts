@@ -6,6 +6,44 @@ const en = {
   common: {
     languageSwitchAriaLabel: "Switch language between Spanish and English",
   },
+  chat: {
+    launcherLabel: "Open Marc's professional assistant",
+    panelTitle: "Marc's professional assistant",
+    panelDescription: "Verified answers for recruiters and potential clients.",
+    assistantBadge: "Portfolio AI",
+    greeting:
+      "Hi! Ask me about Marc's experience, projects, technical skills, or how his verified profile fits a role.",
+    suggestedQuestions: [
+      "What professional React experience does Marc have?",
+      "Tell me about the AI Code Review Trainer.",
+      "What testing experience does Marc demonstrate?",
+      "How does Marc compare with this job description?",
+      "How can I contact Marc?",
+    ],
+    suggestionsLabel: "Suggested recruiter questions",
+    inputLabel: "Message Marc's professional assistant",
+    inputPlaceholder: "Ask about Marc or paste a job description…",
+    sendLabel: "Send",
+    closeLabel: "Close professional assistant",
+    clearLabel: "Clear conversation",
+    loading: "Reviewing Marc's verified profile…",
+    characterCounter: "{count}/{max} characters",
+    emptyInput: "Enter a question before sending.",
+    emptyConversation:
+      "Start with a question about Marc's professional profile.",
+    evidenceLabel: "Relevant evidence",
+    genericApiError: "Your question could not be answered right now.",
+    providerUnavailableError:
+      "The professional assistant is temporarily unavailable.",
+    assistantBusyError: "The professional assistant is busy right now.",
+    rateLimitedError: "You have sent several questions in a short time.",
+    requestRejectedError:
+      "This request was rejected by the site's security configuration.",
+    retryGuidance: "Please try again in a moment or contact Marc directly.",
+    rateLimitRetryGuidance: "Please try again in about {seconds} seconds.",
+    userMessageLabel: "Your message",
+    assistantMessageLabel: "Marc's professional assistant",
+  },
   layout: {
     primaryNav: "Primary",
     menuToggle: "Toggle navigation menu",

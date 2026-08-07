@@ -68,6 +68,18 @@ a {
   text-decoration: none;
 }
 
+@keyframes chat-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .project-details-dialog {
   width: min(56rem, calc(100vw - 2rem));
   max-width: none;
@@ -96,5 +108,11 @@ a {
 
   .project-details-dialog > div {
     max-height: calc(100dvh - 1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

@@ -17,12 +17,13 @@ export function proxy(request: NextRequest) {
   }
 
   const header = request.headers.get("accept-language")?.toLowerCase() ?? "";
-  const locale = header.startsWith("es") || header.startsWith("ca") ? "es" : "en";
+  const locale =
+    header.startsWith("es") || header.startsWith("ca") ? "es" : "en";
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}${pathname}`;
   return NextResponse.redirect(url);
 }
 
 export const config = {
-  matcher: ["/((?!_next|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|.*\\..*).*)"],
 };
