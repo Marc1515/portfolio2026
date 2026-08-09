@@ -236,8 +236,21 @@ function isSensitiveSegment(normalized: string): boolean {
     /\b(?:and|also|then|now|y|tambien|ahora)\b.*\b(?:share|provide|tell me|compartir|comparte|proporciona|dime)\b/.test(
       normalized,
     );
+  const asksForSecretValue =
+    /^(?:what is|what are|what credentials|which credentials|cual es|cuales son|que credenciales)\b/.test(
+      normalized,
+    ) ||
+    /\b(?:and|also|then|now) (?:what is|what are|which)\b/.test(normalized) ||
+    /\b(?:y|tambien|entonces|ahora) (?:cual es|cuales son|que)\b/.test(
+      normalized,
+    );
 
-  if (inspectsContents || asksWhetherConfigured || mixedDisclosureClause) {
+  if (
+    inspectsContents ||
+    asksWhetherConfigured ||
+    mixedDisclosureClause ||
+    asksForSecretValue
+  ) {
     return true;
   }
 
@@ -245,12 +258,7 @@ function isSensitiveSegment(normalized: string): boolean {
 
   if (DISCLOSURE_ACTION_PATTERN.test(normalized)) return true;
 
-  const asksForSecretValue =
-    /^(?:what is|what are|what credentials|which credentials|cual es|cuales son|que credenciales)\b/.test(
-      normalized,
-    );
-
-  return asksForSecretValue;
+  return false;
 }
 
 function isSensitiveRequest(question: string): boolean {
