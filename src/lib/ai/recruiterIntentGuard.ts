@@ -194,7 +194,7 @@ function includesTerm(value: string, terms: string[]): boolean {
 }
 
 const SENSITIVE_SUBJECT_PATTERN =
-  /\b(?:passwords?|credentials?|api tokens?|api keys?|access tokens?|authentication tokens?|auth tokens?|environment variables?|env(?: file)?|private keys?|ssh(?: private)? keys?|github secrets?|secrets?|system prompt|hidden instructions?|internal instructions?|session cookies?|server access|vps access|contrasenas?|credenciales|tokens? (?:de )?api|claves? (?:de )?api|tokens? de (?:acceso|autenticacion)|variables? de entorno|archivo env|claves? privadas?(?: ssh)?|claves? ssh|secretos?(?: de github)?|prompt del sistema|instrucciones? (?:ocultas|internas)|cookies? de sesion|acceso (?:al servidor|vps))\b/;
+  /\b(?:passwords?|credentials?|tokens?|api keys?|environment variables?|env(?: file)?|private keys?|ssh(?: private)? keys?|github secrets?|secrets?|system prompt|hidden instructions?|internal instructions?|session cookies?|server access|vps access|contrasenas?|credenciales|claves? (?:de )?api|variables? de entorno|archivo env|claves? privadas?(?: ssh)?|claves? ssh|secretos?(?: de github)?|prompt del sistema|instrucciones? (?:ocultas|internas)|cookies? de sesion|acceso (?:al servidor|vps))\b/;
 
 const STRONG_DISCLOSURE_ACTION_PATTERN =
   /\b(?:show|print|copy|display|list|export|read|reveal|give|send|dump|expose|see|muestra|muestrame|ensena|ensename|imprime|copia|lista|exporta|lee|revela|dame|envia|expone|ver)\b/;
@@ -210,32 +210,47 @@ function isSensitiveSegment(normalized: string): boolean {
 
   if (STRONG_DISCLOSURE_ACTION_PATTERN.test(normalized)) return true;
 
-  if (PROFESSIONAL_SECRET_HANDLING_PATTERN.test(normalized)) return false;
-
-  if (DISCLOSURE_ACTION_PATTERN.test(normalized)) return true;
-
   const inspectsContents =
-    /^(?:what s|what is|what are|what does|que hay|que contiene|que hay dentro|cual es|cuales son)\b/.test(
-      normalized,
-    ) &&
-    /\b(?:inside|in|contain|contains|contents?|dentro|contiene|contenido)\b/.test(
-      normalized,
-    );
-  const asksForSecretValue =
-    /^(?:what is|what are|what credentials|which credentials|cual es|cuales son|que credenciales)\b/.test(
+    /\b(?:what s inside|what is inside|what does\b.*\bcontain|que hay dentro|que contiene)\b/.test(
       normalized,
     );
   const asksWhetherConfigured =
-    /^(?:is|are|does|do|what|which)\b.*\b(?:configured|set|available|exists?|have)\b/.test(
+    /^(?:is|are|what|which)\b.*\b(?:configured|set|available|exists?)\b/.test(
+      normalized,
+    ) ||
+    /^does (?:the )?(?:server|vps|system|environment)\b.*\bhave\b/.test(
       normalized,
     ) ||
     /^(?:is there|are there)\b/.test(normalized) ||
     /^(?:existe|existen|hay)\b/.test(normalized) ||
-    /^(?:esta|estan|existe|existen|hay|que|cual|cuales)\b.*\b(?:configurad[ao]s?|existe|existen|hay)\b/.test(
+    /^(?:esta|estan|que|cual|cuales)\b.*\b(?:configurad[ao]s?|existe|existen|hay)\b/.test(
+      normalized,
+    ) ||
+    /\b(?:and|also|whether)\b.*\b(?:configured|set|available|exists?)\b/.test(
+      normalized,
+    ) ||
+    /\b(?:y|tambien|si)\b.*\b(?:configurad[ao]s?|existe|existen|hay)\b/.test(
+      normalized,
+    );
+  const mixedDisclosureClause =
+    /\b(?:and|also|then|now|y|tambien|ahora)\b.*\b(?:share|provide|tell me|compartir|comparte|proporciona|dime)\b/.test(
       normalized,
     );
 
-  return inspectsContents || asksForSecretValue || asksWhetherConfigured;
+  if (inspectsContents || asksWhetherConfigured || mixedDisclosureClause) {
+    return true;
+  }
+
+  if (PROFESSIONAL_SECRET_HANDLING_PATTERN.test(normalized)) return false;
+
+  if (DISCLOSURE_ACTION_PATTERN.test(normalized)) return true;
+
+  const asksForSecretValue =
+    /^(?:what is|what are|what credentials|which credentials|cual es|cuales son|que credenciales)\b/.test(
+      normalized,
+    );
+
+  return asksForSecretValue;
 }
 
 function isSensitiveRequest(question: string): boolean {
