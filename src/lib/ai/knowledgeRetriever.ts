@@ -269,7 +269,7 @@ const INDEX = new Map<ChatLocale, IndexedEntry[]>(
   ]),
 );
 
-export function hasRecruiterKnowledgeSignal(
+export function hasRecruiterProfileSubjectSignal(
   locale: ChatLocale,
   question: string,
 ): boolean {
@@ -281,9 +281,6 @@ export function hasRecruiterKnowledgeSignal(
       (indexed.title.length > 2 && normalized.includes(indexed.title)) ||
       indexed.aliases.some(
         (alias) => alias.length > 2 && normalized.includes(alias),
-      ) ||
-      indexed.keywordPhrases.some(
-        (keyword) => keyword.length > 2 && normalized.includes(keyword),
       ),
   );
 }

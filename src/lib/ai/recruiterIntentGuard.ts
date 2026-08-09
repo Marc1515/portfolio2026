@@ -2,7 +2,7 @@ import "server-only";
 
 import { hasPastedJobDescription } from "@/lib/ai/jobDescriptionHeuristics";
 import {
-  hasRecruiterKnowledgeSignal,
+  hasRecruiterProfileSubjectSignal,
   normalizeRetrievalText,
 } from "@/lib/ai/knowledgeRetriever";
 import type { ChatLocale, RecruiterMessage } from "@/types/chat";
@@ -55,6 +55,8 @@ const PROFESSIONAL_TERMS = [
   "tecnico",
   "testing",
   "pruebas",
+  "security",
+  "seguridad",
   "quality",
   "calidad",
   "architecture",
@@ -63,6 +65,14 @@ const PROFESSIONAL_TERMS = [
   "deploy",
   "infrastructure",
   "infraestructura",
+  "environment variables",
+  "variables de entorno",
+  "server environments",
+  "entornos de servidor",
+  "authentication",
+  "autenticacion",
+  "secrets",
+  "secretos",
   "education",
   "training",
   "formacion",
@@ -183,33 +193,57 @@ function includesTerm(value: string, terms: string[]): boolean {
   return terms.some((term) => value.includes(normalizeRetrievalText(term)));
 }
 
-function isSensitiveRequest(normalized: string): boolean {
-  const directSensitivePatterns = [
-    /\b(?:show|reveal|give|send|provide|list|dump|expose)\b.*\b(?:password|credentials|api keys?|api tokens?|environment variables?|env file|private keys?|ssh keys?|database password|github secrets?|system prompt|hidden instructions?|internal instructions?|session cookies?|authentication tokens?|server access|vps access)\b/,
-    /\b(?:muestra|muestrame|ensena|ensename|revela|dame|proporciona|lista|expone)\b.*\b(?:contrasena|credenciales|claves? api|tokens? api|variables? de entorno|archivo env|claves? privadas?|claves? ssh|secretos? de github|prompt del sistema|instrucciones? (?:ocultas|internas)|cookies? de sesion|tokens? de autenticacion|acceso (?:al servidor|vps))\b/,
-    /\b(?:what is|what are|which is|which are|tell me)\b.*\b(?:server password|root password|database password|password|credentials|api keys?|environment variables?|private keys?|ssh keys?|github secrets?|system prompt|hidden instructions?|internal instructions?|session cookies?|authentication tokens?|server access|vps access)\b/,
-    /\bwhat (?:credentials|passwords?|api keys?|api tokens?|environment variables?|private keys?|ssh keys?|github secrets?)\b/,
-    /\b(?:cual es|cuales son|dime)\b.*\b(?:contrasena|credenciales|claves? api|variables? de entorno|claves? privadas?|claves? ssh|secretos? de github|prompt del sistema|instrucciones? (?:ocultas|internas)|cookies? de sesion|tokens? de autenticacion|acceso (?:al servidor|vps))\b/,
-    /\bque (?:credenciales|contrasenas|claves? api|variables? de entorno|claves? privadas?|claves? ssh|secretos? de github)\b/,
-    /\b(?:env file|archivo env|\.env)\b/,
-    /\b(?:show|reveal|give|muestra|muestrame|ensena|ensename|revela|dame)\b.*\benv\b/,
-    /\b(?:system prompt|hidden instructions?|internal instructions?|prompt del sistema|instrucciones? (?:ocultas|internas))\b.*\b(?:show|reveal|muestra|revela)\b/,
-  ];
+const SENSITIVE_SUBJECT_PATTERN =
+  /\b(?:passwords?|credentials?|api tokens?|api keys?|access tokens?|authentication tokens?|auth tokens?|environment variables?|env(?: file)?|private keys?|ssh(?: private)? keys?|github secrets?|secrets?|system prompt|hidden instructions?|internal instructions?|session cookies?|server access|vps access|contrasenas?|credenciales|tokens? (?:de )?api|claves? (?:de )?api|tokens? de (?:acceso|autenticacion)|variables? de entorno|archivo env|claves? privadas?(?: ssh)?|claves? ssh|secretos?(?: de github)?|prompt del sistema|instrucciones? (?:ocultas|internas)|cookies? de sesion|acceso (?:al servidor|vps))\b/;
 
-  if (directSensitivePatterns.some((pattern) => pattern.test(normalized))) {
-    return true;
-  }
+const STRONG_DISCLOSURE_ACTION_PATTERN =
+  /\b(?:show|print|copy|display|list|export|read|reveal|give|send|dump|expose|see|muestra|muestrame|ensena|ensename|imprime|copia|lista|exporta|lee|revela|dame|envia|expone|ver)\b/;
 
-  const asksConfiguration =
-    /\b(?:configured|set|available|exists?|configurado|configurada|existe)\b/.test(
+const DISCLOSURE_ACTION_PATTERN =
+  /\b(?:share|provide|tell me|compartir|comparte|proporciona|dime)\b/;
+
+const PROFESSIONAL_SECRET_HANDLING_PATTERN =
+  /\b(?:experience|experiencia|worked with|work with|managing|manage|handling|handle|configuring|security practices|trabajado con|trabaja con|gestionar|gestionando|manejar|manejando|configurar|configurando|practicas de seguridad)\b/;
+
+function isSensitiveSegment(normalized: string): boolean {
+  if (!SENSITIVE_SUBJECT_PATTERN.test(normalized)) return false;
+
+  if (STRONG_DISCLOSURE_ACTION_PATTERN.test(normalized)) return true;
+
+  if (PROFESSIONAL_SECRET_HANDLING_PATTERN.test(normalized)) return false;
+
+  if (DISCLOSURE_ACTION_PATTERN.test(normalized)) return true;
+
+  const inspectsContents =
+    /^(?:what s|what is|what are|what does|que hay|que contiene|que hay dentro|cual es|cuales son)\b/.test(
+      normalized,
+    ) &&
+    /\b(?:inside|in|contain|contains|contents?|dentro|contiene|contenido)\b/.test(
       normalized,
     );
-  const namesCredential =
-    /\b(?:[a-z0-9]+ )*(?:api tokens?|api keys?|secret keys?|access tokens?|auth tokens?|database password|server password|root password|private keys?|ssh keys?|environment variables?|github secrets?|session cookies?|cloudflare api token)\b/.test(
+  const asksForSecretValue =
+    /^(?:what is|what are|what credentials|which credentials|cual es|cuales son|que credenciales)\b/.test(
+      normalized,
+    );
+  const asksWhetherConfigured =
+    /^(?:is|are|does|do|what|which)\b.*\b(?:configured|set|available|exists?|have)\b/.test(
+      normalized,
+    ) ||
+    /^(?:is there|are there)\b/.test(normalized) ||
+    /^(?:existe|existen|hay)\b/.test(normalized) ||
+    /^(?:esta|estan|existe|existen|hay|que|cual|cuales)\b.*\b(?:configurad[ao]s?|existe|existen|hay)\b/.test(
       normalized,
     );
 
-  return asksConfiguration && namesCredential;
+  return inspectsContents || asksForSecretValue || asksWhetherConfigured;
+}
+
+function isSensitiveRequest(question: string): boolean {
+  const segments = [question, ...question.split(/[!?\n]+|\.\s+/)]
+    .map(normalizeRetrievalText)
+    .filter(Boolean);
+
+  return segments.some(isSensitiveSegment);
 }
 
 function asksForMissingJobDescription(normalized: string): boolean {
@@ -230,15 +264,21 @@ function hasProfessionalRelationship(normalized: string): boolean {
   const hasPersonReference = /\b(?:marc|he|his|him|su|sus)\b/.test(normalized);
   const hasProfessionalTerm = includesTerm(normalized, PROFESSIONAL_TERMS);
   const describesProfessionalUse =
-    /\bmarc\b.*\b(?:know|use|used|work|worked|build|built|develop|developed|lead|manage|deploy|test)\b/.test(
+    /\bmarc\b.*\b(?:know|use|used|work|worked|build|built|develop|developed|lead|manage|deploy|test|complete|completed|study|studied|train|trained)\b/.test(
       normalized,
     ) ||
-    /\bmarc\b.*\b(?:conoce|usa|utiliza|trabaja|trabajo|desarrolla|desarrollo|lidera|gestiona|despliega|prueba)\b/.test(
+    /\bmarc\b.*\b(?:conoce|usa|utiliza|trabaja|trabajo|desarrolla|desarrollo|lidera|gestiona|despliega|prueba|completa|completo|estudia|estudio|forma|formo)\b/.test(
+      normalized,
+    ) ||
+    /\b(?:uses?|used|works?|worked|builds?|built|develops?|developed)\b.*\bmarc\b/.test(
+      normalized,
+    ) ||
+    /\b(?:usa|usado|utiliza|utilizado|trabaja|trabajado|desarrolla|desarrollado)\b.*\bmarc\b/.test(
       normalized,
     );
   const profileIntroduction =
     /\b(?:tell me about|who is|what does|what did) marc\b/.test(normalized) ||
-    /\b(?:hablame de|quien es|que hace) marc\b/.test(normalized);
+    /\b(?:hablame de|quien es|que hace|que hizo) marc\b/.test(normalized);
   const professionalLocation =
     /\bwhere (?:is|does) marc\b.*\b(?:based|live|located)\b/.test(normalized) ||
     /\bdonde (?:vive|esta|se encuentra) marc\b/.test(normalized);
@@ -331,7 +371,7 @@ export function evaluateRecruiterIntent(
   const currentQuestion = messages.at(-1)?.content ?? "";
   const normalized = normalizeRetrievalText(currentQuestion);
 
-  if (isSensitiveRequest(normalized)) {
+  if (isSensitiveRequest(currentQuestion)) {
     return {
       kind: "sensitive_request",
       message: LOCAL_RESPONSES[locale].sensitive_request,
@@ -358,7 +398,7 @@ export function evaluateRecruiterIntent(
 
   if (
     hasProfessionalRelationship(normalized) ||
-    hasRecruiterKnowledgeSignal(locale, currentQuestion) ||
+    hasRecruiterProfileSubjectSignal(locale, currentQuestion) ||
     isProfessionalFollowUp(normalized, messages)
   ) {
     return { kind: "professional" };
