@@ -10,6 +10,10 @@ import {
   type AIProviderAttemptResult,
 } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
+import {
+  evaluateRecruiterIntent,
+  type RecruiterIntentDecision,
+} from "@/lib/ai/recruiterIntentGuard";
 import { MAX_REQUEST_BODY_LENGTH, parseChatRequest } from "@/lib/ai/validation";
 import {
   chatTelemetry,
@@ -46,6 +50,10 @@ interface ChatHandlerDependencies {
     messages: ChatRequest["messages"],
   ) => KnowledgeRetrievalResult;
   promptBuilder?: typeof buildRecruiterPrompt;
+  intentGuard?: (
+    locale: ChatRequest["locale"],
+    messages: ChatRequest["messages"],
+  ) => RecruiterIntentDecision;
   telemetry?: ChatTelemetry;
   performanceNow?: () => number;
 }
@@ -154,9 +162,28 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
       });
     }
 
-    let stage: "retrieval" | "provider" | "internal" = "retrieval";
+    let stage: "intent" | "retrieval" | "provider" | "internal" = "intent";
     let latestProviderAttempt: AIProviderAttemptResult | undefined;
     try {
+      const intentDecision = (
+        dependencies.intentGuard ?? evaluateRecruiterIntent
+      )(chatRequest.locale, chatRequest.messages);
+      if (intentDecision.kind !== "professional") {
+        record({
+          type: "request_handled_locally",
+          reason: intentDecision.kind,
+          durationMs: durationMs(),
+        });
+        return Response.json(
+          {
+            message: intentDecision.message,
+            sources: [],
+          } satisfies ChatResponse,
+          { headers: RESPONSE_HEADERS },
+        );
+      }
+
+      stage = "retrieval";
       const retrieval = (
         dependencies.retrieveKnowledge ?? retrieveRecruiterKnowledge
       )(chatRequest.locale, chatRequest.messages);
