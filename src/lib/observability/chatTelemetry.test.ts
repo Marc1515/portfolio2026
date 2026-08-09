@@ -50,6 +50,11 @@ describe("StructuredChatTelemetry", () => {
       reason: "timeout",
       durationMs: 15_001,
     },
+    {
+      type: "request_handled_locally",
+      reason: "sensitive_request",
+      durationMs: 3,
+    },
   ])("emits only the approved structured fields", (event) => {
     const lines: string[] = [];
     const telemetry = new StructuredChatTelemetry({
@@ -74,7 +79,9 @@ describe("StructuredChatTelemetry", () => {
             "sourceCount",
             "type",
           ]
-        : ["durationMs", "event", "reason", "stage", "type"]
+        : event.type === "request_failed"
+          ? ["durationMs", "event", "reason", "stage", "type"]
+          : ["durationMs", "event", "reason", "type"]
       ).sort(),
     );
     for (const field of forbiddenFields) {

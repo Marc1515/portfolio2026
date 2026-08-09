@@ -5,6 +5,7 @@ import {
   type RecruiterKnowledgeCategory,
   type RecruiterKnowledgeEntry,
 } from "@/data/recruiterKnowledge";
+import { hasPastedJobDescription } from "@/lib/ai/jobDescriptionHeuristics";
 import { isSafeEvidenceHref, MAX_PUBLIC_SOURCES } from "@/lib/chatEvidence";
 import type {
   ChatEvidenceSource,
@@ -268,8 +269,29 @@ const INDEX = new Map<ChatLocale, IndexedEntry[]>(
   ]),
 );
 
+export function hasRecruiterProfileSubjectSignal(
+  locale: ChatLocale,
+  question: string,
+): boolean {
+  const normalized = normalizeRetrievalText(question);
+  if (!normalized) return false;
+
+  return (INDEX.get(locale) ?? []).some(
+    (indexed) =>
+      (indexed.title.length > 2 && normalized.includes(indexed.title)) ||
+      indexed.aliases.some(
+        (alias) => alias.length > 2 && normalized.includes(alias),
+      ),
+  );
+}
+
 export function detectRecruiterQueryKind(question: string): RecruiterQueryKind {
   const normalized = normalizeRetrievalText(question);
+
+  if (hasPastedJobDescription(question)) {
+    return "role_comparison";
+  }
+
   const comparisonSignals = ROLE_COMPARISON_SIGNALS.filter((signal) =>
     normalized.includes(normalizeRetrievalText(signal)),
   ).length;

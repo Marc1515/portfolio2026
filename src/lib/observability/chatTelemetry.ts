@@ -42,6 +42,11 @@ export type ChatTelemetryEvent =
       stage: ChatTelemetryFailureStage;
       reason: ChatTelemetryFailureReason;
       durationMs: number;
+    }
+  | {
+      type: "request_handled_locally";
+      reason: "out_of_scope" | "sensitive_request" | "needs_job_description";
+      durationMs: number;
     };
 
 export interface ChatTelemetry {
