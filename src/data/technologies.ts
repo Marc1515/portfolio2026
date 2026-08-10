@@ -26,7 +26,7 @@ import {
   SiJquery,
   SiBootstrap,
   SiAngular,
-  SiNestjs
+  SiNestjs,
 } from "react-icons/si";
 
 import type { Technology } from "@/types/technology";

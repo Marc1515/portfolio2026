@@ -7,7 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:chat-evals": "vitest run src/lib/ai/evals",
+    "chat:smoke": "node scripts/chat-smoke.mjs",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -29,6 +33,7 @@
     "postcss": "^8.5.8",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

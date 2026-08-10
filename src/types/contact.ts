@@ -1,6 +1,12 @@
 import type { IconType } from "react-icons";
 
-export type ContactType = "email" | "linkedin" | "github" | "instagram" | "whatsapp" | "phone";
+export type ContactType =
+  | "email"
+  | "linkedin"
+  | "github"
+  | "instagram"
+  | "whatsapp"
+  | "phone";
 
 export interface ContactMethod {
   id: string;

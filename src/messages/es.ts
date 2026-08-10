@@ -6,6 +6,47 @@ const es = {
   common: {
     languageSwitchAriaLabel: "Cambiar idioma entre español e inglés",
   },
+  chat: {
+    launcherLabel: "Abrir el asistente profesional de Marc",
+    panelTitle: "Asistente profesional de Marc",
+    panelDescription:
+      "Respuestas verificadas para recruiters y posibles clientes.",
+    assistantBadge: "IA del portfolio",
+    greeting:
+      "¡Hola! Pregúntame por la experiencia, los proyectos y las habilidades técnicas de Marc, o por cómo encaja su perfil verificado en un puesto.",
+    suggestedQuestions: [
+      "¿Qué experiencia profesional tiene Marc con React?",
+      "Háblame de AI Code Review Trainer.",
+      "¿Qué experiencia demuestra Marc con pruebas?",
+      "¿Cómo encaja Marc con esta oferta de empleo?",
+      "¿Cómo puedo contactar con Marc?",
+    ],
+    suggestionsLabel: "Preguntas sugeridas para recruiters",
+    inputLabel: "Mensaje para el asistente profesional de Marc",
+    inputPlaceholder: "Pregunta sobre Marc o pega una oferta de empleo…",
+    sendLabel: "Enviar",
+    closeLabel: "Cerrar el asistente profesional",
+    clearLabel: "Borrar conversación",
+    loading: "Consultando el perfil verificado de Marc…",
+    characterCounter: "{count}/{max} caracteres",
+    emptyInput: "Escribe una pregunta antes de enviarla.",
+    emptyConversation:
+      "Empieza con una pregunta sobre el perfil profesional de Marc.",
+    evidenceLabel: "Evidencias relacionadas",
+    genericApiError: "No se ha podido responder a tu pregunta ahora mismo.",
+    providerUnavailableError:
+      "El asistente profesional no está disponible temporalmente.",
+    assistantBusyError: "El asistente profesional está ocupado ahora mismo.",
+    rateLimitedError: "Has enviado varias preguntas en poco tiempo.",
+    requestRejectedError:
+      "La configuración de seguridad del sitio ha rechazado esta solicitud.",
+    retryGuidance:
+      "Inténtalo de nuevo en unos instantes o contacta directamente con Marc.",
+    rateLimitRetryGuidance:
+      "Inténtalo de nuevo dentro de unos {seconds} segundos.",
+    userMessageLabel: "Tu mensaje",
+    assistantMessageLabel: "Asistente profesional de Marc",
+  },
   layout: {
     primaryNav: "Principal",
     menuToggle: "Abrir o cerrar menú de navegación",

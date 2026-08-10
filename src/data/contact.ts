@@ -15,7 +15,7 @@ export const contactMethods = [
   {
     id: "whatsapp",
     label: "WhatsApp",
-    href: "https://wa.me/+353870041006",
+    href: "https://wa.me/353870041006",
     type: "whatsapp",
     icon: FaWhatsapp,
   },
