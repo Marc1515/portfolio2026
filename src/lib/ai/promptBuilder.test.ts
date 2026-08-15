@@ -234,4 +234,49 @@ Requirements: React, TypeScript, Next.js and REST APIs.`,
       MAX_SERIALIZED_TRANSCRIPT_LENGTH,
     );
   });
+
+  it("keeps the representative role comparison grounded within a stable character budget", () => {
+    const content = `We’re hiring for an international tech company looking to bring on Junior Full Stack Engineers for a brand-new product division focused on workforce education and certification.
+
+This is an opportunity to join a greenfield engineering team at an early stage, working on a modern Python/React product with the backing and stability of an established global business.
+
+The team is building a next-generation certification and assessment platform for regulated industries including aviation, industrial safety, government, and vocational training, leveraging modern AI capabilities and contemporary engineering practices.
+
+If you’re excited by the idea of learning quickly, working closely with experienced engineers, and helping shape a product from the ground up, this role is for you.`;
+    const history: RecruiterMessage[] = [{ role: "user", content }];
+    const retrieval = retrieveRecruiterKnowledge("en", history);
+    const prompt = buildRecruiterPrompt({
+      locale: "en",
+      history,
+      evidence: retrieval.entries,
+      queryKind: retrieval.queryKind,
+      allowDirectContact: retrieval.allowDirectContact,
+    });
+    const selectedIds = retrieval.entries.map((entry) => entry.id);
+    const serializedLength = JSON.stringify(prompt).length;
+
+    expect(retrieval.queryKind).toBe("role_comparison");
+    expect(retrieval.allowDirectContact).toBe(false);
+    expect(selectedIds).toEqual(
+      expect.arrayContaining([
+        "summary-profile",
+        "experience-delinternet",
+        "project-ai-code-review-trainer",
+        "technologies-public",
+        "testing-quality",
+        "deployment-infrastructure",
+      ]),
+    );
+    expect(selectedIds).not.toContain("contact-direct");
+    expect(prompt[0]?.content).toContain("Strong verified matches");
+    expect(prompt[0]?.content).toContain(
+      "Not demonstrated in the verified information",
+    );
+    expect(prompt[0]?.content).toContain("QGIS/Python workflow");
+    expect(prompt[0]?.content).toContain("Personal full-stack AI project");
+    expect(prompt[0]?.content).toContain("CI/CD");
+    expect(prompt[0]?.content).toContain("Docker");
+    expect(serializedLength).toBeLessThanOrEqual(6_000);
+    expect(serializedLength).toBeLessThan(8_210 * 0.75);
+  });
 });

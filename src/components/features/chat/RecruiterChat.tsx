@@ -17,6 +17,7 @@ import {
   toApiRequestMessages,
   type PendingChatHistory,
 } from "@/components/features/chat/chatHistory";
+import { shouldShowLongRequestNotice } from "@/components/features/chat/chatLongRequest";
 import {
   MAX_HISTORY_MESSAGES,
   MAX_USER_MESSAGE_LENGTH,
@@ -87,6 +88,12 @@ export function RecruiterChat() {
   const showSuggestions = !displayedMessages.some(
     (message) => message.role === "user",
   );
+  const showLongRequestNotice = shouldShowLongRequestNotice({
+    input,
+    pendingContent: pendingUserMessage?.content,
+    isLoading,
+    hasRequestError: requestError !== null,
+  });
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -267,6 +274,7 @@ export function RecruiterChat() {
     evidence: t("evidenceLabel"),
     inputLabel: t("inputLabel"),
     loading: t("loading"),
+    longRequestNotice: t("longRequestNotice"),
     placeholder: t("inputPlaceholder"),
     errorGuidance:
       requestError?.type === "rate_limited" && requestError.retryAfterSeconds
@@ -303,6 +311,7 @@ export function RecruiterChat() {
           labels={labels}
           maxLength={MAX_USER_MESSAGE_LENGTH}
           isLoading={isLoading}
+          showLongRequestNotice={showLongRequestNotice}
           showSuggestions={showSuggestions}
           errorMessage={
             requestError?.type === "network_unavailable"
@@ -326,6 +335,9 @@ export function RecruiterChat() {
             setInput(value);
             if (inputError) {
               setInputError(null);
+            }
+            if (requestError && !retryablePending) {
+              setRequestError(null);
             }
           }}
           onSend={() => void sendMessage(input)}

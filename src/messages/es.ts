@@ -28,6 +28,8 @@ const es = {
     closeLabel: "Cerrar el asistente profesional",
     clearLabel: "Borrar conversación",
     loading: "Consultando el perfil verificado de Marc…",
+    longRequestNotice:
+      "Esta es una consulta detallada. Generar una respuesta completa puede tardar un poco más de lo habitual.",
     characterCounter: "{count}/{max} caracteres",
     emptyInput: "Escribe una pregunta antes de enviarla.",
     emptyConversation:

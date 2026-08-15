@@ -56,6 +56,17 @@ interface ChatHandlerDependencies {
   ) => RecruiterIntentDecision;
   telemetry?: ChatTelemetry;
   performanceNow?: () => number;
+  requestId?: () => string;
+}
+
+type ChatTelemetryEventWithoutRequestId = ChatTelemetryEvent extends infer Event
+  ? Event extends ChatTelemetryEvent
+    ? Omit<Event, "requestId">
+    : never
+  : never;
+
+function createRequestId(): string {
+  return crypto.randomUUID().replaceAll("-", "").slice(0, 12);
 }
 
 function errorResponse(
@@ -79,11 +90,12 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
     const performanceNow =
       dependencies.performanceNow ?? (() => performance.now());
     const startedAt = performanceNow();
+    const requestId = (dependencies.requestId ?? createRequestId)();
     const durationMs = () =>
       Math.max(0, Math.round(performanceNow() - startedAt));
-    const record = (event: ChatTelemetryEvent) => {
+    const record = (event: ChatTelemetryEventWithoutRequestId) => {
       try {
-        telemetry.record(event);
+        telemetry.record({ requestId, ...event } as ChatTelemetryEvent);
       } catch {
         // Telemetry must never affect the public chat path.
       }
@@ -217,6 +229,20 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
                   outcome: "failure",
                   reason: attempt.reason ?? "internal",
                   durationMs: attempt.durationMs,
+                  ...(attempt.diagnosticCode
+                    ? {
+                        diagnosticCode: attempt.diagnosticCode,
+                        ...(attempt.finishReason
+                          ? { finishReason: attempt.finishReason }
+                          : {}),
+                        ...(attempt.outputCharacterCount !== undefined
+                          ? {
+                              outputCharacterCount:
+                                attempt.outputCharacterCount,
+                            }
+                          : {}),
+                      }
+                    : {}),
                 },
           );
         },

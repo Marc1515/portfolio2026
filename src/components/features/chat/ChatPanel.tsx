@@ -16,6 +16,7 @@ interface ChatPanelLabels {
   evidence: string;
   inputLabel: string;
   loading: string;
+  longRequestNotice: string;
   placeholder: string;
   errorGuidance: string | null;
   retry: string;
@@ -44,6 +45,7 @@ interface ChatPanelProps {
   panelId: string;
   questions: string[];
   showSuggestions: boolean;
+  showLongRequestNotice: boolean;
 }
 
 export function ChatPanel({
@@ -65,8 +67,10 @@ export function ChatPanel({
   panelId,
   questions,
   showSuggestions,
+  showLongRequestNotice,
 }: ChatPanelProps) {
   const scrollAnchorId = `${panelId}-scroll-anchor`;
+  const longRequestNoticeId = `${panelId}-long-request-notice`;
 
   return (
     <section
@@ -228,7 +232,9 @@ export function ChatPanel({
               disabled={isLoading}
               placeholder={labels.placeholder}
               aria-invalid={inputError ? "true" : undefined}
-              aria-describedby={`${panelId}-input-meta`}
+              aria-describedby={`${panelId}-input-meta${
+                showLongRequestNotice ? ` ${longRequestNoticeId}` : ""
+              }`}
               onChange={(event) =>
                 onInputChange(event.target.value.slice(0, maxLength))
               }
@@ -264,6 +270,15 @@ export function ChatPanel({
               {labels.characterCounter}
             </span>
           </div>
+          {showLongRequestNotice ? (
+            <p
+              id={longRequestNoticeId}
+              aria-live="polite"
+              className="mt-1.5! rounded-md border border-[color-mix(in_srgb,var(--accent)_22%,var(--surface-border))] bg-[color-mix(in_srgb,var(--accent)_7%,transparent)] px-2.5! py-2! text-xs! leading-snug! text-(--muted)"
+            >
+              {labels.longRequestNotice}
+            </p>
+          ) : null}
         </form>
       </div>
     </section>

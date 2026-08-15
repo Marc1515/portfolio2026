@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  DEFAULT_OLLAMA_TIMEOUT_MS,
   normalizeOllamaChatUrl,
   OllamaAIProvider,
   OllamaUsageGuard,
@@ -23,6 +24,9 @@ function jsonResponse(value: unknown, status = 200) {
 }
 
 describe("OllamaAIProvider", () => {
+  it("uses the measured bounded CPU fallback timeout by default", () => {
+    expect(DEFAULT_OLLAMA_TIMEOUT_MS).toBe(90_000);
+  });
   it("normalizes the fixed /api/chat endpoint without duplication", () => {
     expect(normalizeOllamaChatUrl("http://ollama:11434")).toBe(
       "http://ollama:11434/api/chat",

@@ -2,6 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { ChatPanel } from "@/components/features/chat/ChatPanel";
+import {
+  LONG_REQUEST_NOTICE_THRESHOLD,
+  shouldShowLongRequestNotice,
+} from "@/components/features/chat/chatLongRequest";
 
 const labels = {
   assistantBadge: "Portfolio AI",
@@ -16,6 +20,8 @@ const labels = {
   evidence: "Evidence",
   inputLabel: "Message",
   loading: "Loading",
+  longRequestNotice:
+    "This is a detailed request. Generating a thorough answer may take a little longer than usual.",
   placeholder: "Ask",
   retry: "Try again",
   send: "Send",
@@ -52,6 +58,7 @@ function renderRetry(isLoading: boolean) {
       panelId="chat"
       questions={[]}
       showSuggestions={false}
+      showLongRequestNotice={isLoading}
     />,
   );
 }
@@ -70,5 +77,89 @@ describe("ChatPanel retryable error", () => {
   it("disables retry while the retry request is loading", () => {
     const markup = renderRetry(true);
     expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>[\s\S]*Try again/);
+    expect(markup).toContain(labels.longRequestNotice);
+  });
+});
+
+describe("long-request notice state", () => {
+  it.each([
+    [699, false],
+    [700, true],
+    [701, true],
+  ])("uses the trimmed %s-character threshold", (length, expected) => {
+    expect(
+      shouldShowLongRequestNotice({
+        input: "x".repeat(length),
+        isLoading: false,
+        hasRequestError: false,
+      }),
+    ).toBe(expected);
+  });
+
+  it("keeps the notice after submit clears the textarea while the long message is pending", () => {
+    expect(
+      shouldShowLongRequestNotice({
+        input: "",
+        pendingContent: "x".repeat(LONG_REQUEST_NOTICE_THRESHOLD),
+        isLoading: true,
+        hasRequestError: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("stops after success and after provider failure, while retry UI remains separate", () => {
+    const pendingContent = "x".repeat(LONG_REQUEST_NOTICE_THRESHOLD);
+
+    expect(
+      shouldShowLongRequestNotice({
+        input: "",
+        isLoading: false,
+        hasRequestError: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldShowLongRequestNotice({
+        input: "",
+        pendingContent,
+        isLoading: false,
+        hasRequestError: true,
+      }),
+    ).toBe(false);
+    const failureMarkup = renderRetry(false);
+    expect(failureMarkup).toContain("Try again");
+    expect(failureMarkup).not.toContain(labels.longRequestNotice);
+  });
+
+  it("shows again only while retrying a retained long message", () => {
+    expect(
+      shouldShowLongRequestNotice({
+        input: "",
+        pendingContent: "x".repeat(LONG_REQUEST_NOTICE_THRESHOLD),
+        isLoading: true,
+        hasRequestError: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("does not show for a short normal question", () => {
+    expect(
+      shouldShowLongRequestNotice({
+        input: "How has Marc used React?",
+        isLoading: true,
+        hasRequestError: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("renders as an accessible informational description, not an alert", () => {
+    const markup = renderRetry(true);
+    expect(markup).toContain('id="chat-long-request-notice"');
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain(
+      'aria-describedby="chat-input-meta chat-long-request-notice"',
+    );
+    expect(markup).not.toMatch(
+      /id="chat-long-request-notice"[^>]*role="alert"/,
+    );
   });
 });

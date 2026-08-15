@@ -2,6 +2,13 @@ const rawBaseUrl = (
   process.env.OLLAMA_BASE_URL || "http://ollama:11434"
 ).trim();
 const model = process.env.OLLAMA_MODEL?.trim();
+const configuredTimeoutMs = Number(process.env.OLLAMA_REQUEST_TIMEOUT_MS);
+const timeoutMs =
+  Number.isSafeInteger(configuredTimeoutMs) &&
+  configuredTimeoutMs > 0 &&
+  configuredTimeoutMs <= 120_000
+    ? configuredTimeoutMs
+    : 90_000;
 
 function chatEndpoint(value) {
   let url;
@@ -42,7 +49,7 @@ async function run() {
       keep_alive: "2m",
       options: { temperature: 0.1, num_predict: 8 },
     }),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {
