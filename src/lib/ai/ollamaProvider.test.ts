@@ -9,8 +9,8 @@ import {
 const messages = [{ role: "user" as const, content: "Question" }];
 const environment = {
   NODE_ENV: "test",
-  OLLAMA_BASE_URL: "http://127.0.0.1:11434/api/chat",
-  OLLAMA_MODEL: "configured-model:latest",
+  OLLAMA_BASE_URL: "http://ollama:11434",
+  OLLAMA_MODEL: "qwen2.5-coder:3b",
   OLLAMA_REQUEST_TIMEOUT_MS: "1000",
   OLLAMA_KEEP_ALIVE: "2m",
 } as NodeJS.ProcessEnv;
@@ -24,6 +24,9 @@ function jsonResponse(value: unknown, status = 200) {
 
 describe("OllamaAIProvider", () => {
   it("normalizes the fixed /api/chat endpoint without duplication", () => {
+    expect(normalizeOllamaChatUrl("http://ollama:11434")).toBe(
+      "http://ollama:11434/api/chat",
+    );
     expect(normalizeOllamaChatUrl("http://localhost:11434/api/chat/")).toBe(
       "http://localhost:11434/api/chat",
     );
@@ -49,9 +52,9 @@ describe("OllamaAIProvider", () => {
     await expect(provider.generate(messages)).resolves.toBe("Answer");
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, request] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://127.0.0.1:11434/api/chat");
+    expect(url).toBe("http://ollama:11434/api/chat");
     expect(JSON.parse(String(request.body))).toMatchObject({
-      model: "configured-model:latest",
+      model: "qwen2.5-coder:3b",
       stream: false,
       keep_alive: "2m",
       options: { temperature: 0.2, num_predict: 350 },
@@ -206,4 +209,28 @@ describe("OllamaAIProvider", () => {
     });
     expect(guard.attempts).toBe(1);
   });
+
+  it.each([
+    ["missing model", { OLLAMA_BASE_URL: "http://ollama:11434" }],
+    [
+      "malformed URL",
+      { OLLAMA_BASE_URL: "not a URL", OLLAMA_MODEL: "qwen2.5-coder:3b" },
+    ],
+  ])(
+    "rejects %s before making a request",
+    async (_name, invalidEnvironment) => {
+      const fetchMock = vi.fn();
+      const provider = new OllamaAIProvider({
+        fetch: fetchMock as unknown as typeof fetch,
+        environment: invalidEnvironment as unknown as NodeJS.ProcessEnv,
+        guard: new OllamaUsageGuard(1, 25),
+      });
+
+      await expect(provider.generate(messages)).rejects.toMatchObject({
+        provider: "ollama",
+        reason: "configuration",
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
 });

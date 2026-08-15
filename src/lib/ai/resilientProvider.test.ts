@@ -24,22 +24,30 @@ describe("ResilientAIProvider", () => {
     expect(ollama).not.toHaveBeenCalled();
   });
 
-  it("calls Ollama once after a Cloudflare failure", async () => {
-    const cloudflare = vi
-      .fn()
-      .mockRejectedValue(
-        new AIProviderError("cloudflare", "timeout", { fallbackAllowed: true }),
+  it.each([
+    "timeout",
+    "rate_limited",
+    "invalid_response",
+    "unavailable",
+  ] as const)(
+    "calls Ollama once after a fallback-eligible Cloudflare %s failure",
+    async (reason) => {
+      const cloudflare = vi
+        .fn()
+        .mockRejectedValue(
+          new AIProviderError("cloudflare", reason, { fallbackAllowed: true }),
+        );
+      const ollama = vi.fn().mockResolvedValue("Fallback answer");
+      const resilient = new ResilientAIProvider(
+        provider(cloudflare),
+        provider(ollama),
       );
-    const ollama = vi.fn().mockResolvedValue("Fallback answer");
-    const resilient = new ResilientAIProvider(
-      provider(cloudflare),
-      provider(ollama),
-    );
 
-    await expect(resilient.generate(prompt)).resolves.toBe("Fallback answer");
-    expect(cloudflare).toHaveBeenCalledOnce();
-    expect(ollama).toHaveBeenCalledOnce();
-  });
+      await expect(resilient.generate(prompt)).resolves.toBe("Fallback answer");
+      expect(cloudflare).toHaveBeenCalledOnce();
+      expect(ollama).toHaveBeenCalledOnce();
+    },
+  );
 
   it("uses Ollama when Cloudflare configuration is missing", async () => {
     const cloudflare = vi.fn().mockRejectedValue(
@@ -78,6 +86,58 @@ describe("ResilientAIProvider", () => {
       reason: "unavailable",
     });
     expect(cloudflare).toHaveBeenCalledOnce();
+    expect(ollama).toHaveBeenCalledOnce();
+  });
+
+  it("converts an Ollama configuration failure to provider unavailable", async () => {
+    const cloudflare = vi.fn().mockRejectedValue(
+      new AIProviderError("cloudflare", "timeout", {
+        fallbackAllowed: true,
+      }),
+    );
+    const ollama = vi.fn().mockRejectedValue(
+      new AIProviderError("ollama", "configuration", {
+        fallbackAllowed: false,
+      }),
+    );
+    const resilient = new ResilientAIProvider(
+      provider(cloudflare),
+      provider(ollama),
+    );
+
+    await expect(resilient.generate(prompt)).rejects.toMatchObject({
+      provider: "resilient",
+      reason: "unavailable",
+    });
+    expect(cloudflare).toHaveBeenCalledOnce();
+    expect(ollama).toHaveBeenCalledOnce();
+  });
+
+  it("waits for the Cloudflare failure before starting one fallback attempt", async () => {
+    let rejectCloudflare: ((error: Error) => void) | undefined;
+    const cloudflare = vi.fn(
+      () =>
+        new Promise<string>((_resolve, reject) => {
+          rejectCloudflare = reject;
+        }),
+    );
+    const ollama = vi.fn().mockResolvedValue("Fallback answer");
+    const resilient = new ResilientAIProvider(
+      provider(cloudflare),
+      provider(ollama),
+    );
+
+    const generation = resilient.generate(prompt);
+    await Promise.resolve();
+    expect(cloudflare).toHaveBeenCalledOnce();
+    expect(ollama).not.toHaveBeenCalled();
+
+    rejectCloudflare?.(
+      new AIProviderError("cloudflare", "timeout", {
+        fallbackAllowed: true,
+      }),
+    );
+    await expect(generation).resolves.toBe("Fallback answer");
     expect(ollama).toHaveBeenCalledOnce();
   });
 

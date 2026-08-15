@@ -1,4 +1,4 @@
-import { FiSend, FiTrash2, FiX } from "react-icons/fi";
+import { FiRefreshCw, FiSend, FiTrash2, FiX } from "react-icons/fi";
 
 import { ChatMessage } from "@/components/features/chat/ChatMessage";
 import { SuggestedQuestions } from "@/components/features/chat/SuggestedQuestions";
@@ -17,7 +17,8 @@ interface ChatPanelLabels {
   inputLabel: string;
   loading: string;
   placeholder: string;
-  retryGuidance: string;
+  errorGuidance: string | null;
+  retry: string;
   send: string;
   suggestions: string;
   title: string;
@@ -25,6 +26,7 @@ interface ChatPanelLabels {
 }
 
 interface ChatPanelProps {
+  canRetry: boolean;
   errorMessage: string | null;
   input: string;
   inputError: string | null;
@@ -36,6 +38,7 @@ interface ChatPanelProps {
   onClear: () => void;
   onClose: () => void;
   onInputChange: (value: string) => void;
+  onRetry: () => void;
   onSend: () => void;
   onSuggestionSelect: (question: string) => void;
   panelId: string;
@@ -44,6 +47,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({
+  canRetry,
   errorMessage,
   input,
   inputError,
@@ -55,6 +59,7 @@ export function ChatPanel({
   onClear,
   onClose,
   onInputChange,
+  onRetry,
   onSend,
   onSuggestionSelect,
   panelId,
@@ -182,7 +187,25 @@ export function ChatPanel({
             className="mb-2! rounded-lg border border-red-300/25 bg-red-400/10 px-3! py-2! text-xs! leading-snug! text-red-100"
           >
             <p>{errorMessage}</p>
-            <p className="mt-1! text-red-100/75">{labels.retryGuidance}</p>
+            {labels.errorGuidance ? (
+              <p className="mt-1! text-red-100/75">{labels.errorGuidance}</p>
+            ) : null}
+            {canRetry ? (
+              <button
+                type="button"
+                onClick={onRetry}
+                disabled={isLoading}
+                className="mt-2! inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-red-100/35 bg-red-100/10 px-2.5! py-1.5! font-semibold text-red-50 transition-colors hover:bg-red-100/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent) disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
+              >
+                <FiRefreshCw
+                  aria-hidden="true"
+                  className={
+                    isLoading ? "animate-spin motion-reduce:animate-none" : ""
+                  }
+                />
+                {labels.retry}
+              </button>
+            ) : null}
           </div>
         ) : null}
 

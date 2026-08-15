@@ -6,15 +6,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatLauncher } from "@/components/features/chat/ChatLauncher";
 import { ChatPanel } from "@/components/features/chat/ChatPanel";
 import {
+  requestChatAnswer,
+  type ChatRequestError,
+} from "@/components/features/chat/chatClient";
+import {
   confirmPendingChatHistory,
   parseStoredChatMessages,
   preparePendingChatHistory,
   recoverPendingChatHistory,
   toApiRequestMessages,
+  type PendingChatHistory,
 } from "@/components/features/chat/chatHistory";
-import { isChatEvidenceSource, MAX_PUBLIC_SOURCES } from "@/lib/chatEvidence";
 import {
-  MAX_ASSISTANT_MESSAGE_LENGTH,
   MAX_HISTORY_MESSAGES,
   MAX_USER_MESSAGE_LENGTH,
 } from "@/lib/ai/validation";
@@ -22,15 +25,9 @@ import type {
   ChatEvidenceSource,
   ChatDisplayMessage,
   ChatLocale,
-  ChatResponse,
 } from "@/types/chat";
 
 const PANEL_ID = "recruiter-chat-panel";
-
-type RequestError = {
-  type: "generic" | "unavailable" | "busy" | "rate_limited" | "forbidden";
-  retryAfterSeconds?: number;
-};
 
 function createMessage(
   role: ChatDisplayMessage["role"],
@@ -43,21 +40,6 @@ function createMessage(
     content,
     ...(sources && sources.length > 0 ? { sources } : {}),
   };
-}
-
-function isChatResponse(value: unknown): value is ChatResponse {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "message" in value &&
-    typeof value.message === "string" &&
-    value.message.trim().length > 0 &&
-    value.message.length <= MAX_ASSISTANT_MESSAGE_LENGTH &&
-    "sources" in value &&
-    Array.isArray(value.sources) &&
-    value.sources.length <= MAX_PUBLIC_SOURCES &&
-    value.sources.every(isChatEvidenceSource)
-  );
 }
 
 function toStringList(value: unknown): string[] {
@@ -83,7 +65,11 @@ export function RecruiterChat() {
   const [pendingUserMessage, setPendingUserMessage] =
     useState<ChatDisplayMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [requestError, setRequestError] = useState<RequestError | null>(null);
+  const [requestError, setRequestError] = useState<ChatRequestError | null>(
+    null,
+  );
+  const [retryablePending, setRetryablePending] =
+    useState<PendingChatHistory | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [hasRestored, setHasRestored] = useState(false);
   const launcherRef = useRef<HTMLButtonElement>(null);
@@ -169,6 +155,58 @@ export function RecruiterChat() {
     requestAnimationFrame(() => launcherRef.current?.focus());
   }, []);
 
+  const performRequest = useCallback(
+    async (pendingHistory: PendingChatHistory, isRetry: boolean) => {
+      if (requestInFlightRef.current) return;
+      requestInFlightRef.current = true;
+      setInputError(null);
+      if (!isRetry) setRequestError(null);
+      setIsLoading(true);
+      setPendingUserMessage(pendingHistory.pendingUserMessage);
+
+      const recoverFailedRequest = () => {
+        const recovered = recoverPendingChatHistory(pendingHistory);
+        setMessages(recovered.confirmedMessages);
+        setPendingUserMessage(null);
+        setRetryablePending(null);
+        setInput(recovered.retryInput);
+        requestAnimationFrame(() => inputRef.current?.focus());
+      };
+
+      const result = await requestChatAnswer(
+        locale,
+        toApiRequestMessages(pendingHistory.requestMessages),
+      );
+
+      if (!result.ok) {
+        setRequestError(result.error);
+        if (result.error.type === "provider_unavailable") {
+          setMessages(pendingHistory.confirmedMessages);
+          setPendingUserMessage(pendingHistory.pendingUserMessage);
+          setRetryablePending(pendingHistory);
+        } else {
+          recoverFailedRequest();
+        }
+      } else {
+        const assistantMessage = createMessage(
+          "assistant",
+          result.response.message.trim(),
+          result.response.sources,
+        );
+        setMessages(
+          confirmPendingChatHistory(pendingHistory, assistantMessage),
+        );
+        setPendingUserMessage(null);
+        setRetryablePending(null);
+        setRequestError(null);
+      }
+
+      requestInFlightRef.current = false;
+      setIsLoading(false);
+    },
+    [locale],
+  );
+
   const sendMessage = useCallback(
     async (content: string) => {
       const normalizedContent = content.trim();
@@ -180,88 +218,24 @@ export function RecruiterChat() {
 
       if (
         normalizedContent.length > MAX_USER_MESSAGE_LENGTH ||
-        requestInFlightRef.current
+        requestInFlightRef.current ||
+        retryablePending
       ) {
         return;
       }
 
       const userMessage = createMessage("user", normalizedContent);
       const pendingHistory = preparePendingChatHistory(messages, userMessage);
-
-      requestInFlightRef.current = true;
       setInput("");
-      setInputError(null);
-      setRequestError(null);
-      setIsLoading(true);
-      setPendingUserMessage(userMessage);
-
-      const recoverFailedRequest = () => {
-        const recovered = recoverPendingChatHistory(pendingHistory);
-        setMessages(recovered.confirmedMessages);
-        setPendingUserMessage(null);
-        setInput(recovered.retryInput);
-        requestAnimationFrame(() => inputRef.current?.focus());
-      };
-
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            locale,
-            messages: toApiRequestMessages(pendingHistory.requestMessages),
-          }),
-        });
-
-        let payload: unknown = null;
-        try {
-          payload = await response.json();
-        } catch {
-          // A malformed response is handled as a generic user-facing error.
-        }
-
-        if (!response.ok || !isChatResponse(payload)) {
-          if (response.status === 429) {
-            const retryAfterSeconds = Number(
-              response.headers.get("retry-after"),
-            );
-            setRequestError({
-              type: "rate_limited",
-              retryAfterSeconds:
-                Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
-                  ? Math.ceil(retryAfterSeconds)
-                  : undefined,
-            });
-          } else if (response.status === 403) {
-            setRequestError({ type: "forbidden" });
-          } else if (response.status === 503) {
-            setRequestError({ type: "busy" });
-          } else {
-            setRequestError({ type: "generic" });
-          }
-          recoverFailedRequest();
-          return;
-        }
-
-        const assistantMessage = createMessage(
-          "assistant",
-          payload.message.trim(),
-          payload.sources,
-        );
-        setMessages(
-          confirmPendingChatHistory(pendingHistory, assistantMessage),
-        );
-        setPendingUserMessage(null);
-      } catch {
-        setRequestError({ type: "unavailable" });
-        recoverFailedRequest();
-      } finally {
-        requestInFlightRef.current = false;
-        setIsLoading(false);
-      }
+      await performRequest(pendingHistory, false);
     },
-    [locale, messages, t],
+    [messages, performRequest, retryablePending, t],
   );
+
+  const retryFailedMessage = useCallback(async () => {
+    if (!retryablePending || requestInFlightRef.current) return;
+    await performRequest(retryablePending, true);
+  }, [performRequest, retryablePending]);
 
   const clearConversation = useCallback(() => {
     setMessages([greetingMessage]);
@@ -269,6 +243,7 @@ export function RecruiterChat() {
     setInput("");
     setInputError(null);
     setRequestError(null);
+    setRetryablePending(null);
     try {
       sessionStorage.removeItem(storageKey);
     } catch {
@@ -293,12 +268,15 @@ export function RecruiterChat() {
     inputLabel: t("inputLabel"),
     loading: t("loading"),
     placeholder: t("inputPlaceholder"),
-    retryGuidance:
+    errorGuidance:
       requestError?.type === "rate_limited" && requestError.retryAfterSeconds
         ? t("rateLimitRetryGuidance", {
             seconds: requestError.retryAfterSeconds,
           })
-        : t("retryGuidance"),
+        : requestError?.type === "provider_unavailable"
+          ? null
+          : t("retryGuidance"),
+    retry: t("retryLabel"),
     send: t("sendLabel"),
     suggestions: t("suggestionsLabel"),
     title: t("panelTitle"),
@@ -327,18 +305,23 @@ export function RecruiterChat() {
           isLoading={isLoading}
           showSuggestions={showSuggestions}
           errorMessage={
-            requestError?.type === "unavailable"
+            requestError?.type === "network_unavailable"
               ? t("providerUnavailableError")
-              : requestError?.type === "busy"
-                ? t("assistantBusyError")
+              : requestError?.type === "provider_unavailable"
+                ? t("assistantGenerationError")
                 : requestError?.type === "rate_limited"
                   ? t("rateLimitedError")
-                  : requestError?.type === "forbidden"
-                    ? t("requestRejectedError")
-                    : requestError?.type === "generic"
-                      ? t("genericApiError")
-                      : null
+                  : requestError?.type === "invalid_request"
+                    ? t("invalidRequestError")
+                    : requestError?.type === "forbidden"
+                      ? t("requestRejectedError")
+                      : requestError?.type === "internal"
+                        ? t("internalError")
+                        : requestError?.type === "generic"
+                          ? t("genericApiError")
+                          : null
           }
+          canRetry={Boolean(retryablePending)}
           onInputChange={(value) => {
             setInput(value);
             if (inputError) {
@@ -346,6 +329,7 @@ export function RecruiterChat() {
             }
           }}
           onSend={() => void sendMessage(input)}
+          onRetry={() => void retryFailedMessage()}
           onSuggestionSelect={(question) => void sendMessage(question)}
           onClear={clearConversation}
           onClose={close}

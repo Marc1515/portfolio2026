@@ -29,6 +29,19 @@ export type ChatTelemetryFailureReason =
 
 export type ChatTelemetryEvent =
   | {
+      type: "provider_attempt";
+      provider: AnsweringProvider;
+      outcome: "success";
+      durationMs: number;
+    }
+  | {
+      type: "provider_attempt";
+      provider: AnsweringProvider;
+      outcome: "failure";
+      reason: ChatTelemetryFailureReason;
+      durationMs: number;
+    }
+  | {
       type: "request_completed";
       queryKind: RecruiterQueryKind;
       provider: AnsweringProvider;
