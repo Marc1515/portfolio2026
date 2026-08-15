@@ -1,11 +1,14 @@
 import "server-only";
 
-import type { AIProviderFailureReason } from "@/lib/ai/providerErrors";
+import type {
+  AIProviderDiagnosticMetadata,
+  AIProviderFailureReason,
+} from "@/lib/ai/providerErrors";
 import type { AIModelMessage } from "@/lib/ai/promptBuilder";
 
 export type AnsweringProvider = "cloudflare" | "ollama";
 
-export interface AIProviderAttemptResult {
+export interface AIProviderAttemptResult extends Partial<AIProviderDiagnosticMetadata> {
   provider: AnsweringProvider;
   outcome: "success" | "failure";
   durationMs: number;

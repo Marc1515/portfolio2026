@@ -4,6 +4,7 @@ import { createChatPostHandler } from "@/app/api/chat/route";
 import { recruiterKnowledgeEntries } from "@/data/recruiterKnowledge";
 import type { AIProviderGenerateOptions } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
+import { ResilientAIProvider } from "@/lib/ai/resilientProvider";
 import { MAX_REQUEST_BODY_LENGTH } from "@/lib/ai/validation";
 import type { ChatTelemetryEvent } from "@/lib/observability/chatTelemetry";
 
@@ -127,6 +128,7 @@ describe("chat route protections", () => {
         expect.objectContaining({
           type: "request_handled_locally",
           reason: kind,
+          requestId: expect.stringMatching(/^[a-f0-9]{12}$/),
         }),
       ]);
       expect(JSON.stringify(telemetryEvents)).not.toContain(question);
@@ -287,6 +289,45 @@ Responsibilities:
       retryable: true,
     });
   });
+
+  it.each(["timeout", "busy"] as const)(
+    "keeps the public failure recoverable when invalid Cloudflare output is followed by Ollama %s",
+    async (reason) => {
+      const cloudflareGenerate = vi.fn().mockRejectedValue(
+        new AIProviderError("cloudflare", "invalid_response", {
+          fallbackAllowed: true,
+          diagnostic: { diagnosticCode: "incomplete_generation" },
+        }),
+      );
+      const ollamaGenerate = vi
+        .fn()
+        .mockRejectedValue(
+          new AIProviderError("ollama", reason, { fallbackAllowed: false }),
+        );
+      const provider = new ResilientAIProvider(
+        { generate: cloudflareGenerate },
+        { generate: ollamaGenerate },
+      );
+      const post = createChatPostHandler({
+        providerFactory: async () => provider,
+        rateLimiter: { check: () => ({ allowed: true }) },
+        clientIdentifier: () => "client",
+        originAllowed: () => true,
+      });
+
+      const response = await post(request());
+      const payload = await response.json();
+
+      expect(response.status).toBe(503);
+      expect(payload).toEqual({
+        error: "provider_unavailable",
+        retryable: true,
+      });
+      expect(payload).not.toHaveProperty("provider");
+      expect(cloudflareGenerate).toHaveBeenCalledOnce();
+      expect(ollamaGenerate).toHaveBeenCalledOnce();
+    },
+  );
 
   it("returns 500 for an unexpected provider exception", async () => {
     const post = createChatPostHandler({
@@ -480,6 +521,7 @@ Requirements:
       originAllowed: () => true,
       telemetry: { record: (event) => events.push(event) },
       performanceNow: () => times.shift() ?? 225,
+      requestId: () => "req000000001",
     });
 
     const response = await post(request(undefined, secretQuestion));
@@ -487,14 +529,17 @@ Requirements:
 
     expect(response.status).toBe(200);
     expect(payload).not.toHaveProperty("provider");
+    expect(payload).not.toHaveProperty("requestId");
     expect(events).toEqual([
       {
+        requestId: "req000000001",
         type: "provider_attempt",
         provider: "cloudflare",
         outcome: "success",
         durationMs: 75,
       },
       expect.objectContaining({
+        requestId: "req000000001",
         type: "request_completed",
         provider: "cloudflare",
         durationMs: 125,
@@ -525,6 +570,9 @@ Requirements:
           outcome: "failure",
           reason: "invalid_response",
           durationMs: 15_000,
+          diagnosticCode: "incomplete_generation",
+          finishReason: "length",
+          outputCharacterCount: 0,
         });
         options?.onAttempt?.({
           provider: "ollama",
@@ -540,6 +588,7 @@ Requirements:
       clientIdentifier: () => "client",
       originAllowed: () => true,
       telemetry: { record: (event) => events.push(event) },
+      requestId: () => "req000000002",
     });
 
     const response = await post(request());
@@ -549,19 +598,25 @@ Requirements:
     expect(payload).not.toHaveProperty("provider");
     expect(events).toEqual([
       {
+        requestId: "req000000002",
         type: "provider_attempt",
         provider: "cloudflare",
         outcome: "failure",
         reason: "invalid_response",
         durationMs: 15_000,
+        diagnosticCode: "incomplete_generation",
+        finishReason: "length",
+        outputCharacterCount: 0,
       },
       {
+        requestId: "req000000002",
         type: "provider_attempt",
         provider: "ollama",
         outcome: "success",
         durationMs: 8_200,
       },
       expect.objectContaining({
+        requestId: "req000000002",
         type: "request_completed",
         provider: "ollama",
         providerDurationMs: 8_200,
@@ -583,6 +638,7 @@ Requirements:
       clientIdentifier: () => "client",
       originAllowed: () => true,
       telemetry: { record: (event) => events.push(event) },
+      requestId: () => "req000000003",
     });
 
     const response = await post(request(undefined, secretQuestion));
@@ -622,6 +678,7 @@ Requirements:
       clientIdentifier: () => "client",
       originAllowed: () => true,
       telemetry: { record: (event) => events.push(event) },
+      requestId: () => "req000000004",
     });
 
     const response = await post(request());
@@ -633,6 +690,7 @@ Requirements:
     });
     expect(events).toEqual([
       {
+        requestId: "req000000004",
         type: "provider_attempt",
         provider: "ollama",
         outcome: "failure",
@@ -640,6 +698,7 @@ Requirements:
         reason: "timeout",
       },
       expect.objectContaining({
+        requestId: "req000000004",
         type: "request_failed",
         stage: "ollama",
         reason: "timeout",

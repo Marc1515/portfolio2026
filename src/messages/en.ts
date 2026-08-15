@@ -27,6 +27,8 @@ const en = {
     closeLabel: "Close professional assistant",
     clearLabel: "Clear conversation",
     loading: "Reviewing Marc's verified profile…",
+    longRequestNotice:
+      "This is a detailed request. Generating a thorough answer may take a little longer than usual.",
     characterCounter: "{count}/{max} characters",
     emptyInput: "Enter a question before sending.",
     emptyConversation:

@@ -14,7 +14,7 @@ import type {
 } from "@/types/chat";
 
 export const MAX_RETRIEVED_ENTRIES = 6;
-export const MAX_ROLE_COMPARISON_ENTRIES = 10;
+export const MAX_ROLE_COMPARISON_ENTRIES = 7;
 const MAX_PREVIOUS_VISITOR_QUESTIONS = 2;
 
 export type RecruiterQueryKind = "general" | "role_comparison" | "contact";
@@ -203,18 +203,13 @@ const SPECIALIST_CATEGORIES = new Set<RecruiterKnowledgeCategory>([
   "testing",
 ]);
 
-const ROLE_CATEGORY_ORDER: RecruiterKnowledgeCategory[] = [
-  "experience",
-  "commercial_skills",
-  "project",
-  "technologies",
-  "testing",
-  "deployment",
-  "knowledge",
-  "education",
-  "languages",
-  "availability",
-  "summary",
+const ROLE_COMPARISON_CORE_ENTRY_IDS = [
+  "summary-profile",
+  "experience-delinternet",
+  "project-ai-code-review-trainer",
+  "technologies-public",
+  "testing-quality",
+  "deployment-infrastructure",
 ];
 
 export function normalizeRetrievalText(value: string): string {
@@ -408,20 +403,20 @@ export function retrieveRecruiterKnowledge(
     queryKind === "role_comparison"
       ? MAX_ROLE_COMPARISON_ENTRIES
       : MAX_RETRIEVED_ENTRIES;
-  const selected = ranked.slice(0, maximum).map((result) => result.entry);
+  const selected =
+    queryKind === "role_comparison"
+      ? ROLE_COMPARISON_CORE_ENTRY_IDS.map((id) =>
+          indexedEntries.find((indexed) => indexed.entry.id === id),
+        )
+          .filter((indexed): indexed is IndexedEntry => Boolean(indexed))
+          .map((indexed) => indexed.entry)
+      : ranked.slice(0, maximum).map((result) => result.entry);
 
-  if (queryKind === "role_comparison" && selected.length < maximum) {
-    for (const category of ROLE_CATEGORY_ORDER) {
-      for (const indexed of indexedEntries) {
-        if (
-          selected.length >= maximum ||
-          indexed.entry.category !== category ||
-          indexed.entry.directContactOnly ||
-          selected.some((entry) => entry.id === indexed.entry.id)
-        ) {
-          continue;
-        }
-        selected.push(indexed.entry);
+  if (queryKind === "role_comparison") {
+    for (const result of ranked) {
+      if (selected.length >= maximum) break;
+      if (!selected.some((entry) => entry.id === result.entry.id)) {
+        selected.push(result.entry);
       }
     }
   }

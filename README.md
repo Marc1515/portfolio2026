@@ -68,7 +68,7 @@ CLOUDFLARE_AI_MODEL=@cf/zai-org/glm-4.7-flash
 
 OLLAMA_BASE_URL=http://ollama:11434
 OLLAMA_MODEL=qwen2.5-coder:3b
-OLLAMA_REQUEST_TIMEOUT_MS=30000
+OLLAMA_REQUEST_TIMEOUT_MS=90000
 OLLAMA_KEEP_ALIVE=2m
 OLLAMA_MAX_CONCURRENT_REQUESTS=1
 OLLAMA_FALLBACK_DAILY_LIMIT=25
@@ -94,7 +94,7 @@ Answers are grounded only in `src/data/recruiterKnowledge.ts`. Browser-provided 
 
 ### Privacy-safe telemetry and readiness
 
-When `CHAT_TELEMETRY_ENABLED=true`, the server writes centralized JSON operational events. Each provider attempt records only the internal provider name, success/failure outcome, bounded failure reason when applicable, and duration. Successful request events contain only query classification, final answering provider, total duration, provider duration, retrieved-entry count, and source count. Failure events contain only a bounded stage, safe reason, and total duration. Provider identity and timings are never included in the public API response.
+When `CHAT_TELEMETRY_ENABLED=true`, the server writes centralized JSON operational events. Every event has the same short, random, server-generated request ID for internal correlation. Each provider attempt records only the internal provider name, success/failure outcome, bounded failure reason when applicable, and duration. A Cloudflare invalid response may additionally record only a bounded diagnostic code, validated finish reason, and bounded output-character count. Successful request events contain only query classification, final answering provider, total duration, provider duration, retrieved-entry count, and source count. Failure events contain only a bounded stage, safe reason, and total duration. Prompts, questions, answers, reasoning fields, response bodies, evidence content, credentials, and request IDs are never included in the public API response.
 
 `GET /api/chat/health` makes no provider call and returns one uncached configuration-only status:
 
@@ -121,6 +121,17 @@ pnpm chat:smoke:role-comparison
 
 Set `CHAT_SMOKE_BASE_URL=https://your-deployment.example` to target a non-local deployment. The first command makes one fixed recruiter request; the second sends a fixed representative role description through the normal provider stack. Both validate only the bounded public response contract and print no prompt, answer, credentials, provider configuration, or response body.
 
+From the deployed development container, run the representative role comparison with:
+
+```bash
+docker exec \
+  -e CHAT_SMOKE_BASE_URL=https://test.marcespana.com \
+  portfolio2026-dev \
+  node scripts/chat-smoke.mjs --role-comparison
+```
+
+A successful fallback that runs inference on CPU can take noticeably longer than a Cloudflare response. This is expected when the bounded request completes successfully; the smoke command does not provide an ETA or provider progress.
+
 ### Private Ollama network and connectivity
 
 Development and production portfolio containers join both the existing `traefik-proxy` network and the dedicated external `portfolio-ai` network. Deploy workflows create `portfolio-ai` as an internal Docker network when needed and attach the independently managed container named exactly `ollama` when it exists. Ollama stays outside this Compose project and must not have a public Traefik route or a `0.0.0.0:11434` port binding. A host-only `127.0.0.1:11434:11434` binding may remain for host administration; containers use private Docker DNS at `http://ollama:11434`.
@@ -130,6 +141,7 @@ After deployment, keep these non-secret values in the untracked VPS `.env` file:
 ```env
 OLLAMA_BASE_URL=http://ollama:11434
 OLLAMA_MODEL=qwen2.5-coder:3b
+OLLAMA_REQUEST_TIMEOUT_MS=90000
 ```
 
 Safely inspect the runtime topology without printing environment values or provider output:
@@ -160,6 +172,7 @@ When an `Origin` header is present, `/api/chat` accepts only the request's own o
 - [ ] Cloudflare account ID, API token, and model are configured server-side.
 - [ ] The external `portfolio-ai` network reports `internal=true`, and both the portfolio and `ollama` containers belong to it.
 - [ ] `OLLAMA_BASE_URL=http://ollama:11434` and `OLLAMA_MODEL=qwen2.5-coder:3b` are set in the untracked VPS `.env`.
+- [ ] `OLLAMA_REQUEST_TIMEOUT_MS=90000` is set for the bounded CPU fallback window.
 - [ ] `node scripts/ollama-smoke.mjs` passes from inside the deployed portfolio container.
 - [ ] `CHAT_ALLOWED_ORIGINS` matches the deployed HTTPS origins.
 - [ ] Per-minute, per-client daily, and global daily limits were reviewed.
