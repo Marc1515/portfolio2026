@@ -36,6 +36,13 @@ describe("StructuredChatTelemetry", () => {
 
   it.each<ChatTelemetryEvent>([
     {
+      type: "provider_attempt",
+      provider: "cloudflare",
+      outcome: "failure",
+      reason: "timeout",
+      durationMs: 15_000,
+    },
+    {
       type: "request_completed",
       queryKind: "role_comparison",
       provider: "ollama",
@@ -67,23 +74,31 @@ describe("StructuredChatTelemetry", () => {
     expect(lines).toHaveLength(1);
     const emitted = JSON.parse(lines[0] ?? "{}") as Record<string, unknown>;
     expect(emitted.event).toBe("recruiter_chat");
-    expect(Object.keys(emitted).sort()).toEqual(
-      (event.type === "request_completed"
+    const expectedFields =
+      event.type === "provider_attempt"
         ? [
             "durationMs",
             "event",
+            "outcome",
             "provider",
-            "providerDurationMs",
-            "queryKind",
-            "retrievedEntryCount",
-            "sourceCount",
+            ...(event.outcome === "failure" ? ["reason"] : []),
             "type",
           ]
-        : event.type === "request_failed"
-          ? ["durationMs", "event", "reason", "stage", "type"]
-          : ["durationMs", "event", "reason", "type"]
-      ).sort(),
-    );
+        : event.type === "request_completed"
+          ? [
+              "durationMs",
+              "event",
+              "provider",
+              "providerDurationMs",
+              "queryKind",
+              "retrievedEntryCount",
+              "sourceCount",
+              "type",
+            ]
+          : event.type === "request_failed"
+            ? ["durationMs", "event", "reason", "stage", "type"]
+            : ["durationMs", "event", "reason", "type"];
+    expect(Object.keys(emitted).sort()).toEqual(expectedFields.sort());
     for (const field of forbiddenFields) {
       expect(emitted).not.toHaveProperty(field);
     }

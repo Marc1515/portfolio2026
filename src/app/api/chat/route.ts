@@ -63,7 +63,11 @@ function errorResponse(
   status: number,
   additionalHeaders: Record<string, string> = {},
 ) {
-  return Response.json({ error } satisfies ChatErrorResponse, {
+  const body: ChatErrorResponse = {
+    error,
+    ...(error === "provider_unavailable" ? { retryable: true } : {}),
+  };
+  return Response.json(body, {
     status,
     headers: { ...RESPONSE_HEADERS, ...additionalHeaders },
   });
@@ -199,6 +203,22 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
       const message = await provider.generate(messages, {
         onAttempt: (attempt) => {
           latestProviderAttempt = attempt;
+          record(
+            attempt.outcome === "success"
+              ? {
+                  type: "provider_attempt",
+                  provider: attempt.provider,
+                  outcome: "success",
+                  durationMs: attempt.durationMs,
+                }
+              : {
+                  type: "provider_attempt",
+                  provider: attempt.provider,
+                  outcome: "failure",
+                  reason: attempt.reason ?? "internal",
+                  durationMs: attempt.durationMs,
+                },
+          );
         },
       });
       stage = "internal";

@@ -108,6 +108,18 @@ describe("pending chat history", () => {
     expect(recovered.retryInput).toBe("Question to retry");
   });
 
+  it("retains a failed long job description as one pending bubble for retry", () => {
+    const jobDescription = "A".repeat(3_500);
+    const failedMessage = message("role", "user", jobDescription);
+    const pending = preparePendingChatHistory(confirmedHistory, failedMessage);
+
+    expect(pending.pendingUserMessage).toBe(failedMessage);
+    expect(pending.requestMessages.at(-1)).toBe(failedMessage);
+    expect(
+      pending.requestMessages.filter((item) => item.id === failedMessage.id),
+    ).toHaveLength(1);
+  });
+
   it("restores old stored messages without sources", () => {
     expect(parseStoredChatMessages(JSON.stringify(confirmedHistory))).toEqual(
       confirmedHistory,

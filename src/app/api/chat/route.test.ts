@@ -25,6 +25,14 @@ function request(
   });
 }
 
+const realisticRoleDescription = `We're hiring for an international tech company looking to bring on Junior Full Stack Engineers for a brand-new product division focused on workforce education and certification.
+
+This is an opportunity to join a greenfield engineering team at an early stage, working on a modern Python/React product with the backing and stability of an established global business.
+
+The team is building a next-generation certification and assessment platform for regulated industries including aviation, industrial safety, government, and vocational training, leveraging modern AI capabilities and contemporary engineering practices.
+
+If you're excited by the idea of learning quickly, working closely with experienced engineers, and helping shape a product from the ground up, this role is for you.`;
+
 describe("chat route protections", () => {
   it.each([
     {
@@ -195,6 +203,25 @@ Responsibilities:
     );
   });
 
+  it("accepts the realistic role description, retrieves evidence, builds the comparison prompt, and attempts the provider", async () => {
+    const generate = vi.fn().mockResolvedValue("Role comparison answer");
+    const post = createChatPostHandler({
+      providerFactory: async () => ({ generate }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+    });
+
+    const response = await post(request(undefined, realisticRoleDescription));
+
+    expect(response.status).toBe(200);
+    expect(generate).toHaveBeenCalledOnce();
+    const providerMessages = generate.mock.calls[0]?.[0];
+    expect(providerMessages?.at(-1)?.content).toBe(realisticRoleDescription);
+    expect(providerMessages?.[0]?.content).toContain("Strong verified matches");
+    expect(providerMessages?.[0]?.content).toContain("React");
+  });
+
   it("does not create or call a provider after rate limiting rejects", async () => {
     const generate = vi.fn();
     const providerFactory = vi.fn(async () => ({ generate }));
@@ -257,6 +284,7 @@ Responsibilities:
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({
       error: "provider_unavailable",
+      retryable: true,
     });
   });
 
@@ -460,6 +488,12 @@ Requirements:
     expect(response.status).toBe(200);
     expect(payload).not.toHaveProperty("provider");
     expect(events).toEqual([
+      {
+        type: "provider_attempt",
+        provider: "cloudflare",
+        outcome: "success",
+        durationMs: 75,
+      },
       expect.objectContaining({
         type: "request_completed",
         provider: "cloudflare",
@@ -480,6 +514,59 @@ Requirements:
     ]) {
       expect(events[0]).not.toHaveProperty(forbidden);
     }
+  });
+
+  it("records every provider attempt and attributes fallback success to Ollama", async () => {
+    const events: ChatTelemetryEvent[] = [];
+    const generate = vi.fn(
+      async (_messages, options?: AIProviderGenerateOptions) => {
+        options?.onAttempt?.({
+          provider: "cloudflare",
+          outcome: "failure",
+          reason: "invalid_response",
+          durationMs: 15_000,
+        });
+        options?.onAttempt?.({
+          provider: "ollama",
+          outcome: "success",
+          durationMs: 8_200,
+        });
+        return "Fallback answer";
+      },
+    );
+    const post = createChatPostHandler({
+      providerFactory: async () => ({ generate }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+      telemetry: { record: (event) => events.push(event) },
+    });
+
+    const response = await post(request());
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).not.toHaveProperty("provider");
+    expect(events).toEqual([
+      {
+        type: "provider_attempt",
+        provider: "cloudflare",
+        outcome: "failure",
+        reason: "invalid_response",
+        durationMs: 15_000,
+      },
+      {
+        type: "provider_attempt",
+        provider: "ollama",
+        outcome: "success",
+        durationMs: 8_200,
+      },
+      expect.objectContaining({
+        type: "request_completed",
+        provider: "ollama",
+        providerDurationMs: 8_200,
+      }),
+    ]);
   });
 
   it("sanitizes telemetry for unexpected internal exceptions", async () => {
@@ -542,8 +629,16 @@ Requirements:
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({
       error: "provider_unavailable",
+      retryable: true,
     });
     expect(events).toEqual([
+      {
+        type: "provider_attempt",
+        provider: "ollama",
+        outcome: "failure",
+        durationMs: 30_000,
+        reason: "timeout",
+      },
       expect.objectContaining({
         type: "request_failed",
         stage: "ollama",

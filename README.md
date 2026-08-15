@@ -66,8 +66,8 @@ CLOUDFLARE_ACCOUNT_ID=
 CLOUDFLARE_API_TOKEN=
 CLOUDFLARE_AI_MODEL=@cf/zai-org/glm-4.7-flash
 
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=
+OLLAMA_BASE_URL=http://ollama:11434
+OLLAMA_MODEL=qwen2.5-coder:3b
 OLLAMA_REQUEST_TIMEOUT_MS=30000
 OLLAMA_KEEP_ALIVE=2m
 OLLAMA_MAX_CONCURRENT_REQUESTS=1
@@ -94,7 +94,7 @@ Answers are grounded only in `src/data/recruiterKnowledge.ts`. Browser-provided 
 
 ### Privacy-safe telemetry and readiness
 
-When `CHAT_TELEMETRY_ENABLED=true`, the server writes centralized JSON operational events. Successful events contain only query classification, answering provider, total duration, provider duration, retrieved-entry count, and source count. Failure events contain only a bounded stage, safe reason, and total duration. Provider identity and timings are never included in the public API response.
+When `CHAT_TELEMETRY_ENABLED=true`, the server writes centralized JSON operational events. Each provider attempt records only the internal provider name, success/failure outcome, bounded failure reason when applicable, and duration. Successful request events contain only query classification, final answering provider, total duration, provider duration, retrieved-entry count, and source count. Failure events contain only a bounded stage, safe reason, and total duration. Provider identity and timings are never included in the public API response.
 
 `GET /api/chat/health` makes no provider call and returns one uncached configuration-only status:
 
@@ -116,9 +116,36 @@ The real-provider smoke test is manual and is not run by CI or the build. Start 
 
 ```bash
 pnpm chat:smoke
+pnpm chat:smoke:role-comparison
 ```
 
-Set `CHAT_SMOKE_BASE_URL=https://your-deployment.example` to target a non-local deployment. The script makes one fixed recruiter request and validates only the bounded public response contract. It prints no prompt, answer, credentials, provider configuration, or response body.
+Set `CHAT_SMOKE_BASE_URL=https://your-deployment.example` to target a non-local deployment. The first command makes one fixed recruiter request; the second sends a fixed representative role description through the normal provider stack. Both validate only the bounded public response contract and print no prompt, answer, credentials, provider configuration, or response body.
+
+### Private Ollama network and connectivity
+
+Development and production portfolio containers join both the existing `traefik-proxy` network and the dedicated external `portfolio-ai` network. Deploy workflows create `portfolio-ai` as an internal Docker network when needed and attach the independently managed container named exactly `ollama` when it exists. Ollama stays outside this Compose project and must not have a public Traefik route or a `0.0.0.0:11434` port binding. A host-only `127.0.0.1:11434:11434` binding may remain for host administration; containers use private Docker DNS at `http://ollama:11434`.
+
+After deployment, keep these non-secret values in the untracked VPS `.env` file:
+
+```env
+OLLAMA_BASE_URL=http://ollama:11434
+OLLAMA_MODEL=qwen2.5-coder:3b
+```
+
+Safely inspect the runtime topology without printing environment values or provider output:
+
+```bash
+docker container ls -a --filter name=^/ollama$ --format '{{.Names}}'
+docker network inspect portfolio-ai --format 'internal={{.Internal}} containers={{range .Containers}}{{.Name}} {{end}}'
+docker container inspect portfolio2026-dev --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}'
+docker container inspect portfolio2026-prod --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}'
+docker exec portfolio2026-dev node scripts/ollama-smoke.mjs
+docker exec portfolio2026-prod node scripts/ollama-smoke.mjs
+```
+
+Run the command for the deployed portfolio container. The smoke script sends only a harmless fixed prompt, validates a short bounded response, and prints PASS/FAIL without printing the configured URL, model, prompt, or response. Its success proves container-to-Ollama connectivity and inference for the configured model; repository unit tests alone do not.
+
+From any shell where the same non-secret Ollama variables are already exported, the equivalent repository command is `pnpm chat:smoke:ollama`.
 
 ### Request protection and deployment
 
@@ -131,7 +158,9 @@ When an `Origin` header is present, `/api/chat` accepts only the request's own o
 ### Recruiter-chat production checklist
 
 - [ ] Cloudflare account ID, API token, and model are configured server-side.
-- [ ] Ollama is reachable from the Node/Docker runtime and its model is installed.
+- [ ] The external `portfolio-ai` network reports `internal=true`, and both the portfolio and `ollama` containers belong to it.
+- [ ] `OLLAMA_BASE_URL=http://ollama:11434` and `OLLAMA_MODEL=qwen2.5-coder:3b` are set in the untracked VPS `.env`.
+- [ ] `node scripts/ollama-smoke.mjs` passes from inside the deployed portfolio container.
 - [ ] `CHAT_ALLOWED_ORIGINS` matches the deployed HTTPS origins.
 - [ ] Per-minute, per-client daily, and global daily limits were reviewed.
 - [ ] Ollama concurrency and fallback daily budget were reviewed.
