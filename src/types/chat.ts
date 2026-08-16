@@ -47,6 +47,7 @@ export type ChatErrorCode =
 
 export interface ChatErrorResponse {
   error: ChatErrorCode;
+  retryable?: boolean;
 }
 
 export interface ChatDisplayMessage extends RecruiterMessage {

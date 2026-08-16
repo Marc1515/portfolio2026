@@ -11,6 +11,10 @@ import type { AIModelMessage } from "@/lib/ai/promptBuilder";
 export const DEFAULT_CLOUDFLARE_COOLDOWN_MS = 30_000;
 const MAX_CLOUDFLARE_COOLDOWN_MS = 5 * 60_000;
 
+function shouldStartCloudflareCooldown(error: AIProviderError): boolean {
+  return error.reason !== "invalid_response";
+}
+
 interface ResilientProviderOptions {
   now?: () => number;
   performanceNow?: () => number;
@@ -71,17 +75,20 @@ export class ResilientAIProvider implements AIProvider {
           outcome: "failure",
           durationMs: this.durationSince(cloudflareStartedAt),
           reason: error instanceof AIProviderError ? error.reason : "internal",
+          ...(error instanceof AIProviderError ? error.diagnostic : {}),
         });
         if (!(error instanceof AIProviderError) || !error.fallbackAllowed) {
           throw error;
         }
 
-        const retryCooldown = (error.retryAfterSeconds ?? 0) * 1_000;
-        const cooldown = Math.min(
-          MAX_CLOUDFLARE_COOLDOWN_MS,
-          Math.max(this.cloudflareCooldownMs, retryCooldown),
-        );
-        this.cloudflareCooldownUntil = this.now() + cooldown;
+        if (shouldStartCloudflareCooldown(error)) {
+          const retryCooldown = (error.retryAfterSeconds ?? 0) * 1_000;
+          const cooldown = Math.min(
+            MAX_CLOUDFLARE_COOLDOWN_MS,
+            Math.max(this.cloudflareCooldownMs, retryCooldown),
+          );
+          this.cloudflareCooldownUntil = this.now() + cooldown;
+        }
       }
     }
 

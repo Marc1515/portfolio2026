@@ -28,6 +28,8 @@ const es = {
     closeLabel: "Cerrar el asistente profesional",
     clearLabel: "Borrar conversación",
     loading: "Consultando el perfil verificado de Marc…",
+    longRequestNotice:
+      "Esta es una consulta detallada. Generar una respuesta completa puede tardar un poco más de lo habitual.",
     characterCounter: "{count}/{max} caracteres",
     emptyInput: "Escribe una pregunta antes de enviarla.",
     emptyConversation:
@@ -35,13 +37,17 @@ const es = {
     evidenceLabel: "Evidencias relacionadas",
     genericApiError: "No se ha podido responder a tu pregunta ahora mismo.",
     providerUnavailableError:
-      "El asistente profesional no está disponible temporalmente.",
-    assistantBusyError: "El asistente profesional está ocupado ahora mismo.",
+      "No he podido conectar con el asistente profesional ahora mismo.",
+    assistantGenerationError:
+      "No he podido generar esta respuesta ahora mismo. Tu mensaje sigue aquí, así que puedes volver a intentarlo en unos instantes.",
     rateLimitedError: "Has enviado varias preguntas en poco tiempo.",
+    invalidRequestError:
+      "No se ha podido enviar este mensaje. Revísalo y vuelve a intentarlo.",
     requestRejectedError:
       "La configuración de seguridad del sitio ha rechazado esta solicitud.",
-    retryGuidance:
-      "Inténtalo de nuevo en unos instantes o contacta directamente con Marc.",
+    internalError: "Un error inesperado ha impedido generar esta respuesta.",
+    retryGuidance: "Vuelve a intentarlo en unos instantes.",
+    retryLabel: "Volver a intentar",
     rateLimitRetryGuidance:
       "Inténtalo de nuevo dentro de unos {seconds} segundos.",
     userMessageLabel: "Tu mensaje",

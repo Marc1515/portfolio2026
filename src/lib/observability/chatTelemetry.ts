@@ -2,6 +2,10 @@ import "server-only";
 
 import type { RecruiterQueryKind } from "@/lib/ai/knowledgeRetriever";
 import type { AnsweringProvider } from "@/lib/ai/provider";
+import type {
+  AIProviderDiagnosticCode,
+  AIProviderFinishReason,
+} from "@/lib/ai/providerErrors";
 
 export type ChatTelemetryFailureStage =
   | "origin"
@@ -27,27 +31,49 @@ export type ChatTelemetryFailureReason =
   | "internal"
   | "unexpected_exception";
 
-export type ChatTelemetryEvent =
-  | {
-      type: "request_completed";
-      queryKind: RecruiterQueryKind;
-      provider: AnsweringProvider;
-      durationMs: number;
-      providerDurationMs?: number;
-      retrievedEntryCount: number;
-      sourceCount: number;
-    }
-  | {
-      type: "request_failed";
-      stage: ChatTelemetryFailureStage;
-      reason: ChatTelemetryFailureReason;
-      durationMs: number;
-    }
-  | {
-      type: "request_handled_locally";
-      reason: "out_of_scope" | "sensitive_request" | "needs_job_description";
-      durationMs: number;
-    };
+interface ChatTelemetryEventBase {
+  requestId: string;
+}
+
+export type ChatTelemetryEvent = ChatTelemetryEventBase &
+  (
+    | {
+        type: "provider_attempt";
+        provider: AnsweringProvider;
+        outcome: "success";
+        durationMs: number;
+      }
+    | {
+        type: "provider_attempt";
+        provider: AnsweringProvider;
+        outcome: "failure";
+        reason: ChatTelemetryFailureReason;
+        durationMs: number;
+        diagnosticCode?: AIProviderDiagnosticCode;
+        finishReason?: AIProviderFinishReason;
+        outputCharacterCount?: number;
+      }
+    | {
+        type: "request_completed";
+        queryKind: RecruiterQueryKind;
+        provider: AnsweringProvider;
+        durationMs: number;
+        providerDurationMs?: number;
+        retrievedEntryCount: number;
+        sourceCount: number;
+      }
+    | {
+        type: "request_failed";
+        stage: ChatTelemetryFailureStage;
+        reason: ChatTelemetryFailureReason;
+        durationMs: number;
+      }
+    | {
+        type: "request_handled_locally";
+        reason: "out_of_scope" | "sensitive_request" | "needs_job_description";
+        durationMs: number;
+      }
+  );
 
 export interface ChatTelemetry {
   record(event: ChatTelemetryEvent): void;

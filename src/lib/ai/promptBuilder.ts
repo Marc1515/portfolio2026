@@ -55,17 +55,23 @@ export interface BuildRecruiterPromptOptions {
 function formatEvidence(
   locale: ChatLocale,
   evidence: RecruiterKnowledgeEntry[],
+  queryKind: RecruiterQueryKind,
 ): string {
   if (evidence.length === 0) {
     return "SELECTED VERIFIED PORTFOLIO EVIDENCE\nNo supporting portfolio entry was selected.";
   }
 
+  const compact = queryKind === "role_comparison";
   return `SELECTED VERIFIED PORTFOLIO EVIDENCE\n\n${evidence
-    .map(
-      (entry) =>
-        `${entry.title[locale]}\nCategory: ${entry.category}\n${entry.content[locale]}`,
-    )
-    .join("\n\n")}`;
+    .map((entry) => {
+      const content = compact
+        ? (entry.roleComparisonContent?.[locale] ?? entry.content[locale])
+        : entry.content[locale];
+      return compact
+        ? `- ${entry.title[locale]} [${entry.category}]: ${content}`
+        : `${entry.title[locale]}\nCategory: ${entry.category}\n${content}`;
+    })
+    .join(compact ? "\n" : "\n\n")}`;
 }
 
 interface UntrustedTranscriptEntry {
@@ -125,7 +131,7 @@ export function buildRecruiterPrompt({
   return [
     {
       role: "system",
-      content: `${SYSTEM_INSTRUCTION}${comparisonInstruction}\n\nThe selected portfolio locale is ${requestedLanguage}.\n\n${formatEvidence(locale, promptEvidence)}`,
+      content: `${SYSTEM_INSTRUCTION}${comparisonInstruction}\n\nThe selected portfolio locale is ${requestedLanguage}.\n\n${formatEvidence(locale, promptEvidence, queryKind)}`,
     },
     ...(transcript
       ? [

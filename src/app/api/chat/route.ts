@@ -56,6 +56,17 @@ interface ChatHandlerDependencies {
   ) => RecruiterIntentDecision;
   telemetry?: ChatTelemetry;
   performanceNow?: () => number;
+  requestId?: () => string;
+}
+
+type ChatTelemetryEventWithoutRequestId = ChatTelemetryEvent extends infer Event
+  ? Event extends ChatTelemetryEvent
+    ? Omit<Event, "requestId">
+    : never
+  : never;
+
+function createRequestId(): string {
+  return crypto.randomUUID().replaceAll("-", "").slice(0, 12);
 }
 
 function errorResponse(
@@ -63,7 +74,11 @@ function errorResponse(
   status: number,
   additionalHeaders: Record<string, string> = {},
 ) {
-  return Response.json({ error } satisfies ChatErrorResponse, {
+  const body: ChatErrorResponse = {
+    error,
+    ...(error === "provider_unavailable" ? { retryable: true } : {}),
+  };
+  return Response.json(body, {
     status,
     headers: { ...RESPONSE_HEADERS, ...additionalHeaders },
   });
@@ -75,11 +90,12 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
     const performanceNow =
       dependencies.performanceNow ?? (() => performance.now());
     const startedAt = performanceNow();
+    const requestId = (dependencies.requestId ?? createRequestId)();
     const durationMs = () =>
       Math.max(0, Math.round(performanceNow() - startedAt));
-    const record = (event: ChatTelemetryEvent) => {
+    const record = (event: ChatTelemetryEventWithoutRequestId) => {
       try {
-        telemetry.record(event);
+        telemetry.record({ requestId, ...event } as ChatTelemetryEvent);
       } catch {
         // Telemetry must never affect the public chat path.
       }
@@ -199,6 +215,36 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
       const message = await provider.generate(messages, {
         onAttempt: (attempt) => {
           latestProviderAttempt = attempt;
+          record(
+            attempt.outcome === "success"
+              ? {
+                  type: "provider_attempt",
+                  provider: attempt.provider,
+                  outcome: "success",
+                  durationMs: attempt.durationMs,
+                }
+              : {
+                  type: "provider_attempt",
+                  provider: attempt.provider,
+                  outcome: "failure",
+                  reason: attempt.reason ?? "internal",
+                  durationMs: attempt.durationMs,
+                  ...(attempt.diagnosticCode
+                    ? {
+                        diagnosticCode: attempt.diagnosticCode,
+                        ...(attempt.finishReason
+                          ? { finishReason: attempt.finishReason }
+                          : {}),
+                        ...(attempt.outputCharacterCount !== undefined
+                          ? {
+                              outputCharacterCount:
+                                attempt.outputCharacterCount,
+                            }
+                          : {}),
+                      }
+                    : {}),
+                },
+          );
         },
       });
       stage = "internal";

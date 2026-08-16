@@ -390,15 +390,13 @@ export const recruiterEvalCases = [
   {
     id: "intent-en-real-job-description",
     locale: "en",
-    question: `Software Engineer
+    question: `We're hiring for an international tech company looking to bring on Junior Full Stack Engineers for a brand-new product division focused on workforce education and certification.
 
-Requirements:
-- React and TypeScript
-- Testing experience
+This is an opportunity to join a greenfield engineering team at an early stage, working on a modern Python/React product with the backing and stability of an established global business.
 
-Responsibilities:
-- Build web applications
-- Work with APIs`,
+The team is building a next-generation certification and assessment platform for regulated industries including aviation, industrial safety, government, and vocational training, leveraging modern AI capabilities and contemporary engineering practices.
+
+If you're excited by the idea of learning quickly, working closely with experienced engineers, and helping shape a product from the ground up, this role is for you.`,
     expectedIntentKind: "professional",
     expectedQueryKind: "role_comparison",
     forbiddenEvidenceIds: ["contact-direct"],

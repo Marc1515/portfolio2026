@@ -4,6 +4,7 @@ import { createChatPostHandler } from "@/app/api/chat/route";
 import { recruiterKnowledgeEntries } from "@/data/recruiterKnowledge";
 import type { AIProviderGenerateOptions } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
+import { ResilientAIProvider } from "@/lib/ai/resilientProvider";
 import { MAX_REQUEST_BODY_LENGTH } from "@/lib/ai/validation";
 import type { ChatTelemetryEvent } from "@/lib/observability/chatTelemetry";
 
@@ -24,6 +25,14 @@ function request(
     }),
   });
 }
+
+const realisticRoleDescription = `We're hiring for an international tech company looking to bring on Junior Full Stack Engineers for a brand-new product division focused on workforce education and certification.
+
+This is an opportunity to join a greenfield engineering team at an early stage, working on a modern Python/React product with the backing and stability of an established global business.
+
+The team is building a next-generation certification and assessment platform for regulated industries including aviation, industrial safety, government, and vocational training, leveraging modern AI capabilities and contemporary engineering practices.
+
+If you're excited by the idea of learning quickly, working closely with experienced engineers, and helping shape a product from the ground up, this role is for you.`;
 
 describe("chat route protections", () => {
   it.each([
@@ -119,6 +128,7 @@ describe("chat route protections", () => {
         expect.objectContaining({
           type: "request_handled_locally",
           reason: kind,
+          requestId: expect.stringMatching(/^[a-f0-9]{12}$/),
         }),
       ]);
       expect(JSON.stringify(telemetryEvents)).not.toContain(question);
@@ -195,6 +205,25 @@ Responsibilities:
     );
   });
 
+  it("accepts the realistic role description, retrieves evidence, builds the comparison prompt, and attempts the provider", async () => {
+    const generate = vi.fn().mockResolvedValue("Role comparison answer");
+    const post = createChatPostHandler({
+      providerFactory: async () => ({ generate }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+    });
+
+    const response = await post(request(undefined, realisticRoleDescription));
+
+    expect(response.status).toBe(200);
+    expect(generate).toHaveBeenCalledOnce();
+    const providerMessages = generate.mock.calls[0]?.[0];
+    expect(providerMessages?.at(-1)?.content).toBe(realisticRoleDescription);
+    expect(providerMessages?.[0]?.content).toContain("Strong verified matches");
+    expect(providerMessages?.[0]?.content).toContain("React");
+  });
+
   it("does not create or call a provider after rate limiting rejects", async () => {
     const generate = vi.fn();
     const providerFactory = vi.fn(async () => ({ generate }));
@@ -257,8 +286,48 @@ Responsibilities:
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({
       error: "provider_unavailable",
+      retryable: true,
     });
   });
+
+  it.each(["timeout", "busy"] as const)(
+    "keeps the public failure recoverable when invalid Cloudflare output is followed by Ollama %s",
+    async (reason) => {
+      const cloudflareGenerate = vi.fn().mockRejectedValue(
+        new AIProviderError("cloudflare", "invalid_response", {
+          fallbackAllowed: true,
+          diagnostic: { diagnosticCode: "incomplete_generation" },
+        }),
+      );
+      const ollamaGenerate = vi
+        .fn()
+        .mockRejectedValue(
+          new AIProviderError("ollama", reason, { fallbackAllowed: false }),
+        );
+      const provider = new ResilientAIProvider(
+        { generate: cloudflareGenerate },
+        { generate: ollamaGenerate },
+      );
+      const post = createChatPostHandler({
+        providerFactory: async () => provider,
+        rateLimiter: { check: () => ({ allowed: true }) },
+        clientIdentifier: () => "client",
+        originAllowed: () => true,
+      });
+
+      const response = await post(request());
+      const payload = await response.json();
+
+      expect(response.status).toBe(503);
+      expect(payload).toEqual({
+        error: "provider_unavailable",
+        retryable: true,
+      });
+      expect(payload).not.toHaveProperty("provider");
+      expect(cloudflareGenerate).toHaveBeenCalledOnce();
+      expect(ollamaGenerate).toHaveBeenCalledOnce();
+    },
+  );
 
   it("returns 500 for an unexpected provider exception", async () => {
     const post = createChatPostHandler({
@@ -452,6 +521,7 @@ Requirements:
       originAllowed: () => true,
       telemetry: { record: (event) => events.push(event) },
       performanceNow: () => times.shift() ?? 225,
+      requestId: () => "req000000001",
     });
 
     const response = await post(request(undefined, secretQuestion));
@@ -459,8 +529,17 @@ Requirements:
 
     expect(response.status).toBe(200);
     expect(payload).not.toHaveProperty("provider");
+    expect(payload).not.toHaveProperty("requestId");
     expect(events).toEqual([
+      {
+        requestId: "req000000001",
+        type: "provider_attempt",
+        provider: "cloudflare",
+        outcome: "success",
+        durationMs: 75,
+      },
       expect.objectContaining({
+        requestId: "req000000001",
         type: "request_completed",
         provider: "cloudflare",
         durationMs: 125,
@@ -482,6 +561,69 @@ Requirements:
     }
   });
 
+  it("records every provider attempt and attributes fallback success to Ollama", async () => {
+    const events: ChatTelemetryEvent[] = [];
+    const generate = vi.fn(
+      async (_messages, options?: AIProviderGenerateOptions) => {
+        options?.onAttempt?.({
+          provider: "cloudflare",
+          outcome: "failure",
+          reason: "invalid_response",
+          durationMs: 15_000,
+          diagnosticCode: "incomplete_generation",
+          finishReason: "length",
+          outputCharacterCount: 0,
+        });
+        options?.onAttempt?.({
+          provider: "ollama",
+          outcome: "success",
+          durationMs: 8_200,
+        });
+        return "Fallback answer";
+      },
+    );
+    const post = createChatPostHandler({
+      providerFactory: async () => ({ generate }),
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+      telemetry: { record: (event) => events.push(event) },
+      requestId: () => "req000000002",
+    });
+
+    const response = await post(request());
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).not.toHaveProperty("provider");
+    expect(events).toEqual([
+      {
+        requestId: "req000000002",
+        type: "provider_attempt",
+        provider: "cloudflare",
+        outcome: "failure",
+        reason: "invalid_response",
+        durationMs: 15_000,
+        diagnosticCode: "incomplete_generation",
+        finishReason: "length",
+        outputCharacterCount: 0,
+      },
+      {
+        requestId: "req000000002",
+        type: "provider_attempt",
+        provider: "ollama",
+        outcome: "success",
+        durationMs: 8_200,
+      },
+      expect.objectContaining({
+        requestId: "req000000002",
+        type: "request_completed",
+        provider: "ollama",
+        providerDurationMs: 8_200,
+      }),
+    ]);
+  });
+
   it("sanitizes telemetry for unexpected internal exceptions", async () => {
     const events: ChatTelemetryEvent[] = [];
     const secretQuestion =
@@ -496,6 +638,7 @@ Requirements:
       clientIdentifier: () => "client",
       originAllowed: () => true,
       telemetry: { record: (event) => events.push(event) },
+      requestId: () => "req000000003",
     });
 
     const response = await post(request(undefined, secretQuestion));
@@ -535,6 +678,7 @@ Requirements:
       clientIdentifier: () => "client",
       originAllowed: () => true,
       telemetry: { record: (event) => events.push(event) },
+      requestId: () => "req000000004",
     });
 
     const response = await post(request());
@@ -542,9 +686,19 @@ Requirements:
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({
       error: "provider_unavailable",
+      retryable: true,
     });
     expect(events).toEqual([
+      {
+        requestId: "req000000004",
+        type: "provider_attempt",
+        provider: "ollama",
+        outcome: "failure",
+        durationMs: 30_000,
+        reason: "timeout",
+      },
       expect.objectContaining({
+        requestId: "req000000004",
         type: "request_failed",
         stage: "ollama",
         reason: "timeout",

@@ -27,6 +27,7 @@ export interface RecruiterKnowledgeEntry {
   category: RecruiterKnowledgeCategory;
   title: LocalizedKnowledgeText;
   content: LocalizedKnowledgeText;
+  roleComparisonContent?: LocalizedKnowledgeText;
   keywords: Record<ChatLocale, string[]>;
   aliases?: string[];
   sources: TrustedKnowledgeSource[];
@@ -44,6 +45,10 @@ export const recruiterKnowledgeEntries = [
       en: "Marc España is a Full Stack Web Developer based in Dublin. His public profile emphasizes frontend-heavy full-stack work, internal tools, booking systems, admin panels, maintainability, performance, practical problem-solving, and AI-assisted development workflows.",
       es: "Marc España es desarrollador web full stack y reside en Dublín. Su perfil público destaca el trabajo full stack con mayor peso en frontend, herramientas internas, sistemas de reservas, paneles de administración, mantenibilidad, rendimiento, resolución práctica de problemas y flujos de desarrollo asistidos por IA.",
     },
+    roleComparisonContent: {
+      en: "Full Stack Web Developer with a frontend-heavy profile focused on maintainability, performance, practical problem-solving, and AI-assisted development workflows.",
+      es: "Desarrollador web full stack con un perfil centrado en frontend, mantenibilidad, rendimiento, resolución práctica de problemas y flujos asistidos por IA.",
+    },
     keywords: {
       en: ["profile", "summary", "full stack", "frontend", "dublin"],
       es: ["perfil", "resumen", "full stack", "frontend", "dublín"],
@@ -58,6 +63,10 @@ export const recruiterKnowledgeEntries = [
     content: {
       en: "Full Stack Web Developer, 2024–2026. Marc designed internal tools and interfaces, developed applications mainly with Next.js and React, contributed to full-stack functionality and REST API integrations, built a QGIS and Python workflow that reduced a housing-unit identification task from hours to seconds, and led testing for a public address system application.",
       es: "Desarrollador Web Full Stack, 2024–2026. Marc diseñó herramientas internas e interfaces, desarrolló aplicaciones principalmente con Next.js y React, contribuyó en funcionalidades full stack e integraciones con APIs REST, construyó un flujo con QGIS y Python que redujo de horas a segundos una tarea para identificar viviendas y lideró las pruebas de una aplicación de megafonía.",
+    },
+    roleComparisonContent: {
+      en: "Commercial full-stack role (2024–2026): mainly Next.js and React, REST API integrations, a QGIS/Python workflow, and application-testing leadership.",
+      es: "Puesto full stack comercial (2024–2026): principalmente Next.js y React, integraciones REST, un flujo QGIS/Python y liderazgo de pruebas de aplicaciones.",
     },
     keywords: {
       en: [
@@ -131,6 +140,10 @@ export const recruiterKnowledgeEntries = [
     content: {
       en: "A full-stack educational app for practising code reviews with structured AI feedback, authentication, review history, rate limiting, internationalisation, and production monitoring. It treats submitted code as untrusted text, supports anonymous and authenticated use, uses Vitest and production quality checks, and deploys with GitHub Actions, Docker Compose, PostgreSQL, Prisma, Traefik, HTTPS, Sentry, and private-network Ollama. Technologies include Next.js, React, TypeScript, PostgreSQL, Prisma, Ollama, Vitest, Docker, GitHub Actions, Traefik, and Sentry.",
       es: "Aplicación educativa full stack para practicar revisiones de código con feedback estructurado de IA, autenticación, historial, rate limiting, internacionalización y monitorización. Trata el código como texto no confiable, permite uso anónimo y autenticado, utiliza Vitest y controles de calidad y despliega con GitHub Actions, Docker Compose, PostgreSQL, Prisma, Traefik, HTTPS, Sentry y Ollama en red privada. Incluye Next.js, React, TypeScript, PostgreSQL, Prisma, Ollama, Vitest, Docker, GitHub Actions, Traefik y Sentry.",
+    },
+    roleComparisonContent: {
+      en: "Personal full-stack AI project using Next.js, React, TypeScript, PostgreSQL, Vitest, GitHub Actions, Docker Compose, monitoring, and private-network Ollama.",
+      es: "Proyecto personal full stack de IA con Next.js, React, TypeScript, PostgreSQL, Vitest, GitHub Actions, Docker Compose, monitorización y Ollama en red privada.",
     },
     keywords: {
       en: [
@@ -284,6 +297,10 @@ export const recruiterKnowledgeEntries = [
       en: "The Technologies section lists React, Angular, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, REST APIs, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code, and Codex. A listed technology indicates public knowledge or familiarity only unless a professional role or named project separately demonstrates its use.",
       es: "La sección Tecnologías enumera React, Angular, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS, Shadcn, Node.js, NestJS, APIs REST, PostgreSQL, MySQL, MongoDB, Prisma, Python, QGIS, Git, GitHub, GitLab, Docker, Linux, GitHub Actions, Postman, Claude Code y Codex. Una tecnología enumerada indica conocimiento o familiaridad, salvo que un puesto profesional o proyecto demuestre su uso por separado.",
     },
+    roleComparisonContent: {
+      en: "Publicly listed familiarity includes React, Next.js, TypeScript, Node.js, REST APIs, PostgreSQL, Python, Git, Docker, Linux, and GitHub Actions; listing alone is not commercial evidence.",
+      es: "La familiaridad publicada incluye React, Next.js, TypeScript, Node.js, APIs REST, PostgreSQL, Python, Git, Docker, Linux y GitHub Actions; la lista no demuestra por sí sola experiencia comercial.",
+    },
     keywords: {
       en: [
         "technologies",
@@ -352,6 +369,10 @@ export const recruiterKnowledgeEntries = [
       en: "Marc's Delinternet role explicitly includes leading application testing. Automated tests, validation, linting, formatting, TypeScript checks, build checks, pre-commit checks, manual verification, and monitoring are demonstrated only by the personal projects that document them. AI Code Review Trainer and Reservation Management use Vitest. DeltaRoutes is explicitly documented as not yet having an automated unit, integration, or end-to-end suite.",
       es: "El puesto de Marc en Delinternet incluye explícitamente liderar pruebas de aplicaciones. Los tests automatizados, validación, linting, formato, comprobaciones de TypeScript y build, controles pre-commit, verificación manual y monitorización solo están demostrados por los proyectos personales que los documentan. AI Code Review Trainer y el Sistema de Reservas usan Vitest. DeltaRoutes aún no tiene suite automatizada unitaria, de integración o end-to-end.",
     },
+    roleComparisonContent: {
+      en: "Commercial evidence includes leading application testing; documented personal projects demonstrate Vitest and automated quality checks. DeltaRoutes has no documented automated suite yet.",
+      es: "La evidencia comercial incluye liderazgo de pruebas; proyectos personales documentados demuestran Vitest y controles automatizados. DeltaRoutes aún no tiene una suite automatizada documentada.",
+    },
     keywords: {
       en: ["testing", "tests", "quality", "vitest", "test suite", "qa"],
       es: ["pruebas", "tests", "calidad", "vitest", "suite de pruebas"],
@@ -372,6 +393,10 @@ export const recruiterKnowledgeEntries = [
     content: {
       en: "Selected personal projects demonstrate CI/CD pipelines, GitHub Actions, self-hosted runners, multi-stage Docker images, Docker Compose, persistent PostgreSQL services, Prisma migrations, Traefik reverse proxying, HTTPS/TLS, Linux, and Sentry. Deployment details are project-specific and must not be generalized to every project.",
       es: "Algunos proyectos personales demuestran pipelines CI/CD, GitHub Actions, runners self-hosted, imágenes Docker multi-stage, Docker Compose, PostgreSQL persistente, migraciones Prisma, reverse proxy con Traefik, HTTPS/TLS, Linux y Sentry. Los detalles dependen de cada proyecto y no deben generalizarse.",
+    },
+    roleComparisonContent: {
+      en: "Selected personal projects demonstrate CI/CD, GitHub Actions, Docker images and Compose, PostgreSQL migrations, Traefik, HTTPS/TLS, Linux, and monitoring; evidence is project-specific.",
+      es: "Algunos proyectos personales demuestran CI/CD, GitHub Actions, imágenes y Compose de Docker, migraciones PostgreSQL, Traefik, HTTPS/TLS, Linux y monitorización; la evidencia depende del proyecto.",
     },
     keywords: {
       en: [
