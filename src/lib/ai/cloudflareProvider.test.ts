@@ -38,7 +38,7 @@ describe("CloudflareAIProvider", () => {
       messages,
       temperature: 0.2,
       reasoning_effort: "low",
-      max_completion_tokens: 800,
+      max_completion_tokens: 1_200,
       stream: false,
     });
   });
@@ -193,24 +193,25 @@ describe("CloudflareAIProvider", () => {
   });
 
   it("rejects an incomplete reasoning-only response without exposing reasoning", async () => {
-    const provider = new CloudflareAIProvider({
-      fetch: vi.fn().mockResolvedValue(
-        response({
-          success: true,
-          result: {
-            choices: [
-              {
-                message: {
-                  content: null,
-                  reasoning: "Internal reasoning",
-                  reasoning_content: "Internal reasoning content",
-                },
-                finish_reason: "length",
+    const fetchMock = vi.fn().mockResolvedValue(
+      response({
+        success: true,
+        result: {
+          choices: [
+            {
+              message: {
+                content: null,
+                reasoning: "Internal reasoning",
+                reasoning_content: "Internal reasoning content",
               },
-            ],
-          },
-        }),
-      ) as unknown as typeof fetch,
+              finish_reason: "length",
+            },
+          ],
+        },
+      }),
+    );
+    const provider = new CloudflareAIProvider({
+      fetch: fetchMock as unknown as typeof fetch,
       environment,
     });
 
@@ -222,6 +223,10 @@ describe("CloudflareAIProvider", () => {
         diagnosticCode: "incomplete_generation",
         finishReason: "length",
       },
+    });
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(JSON.parse(request.body as string)).toMatchObject({
+      max_completion_tokens: 1_200,
     });
   });
 
