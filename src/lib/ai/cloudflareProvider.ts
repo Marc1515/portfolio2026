@@ -10,7 +10,7 @@ import type { AIProvider } from "@/lib/ai/provider";
 import type { AIModelMessage } from "@/lib/ai/promptBuilder";
 import { MAX_ASSISTANT_MESSAGE_LENGTH } from "@/lib/ai/validation";
 
-const REQUEST_TIMEOUT_MS = 25_000;
+const REQUEST_TIMEOUT_MS = 15_000;
 // A real role comparison exhausted the previous 800-token budget with finishReason=length.
 const CLOUDFLARE_MAX_COMPLETION_TOKENS = 1_200;
 const CLOUDFLARE_REASONING_EFFORT = "low";
