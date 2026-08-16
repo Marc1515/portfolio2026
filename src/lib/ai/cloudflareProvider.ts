@@ -1,12 +1,18 @@
 import "server-only";
 
-import { AIProviderError } from "@/lib/ai/providerErrors";
+import {
+  AIProviderError,
+  type AIProviderDiagnosticCode,
+  type AIProviderDiagnosticMetadata,
+  type AIProviderFinishReason,
+} from "@/lib/ai/providerErrors";
 import type { AIProvider } from "@/lib/ai/provider";
 import type { AIModelMessage } from "@/lib/ai/promptBuilder";
 import { MAX_ASSISTANT_MESSAGE_LENGTH } from "@/lib/ai/validation";
 
-const REQUEST_TIMEOUT_MS = 15_000;
-const CLOUDFLARE_MAX_COMPLETION_TOKENS = 800;
+const REQUEST_TIMEOUT_MS = 25_000;
+// A real role comparison exhausted the previous 800-token budget with finishReason=length.
+const CLOUDFLARE_MAX_COMPLETION_TOKENS = 1_200;
 const CLOUDFLARE_REASONING_EFFORT = "low";
 
 interface CloudflareConfiguration {
@@ -58,24 +64,79 @@ function parseRetryAfter(
   return Math.max(0, Math.ceil((date - now()) / 1_000));
 }
 
-function extractGeneratedText(value: unknown): string | null {
+interface ExtractedCloudflareText {
+  text: string;
+  finishReason?: AIProviderFinishReason;
+}
+
+function normalizeFinishReason(
+  value: unknown,
+): AIProviderFinishReason | undefined {
+  if (typeof value !== "string") return undefined;
+  if (
+    value === "stop" ||
+    value === "length" ||
+    value === "content_filter" ||
+    value === "tool_calls"
+  ) {
+    return value;
+  }
+  return "other";
+}
+
+function boundedCharacterCount(value: string): number {
+  return Math.min(value.length, MAX_ASSISTANT_MESSAGE_LENGTH + 1);
+}
+
+function invalidResponse(
+  diagnosticCode: AIProviderDiagnosticCode,
+  metadata: Omit<AIProviderDiagnosticMetadata, "diagnosticCode"> = {},
+  cause?: unknown,
+): never {
+  throw new AIProviderError("cloudflare", "invalid_response", {
+    fallbackAllowed: true,
+    diagnostic: { diagnosticCode, ...metadata },
+    cause,
+  });
+}
+
+function extractGeneratedText(value: unknown): ExtractedCloudflareText {
   if (!isRecord(value) || value.success !== true || !isRecord(value.result)) {
-    return null;
+    return invalidResponse("invalid_success_payload");
   }
 
   if (typeof value.result.response === "string") {
-    return value.result.response;
+    return { text: value.result.response };
   }
 
   const choices = value.result.choices;
-  if (!Array.isArray(choices) || choices.length === 0) return null;
+  if (!Array.isArray(choices) || choices.length === 0) {
+    return invalidResponse("missing_content");
+  }
 
   const firstChoice = choices[0];
-  if (!isRecord(firstChoice) || !isRecord(firstChoice.message)) return null;
+  if (!isRecord(firstChoice) || !isRecord(firstChoice.message)) {
+    return invalidResponse("invalid_success_payload");
+  }
 
-  return typeof firstChoice.message.content === "string"
-    ? firstChoice.message.content
-    : null;
+  const finishReason = normalizeFinishReason(firstChoice.finish_reason);
+  const content = firstChoice.message.content;
+  if (finishReason === "length") {
+    return invalidResponse("incomplete_generation", {
+      finishReason,
+      ...(typeof content === "string"
+        ? { outputCharacterCount: boundedCharacterCount(content) }
+        : {}),
+    });
+  }
+  if (content === null || content === undefined) {
+    return invalidResponse("missing_content", { finishReason });
+  }
+  if (typeof content !== "string") {
+    return invalidResponse("invalid_success_payload", { finishReason });
+  }
+
+  return { text: content, finishReason };
 }
 
 export class CloudflareAIProvider implements AIProvider {
@@ -144,19 +205,21 @@ export class CloudflareAIProvider implements AIProvider {
       try {
         payload = await response.json();
       } catch (error) {
-        throw new AIProviderError("cloudflare", "invalid_response", {
-          fallbackAllowed: true,
-          cause: error,
-        });
+        return invalidResponse("malformed_payload", {}, error);
       }
 
-      const generatedText = extractGeneratedText(payload)?.trim();
-      if (
-        !generatedText ||
-        generatedText.length > MAX_ASSISTANT_MESSAGE_LENGTH
-      ) {
-        throw new AIProviderError("cloudflare", "invalid_response", {
-          fallbackAllowed: true,
+      const extracted = extractGeneratedText(payload);
+      const generatedText = extracted.text.trim();
+      if (!generatedText) {
+        return invalidResponse("empty_content", {
+          finishReason: extracted.finishReason,
+          outputCharacterCount: 0,
+        });
+      }
+      if (generatedText.length > MAX_ASSISTANT_MESSAGE_LENGTH) {
+        return invalidResponse("answer_too_long", {
+          finishReason: extracted.finishReason,
+          outputCharacterCount: boundedCharacterCount(generatedText),
         });
       }
 

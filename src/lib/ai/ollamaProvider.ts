@@ -5,8 +5,8 @@ import { AIProviderError } from "@/lib/ai/providerErrors";
 import type { AIModelMessage } from "@/lib/ai/promptBuilder";
 import { MAX_ASSISTANT_MESSAGE_LENGTH } from "@/lib/ai/validation";
 
-const DEFAULT_BASE_URL = "http://127.0.0.1:11434";
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_BASE_URL = "http://ollama:11434";
+export const DEFAULT_OLLAMA_TIMEOUT_MS = 90_000;
 const DEFAULT_KEEP_ALIVE = "2m";
 const DEFAULT_MAX_CONCURRENT_REQUESTS = 1;
 const DEFAULT_DAILY_LIMIT = 25;
@@ -163,7 +163,7 @@ function getConfiguration(environment: NodeJS.ProcessEnv): OllamaConfiguration {
     keepAlive,
     timeoutMs: parsePositiveInteger(
       environment.OLLAMA_REQUEST_TIMEOUT_MS,
-      DEFAULT_TIMEOUT_MS,
+      DEFAULT_OLLAMA_TIMEOUT_MS,
       120_000,
     ),
   };

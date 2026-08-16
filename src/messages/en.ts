@@ -27,6 +27,8 @@ const en = {
     closeLabel: "Close professional assistant",
     clearLabel: "Clear conversation",
     loading: "Reviewing Marc's verified profile…",
+    longRequestNotice:
+      "This is a detailed request. Generating a thorough answer may take a little longer than usual.",
     characterCounter: "{count}/{max} characters",
     emptyInput: "Enter a question before sending.",
     emptyConversation:
@@ -34,12 +36,17 @@ const en = {
     evidenceLabel: "Relevant evidence",
     genericApiError: "Your question could not be answered right now.",
     providerUnavailableError:
-      "The professional assistant is temporarily unavailable.",
-    assistantBusyError: "The professional assistant is busy right now.",
+      "I couldn't reach the professional assistant right now.",
+    assistantGenerationError:
+      "I couldn't generate this answer right now. Your message is still here, so you can try again in a moment.",
     rateLimitedError: "You have sent several questions in a short time.",
+    invalidRequestError:
+      "This message could not be submitted. Review it and try again.",
     requestRejectedError:
       "This request was rejected by the site's security configuration.",
-    retryGuidance: "Please try again in a moment or contact Marc directly.",
+    internalError: "Something unexpected prevented this answer.",
+    retryGuidance: "Please try again in a moment.",
+    retryLabel: "Try again",
     rateLimitRetryGuidance: "Please try again in about {seconds} seconds.",
     userMessageLabel: "Your message",
     assistantMessageLabel: "Marc's professional assistant",

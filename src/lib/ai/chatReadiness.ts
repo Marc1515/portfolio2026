@@ -28,7 +28,7 @@ export function getChatReadiness(
     hasSafeValue(environment.CLOUDFLARE_API_TOKEN) &&
     hasSafeValue(environment.CLOUDFLARE_AI_MODEL);
   const ollamaBaseUrl =
-    environment.OLLAMA_BASE_URL?.trim() || "http://127.0.0.1:11434";
+    environment.OLLAMA_BASE_URL?.trim() || "http://ollama:11434";
   const ollamaConfigured =
     hasSafeValue(environment.OLLAMA_MODEL, 200) &&
     normalizeOllamaChatUrl(ollamaBaseUrl) !== null;

@@ -17,6 +17,24 @@ jobs:
           git fetch origin
           git checkout dev
           git reset --hard origin/dev
+          if docker network inspect portfolio-ai >/dev/null 2>&1; then
+            network_internal="$(docker network inspect portfolio-ai --format '{{.Internal}}')"
+            if [ "$network_internal" != "true" ]; then
+              echo "::error::Existing portfolio-ai network is not internal."
+              exit 1
+            fi
+          else
+            docker network create --internal portfolio-ai
+          fi
+          ollama_container="$(docker container ls -a --filter name=^/ollama$ --format '{{.Names}}')"
+          if [ "$ollama_container" = "ollama" ]; then
+            ollama_networks="$(docker container inspect ollama --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}}{{"\n"}}{{end}}')"
+            if ! grep -Fxq portfolio-ai <<< "$ollama_networks"; then
+              docker network connect portfolio-ai ollama
+            fi
+          else
+            echo "::warning::Ollama container not found; deploying without runtime fallback connectivity."
+          fi
           docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
           docker image prune -af
           docker builder prune -af --filter "until=24h"

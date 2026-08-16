@@ -38,7 +38,7 @@ describe("CloudflareAIProvider", () => {
       messages,
       temperature: 0.2,
       reasoning_effort: "low",
-      max_completion_tokens: 800,
+      max_completion_tokens: 1_200,
       stream: false,
     });
   });
@@ -108,7 +108,7 @@ describe("CloudflareAIProvider", () => {
     });
   });
 
-  it("rejects malformed and oversized successful payloads", async () => {
+  it("diagnoses an invalid success shape", async () => {
     const malformed = new CloudflareAIProvider({
       fetch: vi
         .fn()
@@ -119,8 +119,11 @@ describe("CloudflareAIProvider", () => {
     });
     await expect(malformed.generate(messages)).rejects.toMatchObject({
       reason: "invalid_response",
+      diagnostic: { diagnosticCode: "invalid_success_payload" },
     });
+  });
 
+  it("diagnoses oversized answer content without returning or truncating it", async () => {
     const oversized = new CloudflareAIProvider({
       fetch: vi
         .fn()
@@ -131,28 +134,84 @@ describe("CloudflareAIProvider", () => {
     });
     await expect(oversized.generate(messages)).rejects.toMatchObject({
       reason: "invalid_response",
+      diagnostic: {
+        diagnosticCode: "answer_too_long",
+        outputCharacterCount: 2_001,
+      },
+    });
+  });
+
+  it("diagnoses malformed JSON without retaining the response body", async () => {
+    const provider = new CloudflareAIProvider({
+      fetch: vi.fn().mockResolvedValue(
+        new Response("not-json", {
+          headers: { "Content-Type": "application/json" },
+        }),
+      ) as unknown as typeof fetch,
+      environment,
+    });
+
+    await expect(provider.generate(messages)).rejects.toMatchObject({
+      reason: "invalid_response",
+      diagnostic: { diagnosticCode: "malformed_payload" },
+    });
+  });
+
+  it.each([
+    [
+      "missing content",
+      { success: true, result: { choices: [] } },
+      { diagnosticCode: "missing_content" },
+    ],
+    [
+      "null content",
+      {
+        success: true,
+        result: {
+          choices: [{ message: { content: null }, finish_reason: "stop" }],
+        },
+      },
+      { diagnosticCode: "missing_content", finishReason: "stop" },
+    ],
+    [
+      "empty content",
+      { success: true, result: { response: "  " } },
+      { diagnosticCode: "empty_content", outputCharacterCount: 0 },
+    ],
+  ])("diagnoses %s", async (_name, payload, diagnostic) => {
+    const provider = new CloudflareAIProvider({
+      fetch: vi
+        .fn()
+        .mockResolvedValue(response(payload)) as unknown as typeof fetch,
+      environment,
+    });
+
+    await expect(provider.generate(messages)).rejects.toMatchObject({
+      reason: "invalid_response",
+      diagnostic,
     });
   });
 
   it("rejects an incomplete reasoning-only response without exposing reasoning", async () => {
-    const provider = new CloudflareAIProvider({
-      fetch: vi.fn().mockResolvedValue(
-        response({
-          success: true,
-          result: {
-            choices: [
-              {
-                message: {
-                  content: null,
-                  reasoning: "Internal reasoning",
-                  reasoning_content: "Internal reasoning content",
-                },
-                finish_reason: "length",
+    const fetchMock = vi.fn().mockResolvedValue(
+      response({
+        success: true,
+        result: {
+          choices: [
+            {
+              message: {
+                content: null,
+                reasoning: "Internal reasoning",
+                reasoning_content: "Internal reasoning content",
               },
-            ],
-          },
-        }),
-      ) as unknown as typeof fetch,
+              finish_reason: "length",
+            },
+          ],
+        },
+      }),
+    );
+    const provider = new CloudflareAIProvider({
+      fetch: fetchMock as unknown as typeof fetch,
       environment,
     });
 
@@ -160,6 +219,14 @@ describe("CloudflareAIProvider", () => {
       provider: "cloudflare",
       reason: "invalid_response",
       fallbackAllowed: true,
+      diagnostic: {
+        diagnosticCode: "incomplete_generation",
+        finishReason: "length",
+      },
+    });
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(JSON.parse(request.body as string)).toMatchObject({
+      max_completion_tokens: 1_200,
     });
   });
 
