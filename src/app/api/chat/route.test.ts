@@ -5,7 +5,10 @@ import { recruiterKnowledgeEntries } from "@/data/recruiterKnowledge";
 import type { AIProviderGenerateOptions } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
 import { ResilientAIProvider } from "@/lib/ai/resilientProvider";
-import { MAX_REQUEST_BODY_LENGTH } from "@/lib/ai/validation";
+import {
+  MAX_JOB_DESCRIPTION_LENGTH,
+  MAX_REQUEST_BODY_LENGTH,
+} from "@/lib/ai/validation";
 import type { ChatTelemetryEvent } from "@/lib/observability/chatTelemetry";
 
 function request(
@@ -33,6 +36,27 @@ This is an opportunity to join a greenfield engineering team at an early stage, 
 The team is building a next-generation certification and assessment platform for regulated industries including aviation, industrial safety, government, and vocational training, leveraging modern AI capabilities and contemporary engineering practices.
 
 If you're excited by the idea of learning quickly, working closely with experienced engineers, and helping shape a product from the ground up, this role is for you.`;
+
+function realisticRoleDescriptionAtLength(length: number): string {
+  const base = `Senior Full Stack Engineer
+
+Responsibilities:
+- Build and maintain accessible production web applications.
+- Collaborate with product, design and backend engineering teams.
+
+Requirements:
+- Strong React and TypeScript experience.
+- Automated testing, Docker and CI/CD knowledge.
+- Clear communication and reliable delivery.
+
+Additional technologies and responsibilities: `;
+  const detail =
+    "React TypeScript Next.js Node.js PostgreSQL testing Docker collaboration. ";
+  const padding = detail.repeat(
+    Math.ceil((length - base.length) / detail.length),
+  );
+  return `${base}${padding}`.slice(0, length);
+}
 
 describe("chat route protections", () => {
   it.each([
@@ -224,6 +248,71 @@ Responsibilities:
     expect(providerMessages?.[0]?.content).toContain("React");
   });
 
+  it.each([MAX_JOB_DESCRIPTION_LENGTH - 1, MAX_JOB_DESCRIPTION_LENGTH])(
+    "accepts a detected job description with %s characters",
+    async (length) => {
+      const generate = vi.fn().mockResolvedValue("Role comparison answer");
+      const providerFactory = vi.fn(async () => ({ generate }));
+      const post = createChatPostHandler({
+        providerFactory,
+        rateLimiter: { check: () => ({ allowed: true }) },
+        clientIdentifier: () => "client",
+        originAllowed: () => true,
+      });
+
+      const response = await post(
+        request(undefined, realisticRoleDescriptionAtLength(length)),
+      );
+
+      expect(response.status).toBe(200);
+      expect(providerFactory).toHaveBeenCalledOnce();
+      expect(generate).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("rejects a 2,501-character job description before retrieval, prompt construction, or provider invocation", async () => {
+    const generate = vi.fn();
+    const providerFactory = vi.fn(async () => ({ generate }));
+    const retrieveKnowledge = vi.fn();
+    const promptBuilder = vi.fn();
+    const telemetryEvents: ChatTelemetryEvent[] = [];
+    const post = createChatPostHandler({
+      providerFactory,
+      retrieveKnowledge,
+      promptBuilder,
+      rateLimiter: { check: () => ({ allowed: true }) },
+      clientIdentifier: () => "client",
+      originAllowed: () => true,
+      telemetry: { record: (event) => telemetryEvents.push(event) },
+    });
+
+    const response = await post(
+      request(
+        undefined,
+        realisticRoleDescriptionAtLength(MAX_JOB_DESCRIPTION_LENGTH + 1),
+      ),
+    );
+
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toEqual({
+      error: "job_description_too_long",
+    });
+    expect(retrieveKnowledge).not.toHaveBeenCalled();
+    expect(promptBuilder).not.toHaveBeenCalled();
+    expect(providerFactory).not.toHaveBeenCalled();
+    expect(generate).not.toHaveBeenCalled();
+    expect(
+      telemetryEvents.filter((event) => event.type === "provider_attempt"),
+    ).toEqual([]);
+    expect(telemetryEvents).toEqual([
+      expect.objectContaining({
+        type: "request_failed",
+        stage: "validation",
+        reason: "job_description_too_long",
+      }),
+    ]);
+  });
+
   it("does not create or call a provider after rate limiting rejects", async () => {
     const generate = vi.fn();
     const providerFactory = vi.fn(async () => ({ generate }));
@@ -370,6 +459,10 @@ Responsibilities:
           allowDirectContact: false,
         };
       },
+      selectPromptHistory: (history) => {
+        events.push("select-context");
+        return history;
+      },
       promptBuilder: (options) => {
         events.push("prompt");
         expect(options.evidence).toBe(evidence);
@@ -379,7 +472,12 @@ Responsibilities:
     });
 
     const response = await post(request());
-    expect(events).toEqual(["retrieve", "prompt", "provider"]);
+    expect(events).toEqual([
+      "retrieve",
+      "select-context",
+      "prompt",
+      "provider",
+    ]);
     expect(response.status).toBe(200);
     const payload = await response.json();
     expect(payload.message).toBe("Mock answer");

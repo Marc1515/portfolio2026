@@ -42,6 +42,8 @@ const en = {
     rateLimitedError: "You have sent several questions in a short time.",
     invalidRequestError:
       "This message could not be submitted. Review it and try again.",
+    jobDescriptionTooLongError:
+      "This job description is too long for a reliable comparison. Please keep it under 2,500 characters and focus on the main responsibilities, requirements and technologies.",
     requestRejectedError:
       "This request was rejected by the site's security configuration.",
     internalError: "Something unexpected prevented this answer.",

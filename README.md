@@ -55,7 +55,7 @@ The bilingual recruiter chat answers questions about Marc's verified professiona
 
 Cloudflare Workers AI is the primary provider and Ollama is the controlled fallback. Retrieval is local and deterministic. A normal request makes one Cloudflare attempt and, only when eligible, one Ollama attempt. The browser cannot choose or discover the answering provider.
 
-Conversation history remains in browser `sessionStorage`. The server does not persist or log questions, answers, job descriptions, transcripts, prompts, raw request bodies, retrieved evidence content, IP addresses, or provider responses.
+Visible conversation history remains bounded in browser `sessionStorage`, separately from the smaller context selected for each provider request. A new job description resets role-comparison context; short role follow-ups retain the latest job-description anchor, while normal questions use at most two recent completed turns. Job descriptions are limited to 2,500 characters for reliable comparisons and longer descriptions are rejected before any provider invocation. The server does not persist or log questions, answers, job descriptions, transcripts, prompts, raw request bodies, retrieved evidence content, IP addresses, or provider responses.
 
 ### Server-only configuration
 

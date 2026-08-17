@@ -7,6 +7,7 @@ import {
   recoverPendingChatHistory,
   toApiRequestMessages,
 } from "@/components/features/chat/chatHistory";
+import { MAX_HISTORY_MESSAGES } from "@/lib/ai/validation";
 import type { ChatDisplayMessage, ChatEvidenceSource } from "@/types/chat";
 
 function message(
@@ -95,6 +96,25 @@ describe("pending chat history", () => {
     expect(completed.at(-1)?.sources).toEqual(validSources);
   });
 
+  it("keeps the visible request history bounded independently of provider context", () => {
+    const visibleHistory = Array.from(
+      { length: MAX_HISTORY_MESSAGES + 1 },
+      (_, index) =>
+        message(
+          `visible-${index}`,
+          index % 2 === 0 ? "assistant" : "user",
+          `Visible message ${index}`,
+        ),
+    );
+    const pending = preparePendingChatHistory(
+      visibleHistory,
+      message("pending", "user", "Latest visible question"),
+    );
+
+    expect(pending.requestMessages).toHaveLength(MAX_HISTORY_MESSAGES);
+    expect(pending.requestMessages.at(-1)?.id).toBe("pending");
+  });
+
   it("never commits source metadata for a failed pending request", () => {
     const pending = preparePendingChatHistory(
       confirmedHistory,
@@ -118,6 +138,30 @@ describe("pending chat history", () => {
     expect(
       pending.requestMessages.filter((item) => item.id === failedMessage.id),
     ).toHaveLength(1);
+  });
+
+  it("restores an overlong job description for editing without duplicating its bubble", () => {
+    const original = `Full Stack Engineer\n\nRequirements:\n-${" React TypeScript".repeat(170)}`;
+    const failedMessage = message("role-too-long", "user", original);
+    const pending = preparePendingChatHistory(confirmedHistory, failedMessage);
+    const recovered = recoverPendingChatHistory(pending);
+
+    expect(recovered.retryInput).toBe(original);
+    expect(
+      recovered.confirmedMessages.filter(
+        (item) => item.id === failedMessage.id,
+      ),
+    ).toEqual([]);
+
+    const edited = original.slice(0, 2_400);
+    const resubmission = preparePendingChatHistory(
+      recovered.confirmedMessages,
+      message("role-edited", "user", edited),
+    );
+    expect(resubmission.requestMessages.at(-1)?.content).toBe(edited);
+    expect(
+      resubmission.requestMessages.filter((item) => item.role === "user"),
+    ).toHaveLength(2);
   });
 
   it("restores old stored messages without sources", () => {

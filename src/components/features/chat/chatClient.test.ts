@@ -32,6 +32,15 @@ describe("requestChatAnswer", () => {
     expect(es.chat.retryLabel).toBe("Volver a intentar");
   });
 
+  it("provides the dedicated localized job-description length guidance", () => {
+    expect(en.chat.jobDescriptionTooLongError).toBe(
+      "This job description is too long for a reliable comparison. Please keep it under 2,500 characters and focus on the main responsibilities, requirements and technologies.",
+    );
+    expect(es.chat.jobDescriptionTooLongError).toBe(
+      "Esta oferta es demasiado larga para realizar una comparación fiable. Redúcela a menos de 2.500 caracteres y céntrate en las responsabilidades, requisitos y tecnologías principales.",
+    );
+  });
+
   it.each([
     [
       "provider_unavailable",
@@ -39,6 +48,7 @@ describe("requestChatAnswer", () => {
       { error: "provider_unavailable", retryable: true },
     ],
     ["invalid_request", 400, { error: "invalid_request" }],
+    ["job_description_too_long", 422, { error: "job_description_too_long" }],
     ["forbidden", 403, { error: "forbidden_origin" }],
     ["internal", 500, { error: "internal_error" }],
   ] as const)("distinguishes %s public errors", async (type, status, body) => {

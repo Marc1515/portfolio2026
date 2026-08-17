@@ -381,7 +381,10 @@ export function retrieveRecruiterKnowledge(
   const finalQuestion = messages.at(-1)?.content ?? "";
   const queryKind = detectRecruiterQueryKind(finalQuestion);
   const currentQuery = normalizeRetrievalText(finalQuestion);
-  const contextQuery = normalizeRetrievalText(previousVisitorContext(messages));
+  const contextQuery =
+    queryKind === "role_comparison"
+      ? ""
+      : normalizeRetrievalText(previousVisitorContext(messages));
   const allowDirectContact = hasExplicitDirectContactIntent(finalQuestion);
   const indexedEntries = INDEX.get(locale) ?? [];
 

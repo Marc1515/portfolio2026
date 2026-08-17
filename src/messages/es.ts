@@ -43,6 +43,8 @@ const es = {
     rateLimitedError: "Has enviado varias preguntas en poco tiempo.",
     invalidRequestError:
       "No se ha podido enviar este mensaje. Revísalo y vuelve a intentarlo.",
+    jobDescriptionTooLongError:
+      "Esta oferta es demasiado larga para realizar una comparación fiable. Redúcela a menos de 2.500 caracteres y céntrate en las responsabilidades, requisitos y tecnologías principales.",
     requestRejectedError:
       "La configuración de seguridad del sitio ha rechazado esta solicitud.",
     internalError: "Un error inesperado ha impedido generar esta respuesta.",

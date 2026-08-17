@@ -8,6 +8,7 @@ import {
   retrieveRecruiterKnowledge,
 } from "@/lib/ai/knowledgeRetriever";
 import { buildRecruiterPrompt } from "@/lib/ai/promptBuilder";
+import { selectRecruiterPromptHistory } from "@/lib/ai/recruiterPromptHistory";
 import { evaluateRecruiterIntent } from "@/lib/ai/recruiterIntentGuard";
 import { isChatEvidenceSource, MAX_PUBLIC_SOURCES } from "@/lib/chatEvidence";
 
@@ -24,10 +25,11 @@ describe("deterministic recruiter evaluations", () => {
     if (intent.kind !== "professional") return;
 
     const retrieval = retrieveRecruiterKnowledge(evaluation.locale, history);
+    const promptHistory = selectRecruiterPromptHistory(history);
     const evidenceIds = retrieval.entries.map((entry) => entry.id);
     const prompt = buildRecruiterPrompt({
       locale: evaluation.locale,
-      history,
+      history: promptHistory,
       evidence: retrieval.entries,
       queryKind: retrieval.queryKind,
       allowDirectContact: retrieval.allowDirectContact,
