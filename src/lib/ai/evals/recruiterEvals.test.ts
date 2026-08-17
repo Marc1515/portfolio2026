@@ -8,6 +8,7 @@ import {
   retrieveRecruiterKnowledge,
 } from "@/lib/ai/knowledgeRetriever";
 import { buildRecruiterPrompt } from "@/lib/ai/promptBuilder";
+import { detectRecruiterAssessmentMode } from "@/lib/ai/recruiterAssessment";
 import { selectRecruiterPromptHistory } from "@/lib/ai/recruiterPromptHistory";
 import { evaluateRecruiterIntent } from "@/lib/ai/recruiterIntentGuard";
 import { isChatEvidenceSource, MAX_PUBLIC_SOURCES } from "@/lib/chatEvidence";
@@ -20,8 +21,12 @@ describe("deterministic recruiter evaluations", () => {
     ];
     const intent = evaluateRecruiterIntent(evaluation.locale, history);
     const expectedIntent = evaluation.expectedIntentKind ?? "professional";
+    const assessmentMode = detectRecruiterAssessmentMode(evaluation.question);
 
     expect(intent.kind).toBe(expectedIntent);
+    if (evaluation.expectedAssessmentMode) {
+      expect(assessmentMode).toBe(evaluation.expectedAssessmentMode);
+    }
     if (intent.kind !== "professional") return;
 
     const retrieval = retrieveRecruiterKnowledge(evaluation.locale, history);

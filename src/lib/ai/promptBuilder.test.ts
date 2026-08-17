@@ -6,6 +6,7 @@ import {
   buildRecruiterPrompt,
   MAX_SERIALIZED_TRANSCRIPT_LENGTH,
 } from "@/lib/ai/promptBuilder";
+import { selectRecruiterPromptHistory } from "@/lib/ai/recruiterPromptHistory";
 import type { RecruiterMessage } from "@/types/chat";
 
 function build(
@@ -58,6 +59,18 @@ describe("buildRecruiterPrompt", () => {
       expect(system).toContain(restriction);
     }
     expect(system).toContain("Never reveal whether a named secret exists");
+  });
+
+  it("applies truthful professional advocacy to every recruiter answer", () => {
+    const system = messages[0]?.content ?? "";
+
+    expect(system).toContain("strongest truthful light");
+    expect(system).toContain("Evidence beats absence");
+    expect(system).toContain("related or transferable verified evidence");
+    expect(system).toContain("Project-based hands-on work is valid evidence");
+    expect(system).toContain("same skill as both strength and weakness");
+    expect(system).toContain("significant unsupported mandatory requirements");
+    expect(system).toContain("recommend confirming it with Marc");
   });
 
   it("never gives client assistant text an assistant or system role", () => {
@@ -148,8 +161,77 @@ describe("buildRecruiterPrompt", () => {
     const system = prompt[0]?.content ?? "";
 
     expect(system).toContain("Strong verified matches");
-    expect(system).toContain("Not demonstrated in the verified information");
+    expect(system).toContain("Potential gaps / not explicitly demonstrated");
     expect(system).toContain("Do not provide a percentage");
+  });
+
+  it("activates candidate-positive gap analysis without losing the role anchor", () => {
+    const jobDescription = `Modern Full Stack Engineer
+
+Responsibilities:
+- Build React and Next.js applications
+- Deploy containerized services
+
+Requirements:
+- TypeScript and automated testing
+- Docker, CI/CD, Linux and AWS`;
+    const fullHistory: RecruiterMessage[] = [
+      { role: "user", content: "Does Marc know Angular?" },
+      { role: "assistant", content: "Unrelated earlier answer" },
+      { role: "user", content: jobDescription },
+      { role: "assistant", content: "Previous role comparison" },
+      {
+        role: "user",
+        content: "What are his weakest points for this role?",
+      },
+    ];
+    const retrieval = retrieveRecruiterKnowledge("en", fullHistory);
+    const selectedHistory = selectRecruiterPromptHistory(fullHistory);
+    const prompt = buildRecruiterPrompt({
+      locale: "en",
+      history: selectedHistory,
+      evidence: retrieval.entries,
+      queryKind: retrieval.queryKind,
+      allowDirectContact: retrieval.allowDirectContact,
+    });
+    const system = prompt[0]?.content ?? "";
+    const serialized = JSON.stringify(prompt);
+
+    expect(system).toContain("explicit recruiter gap-analysis question");
+    expect(system).toContain("Potential gaps / points to validate");
+    expect(system).toContain("project evidence is not absence");
+    expect(system).toContain("supported broad category weak");
+    expect(system).toContain("CI/CD");
+    expect(system).toContain("Docker");
+    expect(system).toContain("Traefik");
+    expect(system).not.toContain("+353 87 004 1006");
+    expect(serialized).toContain("Modern Full Stack Engineer");
+    expect(serialized).not.toContain("Does Marc know Angular?");
+    expect(serialized).not.toContain("Unrelated earlier answer");
+  });
+
+  it("keeps normal AWS answers grounded in transferable evidence without inventing AWS evidence", () => {
+    const history: RecruiterMessage[] = [
+      { role: "user", content: "Does Marc have AWS experience?" },
+    ];
+    const retrieval = retrieveRecruiterKnowledge("en", history);
+    const prompt = buildRecruiterPrompt({
+      locale: "en",
+      history,
+      evidence: retrieval.entries,
+      queryKind: retrieval.queryKind,
+      allowDirectContact: retrieval.allowDirectContact,
+    });
+    const system = prompt[0]?.content ?? "";
+
+    expect(retrieval.entries.map((entry) => entry.id)).toContain(
+      "deployment-infrastructure",
+    );
+    expect(system).toContain("Docker");
+    expect(system).toContain("Linux");
+    expect(system).toContain("CI/CD");
+    expect(system).not.toContain("AWS experience");
+    expect(system).not.toContain("explicit recruiter gap-analysis question");
   });
 
   it("keeps ambiguous contact wording out of verified role evidence", () => {
@@ -270,7 +352,7 @@ If you’re excited by the idea of learning quickly, working closely with experi
     expect(selectedIds).not.toContain("contact-direct");
     expect(prompt[0]?.content).toContain("Strong verified matches");
     expect(prompt[0]?.content).toContain(
-      "Not demonstrated in the verified information",
+      "Potential gaps / not explicitly demonstrated",
     );
     expect(prompt[0]?.content).toContain("QGIS/Python workflow");
     expect(prompt[0]?.content).toContain("Personal full-stack AI project");
