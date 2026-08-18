@@ -12,6 +12,7 @@
     "test:chat-evals": "vitest run src/lib/ai/evals",
     "chat:smoke": "node scripts/chat-smoke.mjs",
     "chat:smoke:ollama": "node scripts/ollama-smoke.mjs",
+    "chat:warmup:ollama": "node scripts/ollama-warmup.mjs",
     "chat:smoke:role-comparison": "node scripts/chat-smoke.mjs --role-comparison",
     "test:watch": "vitest"
   },
