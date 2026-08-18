@@ -36,5 +36,10 @@ jobs:
             echo "::warning::Ollama container not found; deploying without runtime fallback connectivity."
           fi
           docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
+          if [ "$ollama_container" = "ollama" ]; then
+            if ! docker exec portfolio2026-dev node scripts/ollama-warmup.mjs; then
+              echo "::warning::Private Ollama warm-up failed; Cloudflare primary remains available."
+            fi
+          fi
           docker image prune -af
           docker builder prune -af --filter "until=24h"

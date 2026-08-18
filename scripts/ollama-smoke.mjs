@@ -1,56 +1,54 @@
-const rawBaseUrl = (
-  process.env.OLLAMA_BASE_URL || "http://ollama:11434"
-).trim();
-const model = process.env.OLLAMA_MODEL?.trim();
-const configuredTimeoutMs = Number(process.env.OLLAMA_REQUEST_TIMEOUT_MS);
-const timeoutMs =
-  Number.isSafeInteger(configuredTimeoutMs) &&
-  configuredTimeoutMs > 0 &&
-  configuredTimeoutMs <= 120_000
-    ? configuredTimeoutMs
-    : 90_000;
+import { pathToFileURL } from "node:url";
 
-function chatEndpoint(value) {
-  let url;
+import {
+  DEFAULT_OLLAMA_BASE_URL,
+  normalizeOllamaChatUrl,
+  normalizeOllamaKeepAlive,
+  normalizeOllamaModel,
+  parseBoundedPositiveInteger,
+} from "./ollama-runtime.mjs";
+
+/**
+ * @param {{
+ *   environment?: NodeJS.ProcessEnv;
+ *   fetchImplementation?: typeof fetch;
+ * }} [options]
+ */
+export async function runOllamaSmoke(options = {}) {
+  const environment = options.environment ?? process.env;
+  const fetchImplementation = options.fetchImplementation ?? fetch;
+  const endpoint = normalizeOllamaChatUrl(
+    environment.OLLAMA_BASE_URL || DEFAULT_OLLAMA_BASE_URL,
+  );
+  const model = normalizeOllamaModel(environment.OLLAMA_MODEL);
+  const keepAlive = normalizeOllamaKeepAlive(environment.OLLAMA_KEEP_ALIVE);
+  const timeoutMs = parseBoundedPositiveInteger(
+    environment.OLLAMA_REQUEST_TIMEOUT_MS,
+    90_000,
+    120_000,
+  );
+
+  if (!endpoint) throw new Error("invalid base URL configuration");
+  if (!model) throw new Error("invalid model configuration");
+  if (!keepAlive) throw new Error("invalid keep-alive configuration");
+
+  let response;
   try {
-    url = new URL(value);
+    response = await fetchImplementation(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: "Reply with the single word OK." }],
+        stream: false,
+        keep_alive: keepAlive,
+        options: { temperature: 0.1, num_predict: 8 },
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
   } catch {
-    throw new Error("OLLAMA_BASE_URL must be a valid HTTP(S) URL.");
+    throw new Error("request failed or timed out");
   }
-
-  if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new Error("OLLAMA_BASE_URL must use HTTP or HTTPS.");
-  }
-
-  url.username = "";
-  url.password = "";
-  url.search = "";
-  url.hash = "";
-  const path = url.pathname
-    .replace(/\/+$/, "")
-    .replace(/\/api\/chat$/i, "")
-    .replace(/\/api$/i, "");
-  url.pathname = `${path}/api/chat`.replace(/\/{2,}/g, "/");
-  return url;
-}
-
-async function run() {
-  if (!model || model.length > 200 || /[\u0000-\u001f\u007f]/.test(model)) {
-    throw new Error("OLLAMA_MODEL must name the configured fallback model.");
-  }
-
-  const response = await fetch(chatEndpoint(rawBaseUrl), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: "Reply with the single word OK." }],
-      stream: false,
-      keep_alive: "2m",
-      options: { temperature: 0.1, num_predict: 8 },
-    }),
-    signal: AbortSignal.timeout(timeoutMs),
-  });
 
   if (!response.ok) {
     throw new Error(`Ollama returned HTTP ${response.status}.`);
@@ -59,7 +57,12 @@ async function run() {
     throw new Error("Ollama returned a non-JSON response.");
   }
 
-  const payload = await response.json();
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("Ollama returned invalid JSON.");
+  }
   const content = payload?.message?.content;
   if (
     typeof content !== "string" ||
@@ -68,15 +71,22 @@ async function run() {
   ) {
     throw new Error("Ollama returned an invalid bounded response.");
   }
-
-  console.info("Private Ollama connectivity smoke test: PASS");
 }
 
-run().catch((error) => {
-  console.error(
-    error instanceof Error
-      ? `Private Ollama connectivity smoke test: FAIL (${error.message})`
-      : "Private Ollama connectivity smoke test: FAIL",
-  );
-  process.exitCode = 1;
-});
+const isMainModule =
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMainModule) {
+  runOllamaSmoke()
+    .then(() => {
+      console.info("Private Ollama connectivity smoke test: PASS");
+    })
+    .catch((error) => {
+      console.error(
+        error instanceof Error
+          ? `Private Ollama connectivity smoke test: FAIL (${error.message})`
+          : "Private Ollama connectivity smoke test: FAIL",
+      );
+      process.exitCode = 1;
+    });
+}

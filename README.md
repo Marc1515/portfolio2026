@@ -11,6 +11,7 @@ Personal portfolio built with Next.js App Router and TypeScript, following a mob
 - `pnpm test`: run the Vitest suite once.
 - `pnpm test:chat-evals`: run deterministic recruiter-chat evaluations.
 - `pnpm chat:smoke`: manually check one configured recruiter-chat response.
+- `pnpm chat:warmup:ollama`: preload the private Ollama fallback model.
 - `pnpm test:watch`: run Vitest in watch mode.
 
 ## Architecture
@@ -69,7 +70,7 @@ CLOUDFLARE_AI_MODEL=@cf/zai-org/glm-4.7-flash
 OLLAMA_BASE_URL=http://ollama:11434
 OLLAMA_MODEL=qwen2.5-coder:3b
 OLLAMA_REQUEST_TIMEOUT_MS=90000
-OLLAMA_KEEP_ALIVE=2m
+OLLAMA_KEEP_ALIVE=-1m
 OLLAMA_MAX_CONCURRENT_REQUESTS=1
 OLLAMA_FALLBACK_DAILY_LIMIT=25
 
@@ -83,7 +84,7 @@ CHAT_TELEMETRY_ENABLED=false
 All variables are server-only:
 
 - `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` are production-sensitive credentials. Together with `CLOUDFLARE_AI_MODEL`, all three are required to enable Cloudflare.
-- `OLLAMA_MODEL` enables the fallback. The base URL, timeout, keep-alive, concurrency, and daily budget are optional bounded controls with conservative defaults.
+- `OLLAMA_MODEL` enables the fallback. The base URL, timeout, keep-alive, concurrency, and daily budget are optional bounded controls with conservative defaults. `OLLAMA_KEEP_ALIVE=-1m` keeps the CPU fallback resident to avoid the approximately 70-second model cold start measured on the VPS.
 - `OLLAMA_BASE_URL` is production-sensitive network configuration. It must resolve from the application container/runtime and must not expose Ollama publicly.
 - The chat rate-limit variables are optional bounded controls. `CHAT_ALLOWED_ORIGINS` should include every additional trusted HTTPS origin.
 - `CHAT_TELEMETRY_ENABLED` is optional and defaults to disabled. Set it to `true` only when structured operational logs are collected appropriately.
@@ -142,7 +143,10 @@ After deployment, keep these non-secret values in the untracked VPS `.env` file:
 OLLAMA_BASE_URL=http://ollama:11434
 OLLAMA_MODEL=qwen2.5-coder:3b
 OLLAMA_REQUEST_TIMEOUT_MS=90000
+OLLAMA_KEEP_ALIVE=-1m
 ```
+
+Development and production deployments warm the configured model from the newly deployed portfolio container. This direct infrastructure request uses a separate bounded 120-second warm-up timeout and does not consume the recruiter's fallback budget; the recruiter request timeout remains 90 seconds. A warm-up failure is reported as a deployment warning because Cloudflare remains the primary provider. Keeping Qwen resident intentionally uses additional RAM in exchange for removing CPU cold-start latency.
 
 Safely inspect the runtime topology without printing environment values or provider output:
 
@@ -153,6 +157,8 @@ docker container inspect portfolio2026-dev --format '{{range $name, $_ := .Netwo
 docker container inspect portfolio2026-prod --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}'
 docker exec portfolio2026-dev node scripts/ollama-smoke.mjs
 docker exec portfolio2026-prod node scripts/ollama-smoke.mjs
+docker exec portfolio2026-dev node scripts/ollama-warmup.mjs
+docker exec ollama ollama ps
 ```
 
 Run the command for the deployed portfolio container. The smoke script sends only a harmless fixed prompt, validates a short bounded response, and prints PASS/FAIL without printing the configured URL, model, prompt, or response. Its success proves container-to-Ollama connectivity and inference for the configured model; repository unit tests alone do not.
@@ -173,6 +179,8 @@ When an `Origin` header is present, `/api/chat` accepts only the request's own o
 - [ ] The external `portfolio-ai` network reports `internal=true`, and both the portfolio and `ollama` containers belong to it.
 - [ ] `OLLAMA_BASE_URL=http://ollama:11434` and `OLLAMA_MODEL=qwen2.5-coder:3b` are set in the untracked VPS `.env`.
 - [ ] `OLLAMA_REQUEST_TIMEOUT_MS=90000` is set for the bounded CPU fallback window.
+- [ ] `OLLAMA_KEEP_ALIVE=-1m` is set and `ollama ps` reports the configured model resident after deployment.
+- [ ] `node scripts/ollama-warmup.mjs` passes from inside the deployed portfolio container.
 - [ ] `node scripts/ollama-smoke.mjs` passes from inside the deployed portfolio container.
 - [ ] `CHAT_ALLOWED_ORIGINS` matches the deployed HTTPS origins.
 - [ ] Per-minute, per-client daily, and global daily limits were reviewed.
