@@ -90,7 +90,7 @@ All variables are server-only:
 
 Missing provider configuration does not break installation, tests, or the production build. If neither provider is configured, `/api/chat` returns the existing generic `provider_unavailable` error without revealing which setting is missing.
 
-Answers are grounded only in `src/data/recruiterKnowledge.ts`. Browser-provided assistant history remains untrusted transcript text and is never sent with a provider `assistant` or `system` role.
+Answers are grounded only in `src/data/recruiterKnowledge.ts`. The assistant presents verified evidence in the strongest truthful light: direct matches first, then reasonable transferable evidence, with unsupported requirements framed as validation points rather than assumed weaknesses. Project-based evidence remains clearly distinguished from commercial experience but still counts as valid hands-on evidence. Browser-provided assistant history remains untrusted transcript text and is never sent with a provider `assistant` or `system` role.
 
 ### Privacy-safe telemetry and readiness
 
