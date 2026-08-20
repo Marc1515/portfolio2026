@@ -28,10 +28,27 @@ RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=builder --chown=nextjs:nodejs /app/src/data ./src/data
+COPY --from=builder --chown=nextjs:nodejs /app/src/types ./src/types
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/chatEvidence.ts ./src/lib/chatEvidence.ts
+COPY --from=builder --chown=nextjs:nodejs \
+  /app/src/lib/ai/benchmarks/recruiterModelBenchmark.ts \
+  /app/src/lib/ai/benchmarks/recruiterModelBenchmarkCases.ts \
+  /app/src/lib/ai/benchmarks/recruiterModelBenchmarkRunner.ts \
+  ./src/lib/ai/benchmarks/
+COPY --from=builder --chown=nextjs:nodejs \
+  /app/src/lib/ai/jobDescriptionHeuristics.ts \
+  /app/src/lib/ai/knowledgeRetriever.ts \
+  /app/src/lib/ai/promptBuilder.ts \
+  /app/src/lib/ai/recruiterAssessment.ts \
+  /app/src/lib/ai/recruiterIntentGuard.ts \
+  /app/src/lib/ai/recruiterPromptHistory.ts \
+  /app/src/lib/ai/validation.ts \
+  ./src/lib/ai/
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
+RUN mkdir -p .next/cache benchmark-results && chown -R nextjs:nodejs .next benchmark-results
 
 USER nextjs
 
