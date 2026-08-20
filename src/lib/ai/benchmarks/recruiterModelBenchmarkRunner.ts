@@ -144,6 +144,7 @@ export function formatBenchmarkTerminalSummary(
     `Invalid responses: ${report.summary.invalidResponses}`,
     `Warm-up: ${formatSeconds(report.summary.warmupDurationMs)}`,
     `Report: ${relativeJsonPath}`,
+    "Reminder: after benchmarking alternative models, restore the shared production fallback; see README cleanup commands.",
   ].join("\n");
 }
 

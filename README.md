@@ -190,6 +190,15 @@ docker exec portfolio2026-dev node scripts/recruiter-model-benchmark.mjs --model
 docker cp portfolio2026-dev:/app/benchmark-results ./benchmark-results
 ```
 
+Because the VPS uses one shared Ollama instance, an alternative benchmark model may temporarily displace the resident production fallback under RAM pressure. After finishing the benchmark session, restore and verify the production fallback manually:
+
+```bash
+docker exec portfolio2026-prod node scripts/ollama-warmup.mjs
+docker exec ollama ollama ps
+```
+
+The expected current production state is `qwen2.5-coder:3b ... Forever`. The benchmark never unloads models or invokes this production warm-up automatically.
+
 ### Request protection and deployment
 
 Rate limits, the Cloudflare failure cooldown, Ollama concurrency, and the Ollama daily fallback budget are process-local. They are intentionally not persisted and reset when the Node process restarts. Daily counters reset at midnight UTC. Running multiple Node processes gives each process its own counters, so use infrastructure-level protection if the deployment later scales horizontally.

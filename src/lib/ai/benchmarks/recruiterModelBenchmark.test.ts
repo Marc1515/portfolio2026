@@ -19,7 +19,10 @@ import {
   type BenchmarkCaseResult,
 } from "./recruiterModelBenchmark";
 import { recruiterModelBenchmarkCases } from "./recruiterModelBenchmarkCases";
-import { runRecruiterModelBenchmark } from "./recruiterModelBenchmarkRunner";
+import {
+  formatBenchmarkTerminalSummary,
+  runRecruiterModelBenchmark,
+} from "./recruiterModelBenchmarkRunner";
 
 const temporaryDirectories: string[] = [];
 
@@ -332,6 +335,14 @@ describe("benchmark metrics", () => {
     });
     expect(output.jsonReportPath).toContain("qwen3-1-7b");
     expect(output.markdownReportPath).toContain("qwen3-1-7b");
+    expect(
+      formatBenchmarkTerminalSummary(
+        output.report,
+        "benchmark-results/report.json",
+      ),
+    ).toContain(
+      "after benchmarking alternative models, restore the shared production fallback",
+    );
     const warmupPayload = JSON.parse(
       String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body),
     );
