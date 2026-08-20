@@ -13,7 +13,7 @@ const environment = {
   OLLAMA_BASE_URL: "http://ollama:11434",
   OLLAMA_MODEL: "qwen2.5-coder:3b",
   OLLAMA_REQUEST_TIMEOUT_MS: "1000",
-  OLLAMA_KEEP_ALIVE: "2m",
+  OLLAMA_KEEP_ALIVE: "-1",
 } as NodeJS.ProcessEnv;
 
 function jsonResponse(value: unknown, status = 200) {
@@ -60,9 +60,10 @@ describe("OllamaAIProvider", () => {
     expect(JSON.parse(String(request.body))).toMatchObject({
       model: "qwen2.5-coder:3b",
       stream: false,
-      keep_alive: "2m",
+      keep_alive: "-1m",
       options: { temperature: 0.2, num_predict: 350 },
     });
+    expect(JSON.parse(String(request.body)).keep_alive).not.toBe("-1");
   });
 
   it("classifies request timeouts", async () => {

@@ -387,6 +387,16 @@ function isProfessionalFollowUp(
   );
 }
 
+export function isRecruiterProfessionalFollowUp(
+  messages: RecruiterMessage[],
+): boolean {
+  const currentQuestion = messages.at(-1)?.content ?? "";
+  return isProfessionalFollowUp(
+    normalizeRetrievalText(currentQuestion),
+    messages,
+  );
+}
+
 export function evaluateRecruiterIntent(
   locale: ChatLocale,
   messages: RecruiterMessage[],
@@ -422,7 +432,7 @@ export function evaluateRecruiterIntent(
   if (
     hasProfessionalRelationship(normalized) ||
     hasRecruiterProfileSubjectSignal(locale, currentQuestion) ||
-    isProfessionalFollowUp(normalized, messages)
+    isRecruiterProfessionalFollowUp(messages)
   ) {
     return { kind: "professional" };
   }

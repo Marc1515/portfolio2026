@@ -4,12 +4,19 @@ import type { AIProvider } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
 import type { AIModelMessage } from "@/lib/ai/promptBuilder";
 import { MAX_ASSISTANT_MESSAGE_LENGTH } from "@/lib/ai/validation";
+import {
+  DEFAULT_OLLAMA_BASE_URL,
+  normalizeOllamaChatUrl,
+  normalizeOllamaKeepAlive,
+  normalizeOllamaModel,
+  parseBoundedPositiveInteger,
+} from "../../../scripts/ollama-runtime.mjs";
 
-const DEFAULT_BASE_URL = "http://ollama:11434";
 export const DEFAULT_OLLAMA_TIMEOUT_MS = 90_000;
-const DEFAULT_KEEP_ALIVE = "2m";
 const DEFAULT_MAX_CONCURRENT_REQUESTS = 1;
 const DEFAULT_DAILY_LIMIT = 25;
+
+export { normalizeOllamaChatUrl };
 
 interface OllamaConfiguration {
   endpoint: string;
@@ -28,38 +35,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function parsePositiveInteger(
-  value: string | undefined,
-  fallback: number,
-  maximum = Number.MAX_SAFE_INTEGER,
-): number {
-  const parsed = Number(value);
-  return Number.isSafeInteger(parsed) && parsed > 0 && parsed <= maximum
-    ? parsed
-    : fallback;
-}
-
 function utcDayKey(timestamp: number): string {
   return new Date(timestamp).toISOString().slice(0, 10);
-}
-
-export function normalizeOllamaChatUrl(rawBaseUrl: string): string | null {
-  try {
-    const url = new URL(rawBaseUrl);
-    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
-
-    url.username = "";
-    url.password = "";
-    url.search = "";
-    url.hash = "";
-    let pathname = url.pathname.replace(/\/+$/, "");
-    pathname = pathname.replace(/\/api\/chat$/i, "").replace(/\/api$/i, "");
-    url.pathname = `${pathname}/api/chat`.replace(/\/{2,}/g, "/");
-
-    return url.toString();
-  } catch {
-    return null;
-  }
 }
 
 export class OllamaUsageGuard {
@@ -121,12 +98,12 @@ function createGuard(
   now: () => number = Date.now,
 ) {
   return new OllamaUsageGuard(
-    parsePositiveInteger(
+    parseBoundedPositiveInteger(
       environment.OLLAMA_MAX_CONCURRENT_REQUESTS,
       DEFAULT_MAX_CONCURRENT_REQUESTS,
       100,
     ),
-    parsePositiveInteger(
+    parseBoundedPositiveInteger(
       environment.OLLAMA_FALLBACK_DAILY_LIMIT,
       DEFAULT_DAILY_LIMIT,
       100_000,
@@ -138,20 +115,13 @@ function createGuard(
 let sharedGuard: OllamaUsageGuard | undefined;
 
 function getConfiguration(environment: NodeJS.ProcessEnv): OllamaConfiguration {
-  const model = environment.OLLAMA_MODEL?.trim();
+  const model = normalizeOllamaModel(environment.OLLAMA_MODEL);
   const endpoint = normalizeOllamaChatUrl(
-    environment.OLLAMA_BASE_URL?.trim() || DEFAULT_BASE_URL,
+    environment.OLLAMA_BASE_URL || DEFAULT_OLLAMA_BASE_URL,
   );
-  const keepAlive = environment.OLLAMA_KEEP_ALIVE?.trim() || DEFAULT_KEEP_ALIVE;
+  const keepAlive = normalizeOllamaKeepAlive(environment.OLLAMA_KEEP_ALIVE);
 
-  if (
-    !model ||
-    model.length > 200 ||
-    /[\u0000-\u001f\u007f]/.test(model) ||
-    !endpoint ||
-    keepAlive.length > 32 ||
-    /[\u0000-\u001f\u007f]/.test(keepAlive)
-  ) {
+  if (!model || !endpoint || !keepAlive) {
     throw new AIProviderError("ollama", "configuration", {
       fallbackAllowed: false,
     });
@@ -161,7 +131,7 @@ function getConfiguration(environment: NodeJS.ProcessEnv): OllamaConfiguration {
     endpoint,
     model,
     keepAlive,
-    timeoutMs: parsePositiveInteger(
+    timeoutMs: parseBoundedPositiveInteger(
       environment.OLLAMA_REQUEST_TIMEOUT_MS,
       DEFAULT_OLLAMA_TIMEOUT_MS,
       120_000,

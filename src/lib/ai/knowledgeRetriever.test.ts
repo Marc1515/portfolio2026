@@ -71,6 +71,25 @@ describe("retrieveRecruiterKnowledge", () => {
   });
 
   it.each([
+    "Does Marc have AWS experience?",
+    "Has Marc used Kubernetes commercially?",
+    "What cloud infrastructure experience does Marc have?",
+    "¿Tiene Marc experiencia con AWS?",
+  ])(
+    "selects verified transferable infrastructure evidence for: %s",
+    (question) => {
+      const result = retrieve(question, question.startsWith("¿") ? "es" : "en");
+
+      expect(result.entries.map((entry) => entry.id)).toContain(
+        "deployment-infrastructure",
+      );
+      expect(result.entries.map((entry) => entry.id)).not.toContain(
+        "contact-direct",
+      );
+    },
+  );
+
+  it.each([
     ["What is Marc's phone number?", "en"],
     ["What's his mobile number?", "en"],
     ["What is Marc's WhatsApp?", "en"],

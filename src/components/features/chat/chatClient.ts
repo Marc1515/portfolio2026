@@ -15,6 +15,7 @@ export type ChatRequestError = {
     | "provider_unavailable"
     | "rate_limited"
     | "invalid_request"
+    | "job_description_too_long"
     | "forbidden"
     | "internal";
   retryAfterSeconds?: number;
@@ -44,6 +45,7 @@ function isChatErrorResponse(value: unknown): value is ChatErrorResponse {
   if (!isRecord(value) || typeof value.error !== "string") return false;
   const codes: ChatErrorCode[] = [
     "invalid_request",
+    "job_description_too_long",
     "forbidden_origin",
     "rate_limited",
     "provider_unavailable",
@@ -76,6 +78,8 @@ function classifyError(
       return { type: "provider_unavailable" };
     case "invalid_request":
       return { type: "invalid_request" };
+    case "job_description_too_long":
+      return { type: "job_description_too_long" };
     case "forbidden_origin":
       return { type: "forbidden" };
     case "internal_error":

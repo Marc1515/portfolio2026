@@ -63,6 +63,36 @@ function renderRetry(isLoading: boolean) {
   );
 }
 
+function renderJobDescriptionValidation() {
+  const jobDescription = "Senior Engineer requirements to edit";
+  return {
+    jobDescription,
+    markup: renderToStaticMarkup(
+      <ChatPanel
+        canRetry={false}
+        errorMessage="This job description is too long for a reliable comparison."
+        input={jobDescription}
+        inputError={null}
+        inputRef={{ current: null }}
+        isLoading={false}
+        labels={labels}
+        maxLength={4_000}
+        messages={[{ id: "greeting", role: "assistant", content: "Hello" }]}
+        onClear={vi.fn()}
+        onClose={vi.fn()}
+        onInputChange={vi.fn()}
+        onRetry={vi.fn()}
+        onSend={vi.fn()}
+        onSuggestionSelect={vi.fn()}
+        panelId="chat"
+        questions={[]}
+        showSuggestions={false}
+        showLongRequestNotice={false}
+      />,
+    ),
+  };
+}
+
 describe("ChatPanel retryable error", () => {
   it("shows the recoverable message, retained job description, and retry action", () => {
     const markup = renderRetry(false);
@@ -78,6 +108,20 @@ describe("ChatPanel retryable error", () => {
     const markup = renderRetry(true);
     expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>[\s\S]*Try again/);
     expect(markup).toContain(labels.longRequestNotice);
+  });
+});
+
+describe("job-description validation error", () => {
+  it("shows the specific error with editable text and no retry action or duplicate bubble", () => {
+    const { jobDescription, markup } = renderJobDescriptionValidation();
+
+    expect(markup).toContain(
+      "This job description is too long for a reliable comparison.",
+    );
+    expect(markup).toContain(`<textarea`);
+    expect(markup).toContain(`>${jobDescription}</textarea>`);
+    expect(markup.match(new RegExp(jobDescription, "g"))).toHaveLength(1);
+    expect(markup).not.toContain("Try again");
   });
 });
 
