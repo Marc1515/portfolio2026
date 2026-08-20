@@ -174,7 +174,19 @@ const DIRECT_CONTACT_CALL_PATTERNS = [
 const CATEGORY_TERMS: Partial<Record<RecruiterKnowledgeCategory, string[]>> = {
   availability: ["availability", "dublin", "ireland", "location", "ubicacion"],
   contact: ["contact", "contacto", "email", "linkedin", "github", "cv"],
-  deployment: ["deployment", "infrastructure", "infraestructura", "ci/cd"],
+  deployment: [
+    "deployment",
+    "infrastructure",
+    "infraestructura",
+    "ci/cd",
+    "aws",
+    "cloud",
+    "nube",
+    "kubernetes",
+    "eks",
+    "containerized",
+    "contenedores",
+  ],
   education: ["education", "formacion", "education", "studies", "estudios"],
   experience: [
     "commercial",
@@ -381,7 +393,10 @@ export function retrieveRecruiterKnowledge(
   const finalQuestion = messages.at(-1)?.content ?? "";
   const queryKind = detectRecruiterQueryKind(finalQuestion);
   const currentQuery = normalizeRetrievalText(finalQuestion);
-  const contextQuery = normalizeRetrievalText(previousVisitorContext(messages));
+  const contextQuery =
+    queryKind === "role_comparison"
+      ? ""
+      : normalizeRetrievalText(previousVisitorContext(messages));
   const allowDirectContact = hasExplicitDirectContactIntent(finalQuestion);
   const indexedEntries = INDEX.get(locale) ?? [];
 

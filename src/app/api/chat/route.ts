@@ -11,10 +11,18 @@ import {
 } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/providerErrors";
 import {
+  isRecruiterJobDescription,
+  selectRecruiterPromptHistory,
+} from "@/lib/ai/recruiterPromptHistory";
+import {
   evaluateRecruiterIntent,
   type RecruiterIntentDecision,
 } from "@/lib/ai/recruiterIntentGuard";
-import { MAX_REQUEST_BODY_LENGTH, parseChatRequest } from "@/lib/ai/validation";
+import {
+  MAX_JOB_DESCRIPTION_LENGTH,
+  MAX_REQUEST_BODY_LENGTH,
+  parseChatRequest,
+} from "@/lib/ai/validation";
 import {
   chatTelemetry,
   type ChatTelemetry,
@@ -50,6 +58,7 @@ interface ChatHandlerDependencies {
     messages: ChatRequest["messages"],
   ) => KnowledgeRetrievalResult;
   promptBuilder?: typeof buildRecruiterPrompt;
+  selectPromptHistory?: typeof selectRecruiterPromptHistory;
   intentGuard?: (
     locale: ChatRequest["locale"],
     messages: ChatRequest["messages"],
@@ -199,13 +208,29 @@ export function createChatPostHandler(dependencies: ChatHandlerDependencies) {
         );
       }
 
+      const currentQuestion = chatRequest.messages.at(-1)?.content ?? "";
+      if (
+        isRecruiterJobDescription(currentQuestion) &&
+        currentQuestion.trim().length > MAX_JOB_DESCRIPTION_LENGTH
+      ) {
+        return fail(
+          "job_description_too_long",
+          422,
+          "validation",
+          "job_description_too_long",
+        );
+      }
+
       stage = "retrieval";
       const retrieval = (
         dependencies.retrieveKnowledge ?? retrieveRecruiterKnowledge
       )(chatRequest.locale, chatRequest.messages);
+      const promptHistory = (
+        dependencies.selectPromptHistory ?? selectRecruiterPromptHistory
+      )(chatRequest.messages);
       const messages = (dependencies.promptBuilder ?? buildRecruiterPrompt)({
         locale: chatRequest.locale,
-        history: chatRequest.messages,
+        history: promptHistory,
         evidence: retrieval.entries,
         queryKind: retrieval.queryKind,
         allowDirectContact: retrieval.allowDirectContact,

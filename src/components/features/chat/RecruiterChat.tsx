@@ -283,7 +283,9 @@ export function RecruiterChat() {
           })
         : requestError?.type === "provider_unavailable"
           ? null
-          : t("retryGuidance"),
+          : requestError?.type === "job_description_too_long"
+            ? null
+            : t("retryGuidance"),
     retry: t("retryLabel"),
     send: t("sendLabel"),
     suggestions: t("suggestionsLabel"),
@@ -322,13 +324,15 @@ export function RecruiterChat() {
                   ? t("rateLimitedError")
                   : requestError?.type === "invalid_request"
                     ? t("invalidRequestError")
-                    : requestError?.type === "forbidden"
-                      ? t("requestRejectedError")
-                      : requestError?.type === "internal"
-                        ? t("internalError")
-                        : requestError?.type === "generic"
-                          ? t("genericApiError")
-                          : null
+                    : requestError?.type === "job_description_too_long"
+                      ? t("jobDescriptionTooLongError")
+                      : requestError?.type === "forbidden"
+                        ? t("requestRejectedError")
+                        : requestError?.type === "internal"
+                          ? t("internalError")
+                          : requestError?.type === "generic"
+                            ? t("genericApiError")
+                            : null
           }
           canRetry={Boolean(retryablePending)}
           onInputChange={(value) => {

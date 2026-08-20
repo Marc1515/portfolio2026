@@ -40,6 +40,7 @@ export interface ChatResponse {
 
 export type ChatErrorCode =
   | "invalid_request"
+  | "job_description_too_long"
   | "forbidden_origin"
   | "rate_limited"
   | "provider_unavailable"

@@ -20,6 +20,7 @@ export type ChatTelemetryFailureStage =
 export type ChatTelemetryFailureReason =
   | "forbidden_origin"
   | "invalid_request"
+  | "job_description_too_long"
   | "limit_exceeded"
   | "configuration"
   | "authentication"

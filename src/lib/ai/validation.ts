@@ -6,6 +6,7 @@ import {
 } from "@/types/chat";
 
 export const MAX_USER_MESSAGE_LENGTH = 4_000;
+export const MAX_JOB_DESCRIPTION_LENGTH = 2_500;
 export const MAX_ASSISTANT_MESSAGE_LENGTH = 2_000;
 export const MAX_HISTORY_MESSAGES = 10;
 export const MAX_REQUEST_MESSAGES = 50;
