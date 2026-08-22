@@ -1,5 +1,6 @@
 node_modules
 .next
+benchmark-results
 .git
 .gitignore
 README.md
