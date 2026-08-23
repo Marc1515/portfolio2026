@@ -18,6 +18,14 @@ async function readReport(filePath) {
   ) {
     throw new Error("invalid report format");
   }
+  if (
+    report.summary.criticalFailures !== undefined &&
+    (typeof report.summary.criticalFailures !== "number" ||
+      !Number.isSafeInteger(report.summary.criticalFailures) ||
+      report.summary.criticalFailures < 0)
+  ) {
+    throw new Error("invalid report format");
+  }
   return report;
 }
 
@@ -35,12 +43,16 @@ if (process.argv.length < 4) {
 
     console.info("Recruiter AI Model Benchmark Comparison");
     console.info("");
-    console.info("Model\tScore\tMedian\tP95\tFailures");
+    console.info("Model\tScore\tMedian\tP95\tFailures\tCritical");
     for (const report of reports) {
       console.info(
-        `${report.model}\t${report.summary.deterministicScore.toFixed(1)}\t${formatSeconds(report.summary.medianLatencyMs)}\t${formatSeconds(report.summary.p95LatencyMs)}\t${report.summary.failedCases}`,
+        `${report.model}\t${report.summary.deterministicScore.toFixed(1)}\t${formatSeconds(report.summary.medianLatencyMs)}\t${formatSeconds(report.summary.p95LatencyMs)}\t${report.summary.failedCases}\t${report.summary.criticalFailures ?? 0}`,
       );
     }
+    console.info("");
+    console.info(
+      "The deterministic score is approximate; review critical failures separately and keep human review in the selection process.",
+    );
   } catch {
     console.error("Recruiter AI Model Benchmark Comparison: FAIL");
     process.exitCode = 1;

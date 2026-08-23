@@ -87,6 +87,24 @@ const roleAnswerContext =
   "The verified profile shows React, TypeScript, Docker, Linux, CI/CD, testing and full-stack project evidence. AWS, Kubernetes and Java/Spring are not explicitly demonstrated and should be confirmed directly with Marc.";
 const roleAnswerContextEs =
   "El perfil verificado demuestra React, TypeScript, Docker, Linux, CI/CD, pruebas y proyectos full stack. AWS, Kubernetes y Java/Spring no están demostrados explícitamente y deberían confirmarse directamente con Marc.";
+const evidenceLimitationTermsEn = [
+  "not explicitly demonstrated",
+  "not explicitly stated",
+  "not shown",
+  "no verified evidence",
+  "does not establish",
+  "does not mention",
+  "has not explicitly stated",
+];
+const evidenceLimitationTermsEs = [
+  "no está demostrado",
+  "no está demostrada",
+  "no está explícitamente",
+  "no se demuestra",
+  "no consta",
+  "no hay evidencia",
+  "la evidencia disponible no establece",
+];
 
 function professionalCase(
   value: Omit<RecruiterModelBenchmarkCase, "expectedIntent">,
@@ -183,12 +201,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
         { label: "AWS", terms: ["aws"] },
         {
           label: "evidence limitation",
-          terms: [
-            "not explicitly demonstrated",
-            "not shown",
-            "no verified",
-            "does not establish",
-          ],
+          terms: evidenceLimitationTermsEn,
         },
       ],
       evidenceTerms: ["docker", "linux", "ci/cd", "github actions"],
@@ -206,12 +219,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
         { label: "Kubernetes", terms: ["kubernetes"] },
         {
           label: "evidence limitation",
-          terms: [
-            "not explicitly",
-            "not shown",
-            "no verified",
-            "not establish",
-          ],
+          terms: evidenceLimitationTermsEn,
         },
       ],
       evidenceTerms: ["docker", "linux", "ci/cd", "deployment"],
@@ -231,12 +239,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
         { label: "Salesforce", terms: ["salesforce"] },
         {
           label: "límite de evidencia",
-          terms: [
-            "no está demostrado",
-            "no se demuestra",
-            "no consta",
-            "no hay evidencia",
-          ],
+          terms: evidenceLimitationTermsEs,
         },
       ],
       unsupportedTechnologies: ["salesforce"],
@@ -253,12 +256,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
         { label: "Go", terms: [" go ", "golang"] },
         {
           label: "evidence limitation",
-          terms: [
-            "not explicitly",
-            "not shown",
-            "no verified",
-            "not establish",
-          ],
+          terms: evidenceLimitationTermsEn,
         },
       ],
       unsupportedTechnologies: ["golang", "go"],
@@ -448,7 +446,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
     locale: "en",
     messages: [
       { role: "user", content: devopsAdjacentRole },
-      { role: "assistant", content: roleAnswerContextEs },
+      { role: "assistant", content: roleAnswerContext },
       { role: "user", content: "What about AWS?" },
     ],
     expectation: {
@@ -456,7 +454,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
         { label: "AWS", terms: ["aws"] },
         {
           label: "evidence limitation",
-          terms: ["not explicitly", "not shown", "no verified"],
+          terms: evidenceLimitationTermsEn,
         },
       ],
       evidenceTerms: ["docker", "linux", "ci/cd", "github actions"],
@@ -491,7 +489,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
     locale: "es",
     messages: [
       { role: "user", content: devopsAdjacentRole },
-      { role: "assistant", content: roleAnswerContext },
+      { role: "assistant", content: roleAnswerContextEs },
       { role: "user", content: "¿Y Kubernetes?" },
     ],
     expectation: {
@@ -499,12 +497,7 @@ export const recruiterModelBenchmarkCases: RecruiterModelBenchmarkCase[] = [
         { label: "Kubernetes", terms: ["kubernetes"] },
         {
           label: "límite de evidencia",
-          terms: [
-            "no está demostrado",
-            "no se demuestra",
-            "no consta",
-            "no hay evidencia",
-          ],
+          terms: evidenceLimitationTermsEs,
         },
       ],
       evidenceTerms: ["docker", "linux", "ci/cd", "despliegue"],

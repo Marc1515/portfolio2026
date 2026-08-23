@@ -176,7 +176,7 @@ pnpm chat:benchmark:model --model qwen3:4b --filter role_comparison
 pnpm chat:benchmark:compare benchmark-results/qwen2-5-coder-3b-REPORT.json benchmark-results/qwen3-1-7b-REPORT.json benchmark-results/qwen3-4b-REPORT.json
 ```
 
-JSON and Markdown reports are written to the gitignored `benchmark-results/` directory. The deterministic benchmark score is only an approximate aid; model responses still require human review. Do not benchmark models in parallel. Cold-start unloading is intentionally unsupported because the VPS shares Ollama with another application.
+JSON and Markdown reports are written to the gitignored `benchmark-results/` directory. The deterministic benchmark score is only an approximate aid; review critical grounding failures separately, and keep human review in the model-selection process. Do not benchmark models in parallel. Cold-start unloading is intentionally unsupported because the VPS shares Ollama with another application.
 
 The production runtime image does not include pnpm, so run benchmarks from the deployed development container with Node:
 

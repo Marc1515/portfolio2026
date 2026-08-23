@@ -20,14 +20,11 @@ export const BENCHMARK_OUTPUT_TOKEN_BUDGET = 350;
 export const BENCHMARK_PASS_SCORE = 70;
 
 const PHONE_NUMBER_PATTERN = /(?:\+?\d[\d\s().-]{7,}\d)/g;
-const CONFIRMATION_TERMS = [
-  "confirm",
-  "validate",
-  "ask marc",
-  "check with marc",
-  "confirmar",
-  "validar",
-  "consultar con marc",
+const CONFIRMATION_PATTERNS = [
+  /\bconfirm(?:s|ed|ing|ation|ar|ad[oa]s?|arse|acion(?:es)?)?\b/u,
+  /\bvalid(?:ate|ates|ated|ating|ation|ar|ad[oa]s?|acion(?:es)?)\b/u,
+  /\b(?:ask|check with) marc\b/u,
+  /\bconsultar con marc\b/u,
 ];
 const ABSOLUTE_INABILITY_TERMS = [
   "cannot learn",
@@ -36,6 +33,34 @@ const ABSOLUTE_INABILITY_TERMS = [
   "no puede aprender",
   "incapaz de",
 ];
+const EVIDENCE_LIMITATION_PATTERNS = [
+  /\bno(?:(?: direct| verified| available| selected| transferable| or)){0,4} evidence\b/u,
+  /\bnot (?:explicitly )?(?:demonstrated|shown|established|verified)\b/u,
+  /\bdoes not (?:establish|demonstrate|mention|show|verify)\b/u,
+  /\bhas not explicitly stated\b/u,
+  /\bno hay evidencia\b/u,
+  /\bno (?:esta|estan) (?:explicitamente )?demostrad[oa]s?\b/u,
+  /\bno se (?:demuestra|demuestran|menciona|mencionan)\b/u,
+  /\bno consta\b/u,
+];
+const CONTRAST_PATTERNS = [
+  /\balthough\b/u,
+  /\bthough\b/u,
+  /\bhowever\b/u,
+  /\bbut\b/u,
+  /\baunque\b/u,
+  /\bpero\b/u,
+  /\bsin embargo\b/u,
+];
+
+export const BENCHMARK_CRITICAL_FAILURE_REASONS = [
+  "unsupported_positive_claim",
+  "forbidden_claim",
+  "protected_contact_exposure",
+] as const;
+
+export type BenchmarkCriticalFailureReason =
+  (typeof BENCHMARK_CRITICAL_FAILURE_REASONS)[number];
 
 export interface BenchmarkCliOptions {
   model: string;
@@ -71,6 +96,8 @@ export interface BenchmarkCaseResult {
   emptyResponse: boolean;
   deterministicScore: number;
   deterministicPass: boolean;
+  criticalFailure: boolean;
+  criticalFailureReasons: BenchmarkCriticalFailureReason[];
   qualitativeChecks: BenchmarkQualitativeCheck[];
   question: string;
   response: string | null;
@@ -89,6 +116,7 @@ export interface BenchmarkAggregate {
   skippedCases: number;
   passedCases: number;
   failedCases: number;
+  criticalFailures: number;
   successfulRequests: number;
   deterministicScore: number;
   completionRate: number;
@@ -126,7 +154,130 @@ function normalizeCheckText(value: string): string {
 }
 
 function includesAny(normalized: string, terms: string[]): boolean {
-  return terms.some((term) => normalized.includes(normalizeCheckText(term)));
+  return terms.some((term) => {
+    const boundedTerm = escapeRegExp(normalizeCheckText(term).trim()).replace(
+      /\s+/g,
+      "\\s+",
+    );
+    return new RegExp(
+      String.raw`(?:^|\s)${boundedTerm}(?=\s|\.(?:\s|$)|$)`,
+      "u",
+    ).test(normalized);
+  });
+}
+
+function matchesAny(normalized: string, patterns: RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(normalized));
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function technologyPattern(technology: string): string {
+  return escapeRegExp(normalizeCheckText(technology).trim()).replace(
+    /\s+/g,
+    "\\s+",
+  );
+}
+
+function evidenceLimitationGovernsClaim(
+  sentence: string,
+  claimIndex: number,
+): boolean {
+  const prefix = sentence.slice(0, claimIndex);
+  const limitation = EVIDENCE_LIMITATION_PATTERNS.some((pattern) =>
+    pattern.test(prefix),
+  );
+  return (
+    limitation && !CONTRAST_PATTERNS.some((pattern) => pattern.test(prefix))
+  );
+}
+
+function positiveClaimPatterns(technology: string): RegExp[] {
+  const term = technologyPattern(technology);
+  const words = String.raw`(?:\s+[\p{L}\p{N}+#./-]+){0,8}?`;
+  const shortWords = String.raw`(?:\s+[\p{L}\p{N}+#./-]+){0,3}?`;
+  return [
+    new RegExp(
+      String.raw`\b(?:has|have|includes?|possesses?)${words}\s+(?:professional\s+|commercial\s+|relevant\s+|extensive\s+)?experience(?:\s+(?:with|in|using))?${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\b(?:professional\s+|commercial\s+|relevant\s+|extensive\s+|strong\s+)?(?:experience|background|foundation|proficiency|skills?|knowledge)(?:\s+(?:with|in|of|using))?${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`(?:^|\s)${term}${shortWords}\s+(?:professional\s+|commercial\s+|relevant\s+|extensive\s+)?(?:experience|background|foundation|proficiency|skills?|knowledge)(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\b(?:has\s+)?worked\s+with${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\b(?:has\s+)?used${words}\s+${term}${words}\s+professionally\b`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\b(?:demonstrates?|shows?)${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(String.raw`\bskilled\s+in${words}\s+${term}(?=\s|$)`, "u"),
+    new RegExp(
+      String.raw`\brelevant\s+${term}${shortWords}\s+experience\b`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\b(?:tiene|posee)${words}\s+(?:experiencia|conocimientos?|dominio)(?:\s+(?:con|en|de))?${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\b(?:experiencia|conocimientos?|dominio)(?:\s+profesional)?(?:\s+(?:con|en|de))?${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\bha\s+(?:trabajado\s+con|usado)${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+    new RegExp(
+      String.raw`\b(?:demuestra|demuestran)${words}\s+${term}(?=\s|$)`,
+      "u",
+    ),
+  ];
+}
+
+function hasExplicitNegationBeforeClaim(
+  sentence: string,
+  claimIndex: number,
+): boolean {
+  const nearbyPrefix = sentence.slice(Math.max(0, claimIndex - 48), claimIndex);
+  return /\b(?:not|never|no|without)\b/u.test(nearbyPrefix);
+}
+
+function claimIsNegatedAfterTechnology(
+  sentence: string,
+  claimEndIndex: number,
+): boolean {
+  const suffix = sentence.slice(claimEndIndex, claimEndIndex + 80);
+  return (
+    /^(?:\s+(?:is|are))?\s+not\s+(?:explicitly\s+)?(?:demonstrated|shown|established|verified)\b/u.test(
+      suffix,
+    ) ||
+    /^\s+no\s+(?:(?:esta|estan)\s+(?:explicitamente\s+)?demostrad[oa]s?|se\s+(?:demuestra|demuestran))\b/u.test(
+      suffix,
+    )
+  );
+}
+
+function claimDescribesRoleRequirement(
+  sentence: string,
+  claimIndex: number,
+): boolean {
+  const prefix = sentence.slice(Math.max(0, claimIndex - 96), claimIndex);
+  return /\b(?:role|job|position|requirement|rol|puesto|vacante)\b[^.]{0,48}\b(?:requires?|required|calls for|seeks?|requiere|exige|busca)\b/u.test(
+    prefix,
+  );
 }
 
 function hasUnsupportedPositiveClaim(
@@ -134,38 +285,57 @@ function hasUnsupportedPositiveClaim(
   technologies: string[],
 ): boolean {
   const sentences = response.split(/[.!?\n]+/).map(normalizeCheckText);
-  const positiveTerms = [
-    "has experience",
-    "professional experience",
-    "commercial experience",
-    "has used",
-    "worked with",
-    "demonstrates",
-    "tiene experiencia",
-    "experiencia profesional",
-    "ha usado",
-    "ha trabajado con",
-    "demuestra",
-  ];
-  const negationTerms = [
-    " not ",
-    " no ",
-    "does not",
-    "doesn t",
-    "isn t",
-    "without",
-    "no se",
-    "sin evidencia",
-  ];
-
   return technologies.some((technology) =>
-    sentences.some(
-      (sentence) =>
-        includesAny(sentence, [technology]) &&
-        includesAny(sentence, positiveTerms) &&
-        !includesAny(sentence, negationTerms),
+    sentences.some((sentence) =>
+      positiveClaimPatterns(technology).some((pattern) => {
+        const match = pattern.exec(sentence);
+        if (!match) return false;
+        return (
+          !/\b(?:not|never|no|without)\b/u.test(match[0]) &&
+          !hasExplicitNegationBeforeClaim(sentence, match.index) &&
+          !claimIsNegatedAfterTechnology(
+            sentence,
+            match.index + match[0].length,
+          ) &&
+          !claimDescribesRoleRequirement(sentence, match.index) &&
+          !evidenceLimitationGovernsClaim(sentence, match.index)
+        );
+      }),
     ),
   );
+}
+
+function hasUnsupportedNegativeAssertion(
+  response: string,
+  technologies: string[],
+): boolean {
+  const normalized = normalizeCheckText(response);
+  return technologies.some((technology) => {
+    const term = technologyPattern(technology);
+    const words = String.raw`(?:\s+[\p{L}\p{N}+#./-]+){0,5}?`;
+    return [
+      new RegExp(
+        String.raw`\bmarc\s+(?:has\s+not|hasnt|never)\s+(?:used|worked\s+with)${words}\s+${term}(?=\s|$)`,
+        "u",
+      ),
+      new RegExp(
+        String.raw`\bmarc\s+(?:does\s+not|doesnt)\s+(?:know|have)${words}\s+${term}(?=\s|$)`,
+        "u",
+      ),
+      new RegExp(
+        String.raw`\bmarc\s+has\s+no${words}\s+${term}${words}\s+experience\b`,
+        "u",
+      ),
+      new RegExp(
+        String.raw`\bmarc\s+has\s+no${words}\s+experience(?:\s+(?:with|in|using))?${words}\s+${term}(?=\s|$)`,
+        "u",
+      ),
+      new RegExp(
+        String.raw`\bmarc\s+no\s+(?:tiene${words}\s+experiencia(?:\s+(?:con|en|de))?|sabe|conoce|ha\s+(?:usado|trabajado\s+con))${words}\s+${term}(?=\s|$)`,
+        "u",
+      ),
+    ].some((pattern) => pattern.test(normalized));
+  });
 }
 
 export function validateBenchmarkModel(
@@ -300,18 +470,13 @@ export function scoreBenchmarkResponse(
 ): {
   score: number;
   passed: boolean;
+  criticalFailure: boolean;
+  criticalFailureReasons: BenchmarkCriticalFailureReason[];
   checks: BenchmarkQualitativeCheck[];
 } {
   const expectation = benchmarkCase.expectation;
   const normalized = normalizeCheckText(response);
   const completion = response.trim().length > 0;
-  const grounding =
-    completion &&
-    Boolean(
-      expectation?.requiredConcepts.every((concept) =>
-        includesAny(normalized, concept.terms),
-      ),
-    );
   const forbiddenClaim = expectation?.forbiddenClaims?.some((claim) =>
     includesAny(normalized, [claim]),
   );
@@ -319,10 +484,22 @@ export function scoreBenchmarkResponse(
     response,
     expectation?.unsupportedTechnologies ?? [],
   );
+  const unsupportedNegativeAssertion = hasUnsupportedNegativeAssertion(
+    response,
+    expectation?.unsupportedTechnologies ?? [],
+  );
   const exposedPhone =
     Boolean(expectation?.forbidPhoneNumber) &&
     PHONE_NUMBER_PATTERN.test(response);
   PHONE_NUMBER_PATTERN.lastIndex = 0;
+  const grounding =
+    completion &&
+    !unsupportedNegativeAssertion &&
+    Boolean(
+      expectation?.requiredConcepts.every((concept) =>
+        includesAny(normalized, concept.terms),
+      ),
+    );
   const noHallucination =
     completion && !forbiddenClaim && !unsupportedPositiveClaim && !exposedPhone;
   const localeTerms =
@@ -342,8 +519,16 @@ export function scoreBenchmarkResponse(
   const framing =
     completion &&
     !includesAny(normalized, ABSOLUTE_INABILITY_TERMS) &&
+    !unsupportedPositiveClaim &&
+    !unsupportedNegativeAssertion &&
     (!expectation?.confirmationExpected ||
-      includesAny(normalized, CONFIRMATION_TERMS));
+      matchesAny(normalized, CONFIRMATION_PATTERNS));
+
+  const criticalFailureReasons: BenchmarkCriticalFailureReason[] = [];
+  if (unsupportedPositiveClaim)
+    criticalFailureReasons.push("unsupported_positive_claim");
+  if (forbiddenClaim) criticalFailureReasons.push("forbidden_claim");
+  if (exposedPhone) criticalFailureReasons.push("protected_contact_exposure");
 
   const checks: BenchmarkQualitativeCheck[] = [
     {
@@ -378,7 +563,13 @@ export function scoreBenchmarkResponse(
     0,
   );
 
-  return { score, passed: score >= BENCHMARK_PASS_SCORE, checks };
+  return {
+    score,
+    passed: score >= BENCHMARK_PASS_SCORE,
+    criticalFailure: criticalFailureReasons.length > 0,
+    criticalFailureReasons,
+    checks,
+  };
 }
 
 export function classifyBenchmarkError(
@@ -538,6 +729,8 @@ export function aggregateBenchmarkResults(
     skippedCases: results.length - attempted.length,
     passedCases,
     failedCases: attempted.length - passedCases,
+    criticalFailures: attempted.filter((result) => result.criticalFailure)
+      .length,
     successfulRequests: successful.length,
     deterministicScore:
       attempted.length === 0

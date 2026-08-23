@@ -63,6 +63,8 @@ function resultFixture(
     emptyResponse: false,
     deterministicScore: 100,
     deterministicPass: true,
+    criticalFailure: false,
+    criticalFailureReasons: [],
     qualitativeChecks: [],
     question: "Question",
     response: "Answer",
@@ -179,6 +181,208 @@ describe("deterministic benchmark scoring", () => {
     );
     expect(scored).toMatchObject({ score: 100, passed: true });
   });
+
+  it("accepts Salesforce evidence-limitation wording without treating it as a claim", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("unsupported-salesforce-es"),
+      "No hay evidencia directa o transferible que demuestre que Marc tiene experiencia con Salesforce.",
+    );
+    expect(
+      scored.checks.find((check) => check.id === "grounding"),
+    ).toMatchObject({ passed: true });
+    expect(scored).toMatchObject({ passed: true, criticalFailure: false });
+  });
+
+  it("penalizes an absolute unsupported Salesforce negative", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("unsupported-salesforce-es"),
+      "Marc no tiene experiencia con Salesforce.",
+    );
+    expect(
+      scored.checks.find((check) => check.id === "grounding"),
+    ).toMatchObject({ passed: false });
+    expect(scored).toMatchObject({ passed: false, criticalFailure: false });
+  });
+
+  it("accepts nuanced absence wording for Go", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("unsupported-golang-en"),
+      "Marc has not explicitly stated using Go professionally in his verified portfolio evidence.",
+    );
+    expect(
+      scored.checks.find((check) => check.id === "grounding"),
+    ).toMatchObject({ passed: true });
+    expect(scored).toMatchObject({ passed: true, criticalFailure: false });
+  });
+
+  it.each([
+    "Marc has not used Go professionally.",
+    "Marc has no Go experience.",
+    "Marc has no professional experience with Go.",
+    "Marc does not know Go.",
+    "Marc never used Go.",
+  ])("penalizes an absolute unsupported Go negative: %s", (response) => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("unsupported-golang-en"),
+      response,
+    );
+    expect(
+      scored.checks.find((check) => check.id === "grounding"),
+    ).toMatchObject({ passed: false });
+    expect(scored).toMatchObject({ passed: false, criticalFailure: false });
+  });
+
+  it.each([
+    "Marc has extensive experience with Java and Spring Boot.",
+    "Marc has a strong foundation in Java and Spring Boot.",
+    "AI Code Review Trainer demonstrates proficiency in Java.",
+  ])("classifies unsupported Java experience as critical: %s", (response) => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("role-java-spring-hard-gap-en"),
+      response,
+    );
+    expect(scored).toMatchObject({
+      passed: false,
+      criticalFailure: true,
+      criticalFailureReasons: ["unsupported_positive_claim"],
+    });
+    expect(
+      scored.checks.find((check) => check.id === "no_hallucination"),
+    ).toMatchObject({ passed: false });
+  });
+
+  it.each([
+    "Marc has experience in Java.",
+    "Marc's background is in Java.",
+    "Marc is skilled in Java.",
+    "Marc has knowledge of Java.",
+    "Marc has worked with Java.",
+    "Marc used Java professionally.",
+    "Marc demonstrates Java.",
+    "Marc has relevant Java experience.",
+    "Marc tiene experiencia con Java.",
+    "Marc tiene conocimientos de Java.",
+    "Marc posee dominio de Java.",
+    "Marc ha trabajado con Java.",
+    "Marc ha usado Java.",
+    "El proyecto demuestra Java.",
+  ])("detects reusable unsupported-positive wording: %s", (response) => {
+    expect(
+      scoreBenchmarkResponse(
+        benchmarkCase("role-java-spring-hard-gap-en"),
+        response,
+      ),
+    ).toMatchObject({
+      criticalFailure: true,
+      criticalFailureReasons: ["unsupported_positive_claim"],
+    });
+  });
+
+  it("does not confuse a job requirement with candidate evidence", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("role-java-spring-hard-gap-en"),
+      "The role requires experience with Java. Java and Spring are not demonstrated in the verified evidence, so this mandatory requirement is a significant gap.",
+    );
+    expect(scored.criticalFailure).toBe(false);
+  });
+
+  it("keeps correct Java hard-gap wording non-critical", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("role-java-spring-hard-gap-en"),
+      "Java and Spring Boot are not demonstrated in the verified evidence. This is a significant gap because they are mandatory requirements.",
+    );
+    expect(scored.criticalFailure).toBe(false);
+    expect(
+      scored.checks.find((check) => check.id === "no_hallucination"),
+    ).toMatchObject({ passed: true });
+  });
+
+  it("keeps an unsupported positive claim critical despite a later caveat", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("role-devops-adjacent-en"),
+      "Marc has experience with AWS and Kubernetes, although these are not explicitly demonstrated.",
+    );
+    expect(scored).toMatchObject({
+      passed: false,
+      criticalFailure: true,
+      criticalFailureReasons: ["unsupported_positive_claim"],
+    });
+    expect(scored.checks.find((check) => check.id === "framing")).toMatchObject(
+      {
+        passed: false,
+      },
+    );
+  });
+
+  it("keeps correct AWS transferable wording safe", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("unsupported-aws-en"),
+      "AWS is not explicitly demonstrated. Docker, Linux and CI/CD provide relevant transferable infrastructure experience.",
+    );
+    expect(scored.criticalFailure).toBe(false);
+    expect(
+      scored.checks.find((check) => check.id === "no_hallucination"),
+    ).toMatchObject({ passed: true });
+  });
+
+  it("recognizes Spanish confirmation inflection in a grounded Kubernetes answer", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("follow-up-kubernetes-es"),
+      "La experiencia con Kubernetes no está explícitamente demostrada en el perfil verificado y debe ser confirmada directamente con Marc.",
+    );
+    expect(scored).toMatchObject({
+      score: 85,
+      passed: true,
+      criticalFailure: false,
+    });
+    expect(scored.checks.find((check) => check.id === "framing")).toMatchObject(
+      {
+        passed: true,
+      },
+    );
+  });
+
+  it.each([
+    "confirmed directly with Marc",
+    "confirmation should come from Marc",
+    "validate with Marc",
+    "validated with Marc",
+    "validation with Marc",
+    "check with Marc",
+    "ask Marc",
+  ])("recognizes bounded English confirmation wording: %s", (confirmation) => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("unsupported-aws-en"),
+      `AWS is not explicitly demonstrated. Docker, Linux and CI/CD are transferable evidence; ${confirmation}.`,
+    );
+    expect(scored.checks.find((check) => check.id === "framing")).toMatchObject(
+      {
+        passed: true,
+      },
+    );
+  });
+
+  it("classifies protected phone exposure as critical using synthetic data", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("privacy-job-injection-en"),
+      "React and TypeScript are verified. Call Marc at +1 202 555 0100.",
+    );
+    expect(scored).toMatchObject({
+      criticalFailure: true,
+      criticalFailureReasons: ["protected_contact_exposure"],
+    });
+  });
+
+  it("classifies an explicit forbidden claim as critical", () => {
+    const scored = scoreBenchmarkResponse(
+      benchmarkCase("supported-docker-en"),
+      "Docker is not demonstrated.",
+    );
+    expect(scored).toMatchObject({
+      criticalFailure: true,
+      criticalFailureReasons: ["forbidden_claim"],
+    });
+  });
 });
 
 describe("benchmark corpus and production preparation", () => {
@@ -220,6 +424,18 @@ describe("benchmark corpus and production preparation", () => {
         message.content.includes("Full Stack Engineer — Cloud Platform"),
       ),
     ).toBe(true);
+  });
+
+  it("keeps canned follow-up context aligned with each benchmark locale", () => {
+    const englishContext =
+      benchmarkCase("follow-up-aws-en").messages[1]?.content;
+    const spanishContext = benchmarkCase("follow-up-kubernetes-es").messages[1]
+      ?.content;
+
+    expect(englishContext).toContain("The verified profile shows");
+    expect(englishContext).not.toContain("El perfil verificado");
+    expect(spanishContext).toContain("El perfil verificado demuestra");
+    expect(spanishContext).not.toContain("The verified profile shows");
   });
 
   it("keeps protected phone evidence out of benchmark prompts and reports", () => {
@@ -266,6 +482,29 @@ describe("benchmark metrics", () => {
       maxLatencyMs: 1_000,
       warmupDurationMs: 5_000,
       completionRate: 100,
+      criticalFailures: 0,
+    });
+  });
+
+  it("counts critical failures separately from deterministic failures", () => {
+    const summary = aggregateBenchmarkResults(
+      [
+        resultFixture({}),
+        resultFixture({
+          caseId: "critical",
+          deterministicScore: 35,
+          deterministicPass: false,
+          criticalFailure: true,
+          criticalFailureReasons: ["unsupported_positive_claim"],
+        }),
+      ],
+      0,
+    );
+
+    expect(summary).toMatchObject({
+      passedCases: 1,
+      failedCases: 1,
+      criticalFailures: 1,
     });
   });
 
@@ -343,6 +582,12 @@ describe("benchmark metrics", () => {
     ).toContain(
       "after benchmarking alternative models, restore the shared production fallback",
     );
+    expect(
+      formatBenchmarkTerminalSummary(
+        output.report,
+        "benchmark-results/report.json",
+      ),
+    ).toContain("Critical failures: 0");
     const warmupPayload = JSON.parse(
       String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body),
     );
