@@ -165,6 +165,40 @@ Run the command for the deployed portfolio container. The smoke script sends onl
 
 From any shell where the same non-secret Ollama variables are already exported, the equivalent repository command is `pnpm chat:smoke:ollama`.
 
+### Recruiter AI model benchmark
+
+The developer-only model benchmark compares local Ollama models against the same recruiter intent, retrieval, prompt-history and prompt-building path used in production. It calls the private `OLLAMA_BASE_URL` directly, runs models sequentially, warms the selected model before timing cases, and uses a benchmark-only `5m` keep-alive (optionally override it with `OLLAMA_BENCHMARK_KEEP_ALIVE`). It does not change the production provider, model or persistent keep-alive. Qwen Code (`qwen2.5-coder:3b`) remains required by AI Code Review Trainer.
+
+```bash
+pnpm chat:benchmark:model --model qwen2.5-coder:3b
+pnpm chat:benchmark:model --model qwen3:1.7b --locale en
+pnpm chat:benchmark:model --model qwen3:4b --filter role_comparison
+pnpm chat:benchmark:compare benchmark-results/qwen2-5-coder-3b-REPORT.json benchmark-results/qwen3-1-7b-REPORT.json benchmark-results/qwen3-4b-REPORT.json
+```
+
+JSON and Markdown reports are written to the gitignored `benchmark-results/` directory. The deterministic benchmark score is only an approximate aid; model responses still require human review. Do not benchmark models in parallel. Cold-start unloading is intentionally unsupported because the VPS shares Ollama with another application.
+
+The production runtime image does not include pnpm, so run benchmarks from the deployed development container with Node:
+
+```bash
+docker exec ollama ollama list
+docker exec ollama ollama ps
+docker stats --no-stream ollama
+docker exec portfolio2026-dev node scripts/recruiter-model-benchmark.mjs --model qwen2.5-coder:3b
+docker exec portfolio2026-dev node scripts/recruiter-model-benchmark.mjs --model qwen3:1.7b
+docker exec portfolio2026-dev node scripts/recruiter-model-benchmark.mjs --model qwen3:4b
+docker cp portfolio2026-dev:/app/benchmark-results ./benchmark-results
+```
+
+Because the VPS uses one shared Ollama instance, an alternative benchmark model may temporarily displace the resident production fallback under RAM pressure. After finishing the benchmark session, restore and verify the production fallback manually:
+
+```bash
+docker exec portfolio2026-prod node scripts/ollama-warmup.mjs
+docker exec ollama ollama ps
+```
+
+The expected current production state is `qwen2.5-coder:3b ... Forever`. The benchmark never unloads models or invokes this production warm-up automatically.
+
 ### Request protection and deployment
 
 Rate limits, the Cloudflare failure cooldown, Ollama concurrency, and the Ollama daily fallback budget are process-local. They are intentionally not persisted and reset when the Node process restarts. Daily counters reset at midnight UTC. Running multiple Node processes gives each process its own counters, so use infrastructure-level protection if the deployment later scales horizontally.
