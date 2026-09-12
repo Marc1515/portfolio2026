@@ -69,7 +69,7 @@ CLOUDFLARE_AI_MODEL=@cf/zai-org/glm-4.7-flash
 
 OLLAMA_BASE_URL=http://ollama:11434
 OLLAMA_MODEL=qwen2.5-coder:3b
-OLLAMA_REQUEST_TIMEOUT_MS=90000
+OLLAMA_REQUEST_TIMEOUT_MS=120000
 OLLAMA_KEEP_ALIVE=-1m
 OLLAMA_MAX_CONCURRENT_REQUESTS=1
 OLLAMA_FALLBACK_DAILY_LIMIT=25
@@ -142,11 +142,13 @@ After deployment, keep these non-secret values in the untracked VPS `.env` file:
 ```env
 OLLAMA_BASE_URL=http://ollama:11434
 OLLAMA_MODEL=qwen2.5-coder:3b
-OLLAMA_REQUEST_TIMEOUT_MS=90000
+OLLAMA_REQUEST_TIMEOUT_MS=120000
 OLLAMA_KEEP_ALIVE=-1m
 ```
 
-Development and production deployments warm the configured model from the newly deployed portfolio container. This direct infrastructure request uses a separate bounded 120-second warm-up timeout and does not consume the recruiter's fallback budget; the recruiter request timeout remains 90 seconds. A warm-up failure is reported as a deployment warning because Cloudflare remains the primary provider. Keeping Qwen resident intentionally uses additional RAM in exchange for removing CPU cold-start latency.
+Development and production deployments warm the configured model from the newly deployed portfolio container. This direct infrastructure request uses a separate bounded 120-second warm-up timeout and does not consume the recruiter's fallback budget; the recommended recruiter fallback timeout is also 120 seconds. A warm-up failure is reported as a deployment warning because Cloudflare remains the primary provider. Keeping Qwen resident intentionally uses additional RAM in exchange for removing CPU cold-start latency.
+
+Set `OLLAMA_REQUEST_TIMEOUT_MS=120000` to match the tested VPS recovery configuration. The representative `role_comparison` request timed out with the previous 90000 ms setting. In the successful recovery test, Cloudflare timed out after about 25 seconds, Ollama completed the fallback in about 61 seconds, and the complete request took about 86 seconds.
 
 Safely inspect the runtime topology without printing environment values or provider output:
 
@@ -178,7 +180,9 @@ pnpm chat:benchmark:compare benchmark-results/qwen2-5-coder-3b-REPORT.json bench
 
 JSON and Markdown reports are written to the gitignored `benchmark-results/` directory. The deterministic benchmark score is only an approximate aid; model responses still require human review. Do not benchmark models in parallel. Cold-start unloading is intentionally unsupported because the VPS shares Ollama with another application.
 
-The production runtime image does not include pnpm, so run benchmarks from the deployed development container with Node:
+Docker Compose explicitly selects the minimal `runner` target for production and `benchmark-runner` for development. Both reuse the same non-root application runtime and operational smoke/warm-up scripts. Only `benchmark-runner` adds benchmark scripts, their required TypeScript modules and a writable `benchmark-results/` directory; production contains none of these benchmark-only files. A Docker build without `--target` also selects the minimal `runner`. This keeps repository content identical across environments while selecting tooling through runtime configuration.
+
+The runtime images do not include pnpm, so run benchmarks from the deployed development container with Node:
 
 ```bash
 docker exec ollama ollama list
@@ -212,7 +216,7 @@ When an `Origin` header is present, `/api/chat` accepts only the request's own o
 - [ ] Cloudflare account ID, API token, and model are configured server-side.
 - [ ] The external `portfolio-ai` network reports `internal=true`, and both the portfolio and `ollama` containers belong to it.
 - [ ] `OLLAMA_BASE_URL=http://ollama:11434` and `OLLAMA_MODEL=qwen2.5-coder:3b` are set in the untracked VPS `.env`.
-- [ ] `OLLAMA_REQUEST_TIMEOUT_MS=90000` is set for the bounded CPU fallback window.
+- [ ] `OLLAMA_REQUEST_TIMEOUT_MS=120000` is set for the bounded CPU fallback window.
 - [ ] `OLLAMA_KEEP_ALIVE=-1m` is set and `ollama ps` reports the configured model resident after deployment.
 - [ ] `node scripts/ollama-warmup.mjs` passes from inside the deployed portfolio container.
 - [ ] `node scripts/ollama-smoke.mjs` passes from inside the deployed portfolio container.

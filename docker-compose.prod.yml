@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
     env_file:
       - .env
     restart: unless-stopped
