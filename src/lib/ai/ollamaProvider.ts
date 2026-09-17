@@ -167,6 +167,7 @@ export class OllamaAIProvider implements AIProvider {
           model,
           messages,
           stream: false,
+          think: false,
           keep_alive: keepAlive,
           options: { temperature: 0.2, num_predict: 350 },
         }),

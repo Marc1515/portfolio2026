@@ -60,6 +60,7 @@ describe("OllamaAIProvider", () => {
     expect(JSON.parse(String(request.body))).toMatchObject({
       model: "qwen2.5-coder:3b",
       stream: false,
+      think: false,
       keep_alive: "-1m",
       options: { temperature: 0.2, num_predict: 350 },
     });
