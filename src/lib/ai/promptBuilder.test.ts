@@ -147,7 +147,7 @@ describe("buildRecruiterPrompt", () => {
     );
   });
 
-  it("adds strict role-comparison instructions without scores", () => {
+  it("adds concise four-section role-comparison instructions without scores", () => {
     const prompt = build(
       [
         {
@@ -161,7 +161,16 @@ describe("buildRecruiterPrompt", () => {
     const system = prompt[0]?.content ?? "";
 
     expect(system).toContain("Strong verified matches");
+    expect(system).toContain("Related / transferable experience");
     expect(system).toContain("Potential gaps / not explicitly demonstrated");
+    expect(system).toContain("Points to confirm with Marc");
+    expect(system).toContain(
+      "Keep the entire final answer under 1,500 characters, including headings and whitespace",
+    );
+    expect(system).toContain("Keep four plain-text sections");
+    expect(system).toContain("short, concise bullets");
+    expect(system).toContain("only the most relevant evidence");
+    expect(system).toContain("do not repeat evidence across sections");
     expect(system).toContain("Do not provide a percentage");
   });
 
