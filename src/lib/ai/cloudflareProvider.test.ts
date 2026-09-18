@@ -38,6 +38,9 @@ describe("CloudflareAIProvider", () => {
       messages,
       temperature: 0.2,
       reasoning_effort: "low",
+      chat_template_kwargs: {
+        enable_thinking: false,
+      },
       max_completion_tokens: 1_200,
       stream: false,
     });
