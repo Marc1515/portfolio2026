@@ -174,6 +174,9 @@ export class CloudflareAIProvider implements AIProvider {
             messages,
             temperature: 0.2,
             reasoning_effort: CLOUDFLARE_REASONING_EFFORT,
+            chat_template_kwargs: {
+              enable_thinking: false,
+            },
             max_completion_tokens: CLOUDFLARE_MAX_COMPLETION_TOKENS,
             stream: false,
           }),
