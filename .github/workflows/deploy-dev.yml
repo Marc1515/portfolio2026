@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Deploy dev locally
         run: |
-          cd ~/apps/portfolio2026
+          cd ~/apps/portfolio2026-dev
           git fetch origin
           git checkout dev
           git reset --hard origin/dev
@@ -35,7 +35,10 @@ jobs:
           else
             echo "::warning::Ollama container not found; deploying without runtime fallback connectivity."
           fi
-          docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
+          docker compose \
+            -f docker-compose.dev.yml \
+            -f docker-compose.dev.secure.yml \
+            up -d --build --remove-orphans
           if [ "$ollama_container" = "ollama" ]; then
             if ! docker exec portfolio2026-dev node scripts/ollama-warmup.mjs; then
               echo "::warning::Private Ollama warm-up failed; Cloudflare primary remains available."
