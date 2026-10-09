@@ -425,8 +425,8 @@ export const recruiterKnowledgeEntries = [
     category: "education",
     title: { en: "Education and training", es: "Educación y formación" },
     content: {
-      en: "Master's Degree in AI Development — in progress, 2026–present. English Language Training, EF Education First, Australia — 2024. Studies in Web Application Development (DAW) — 2020 and Systems and Network Administration (ASIR) — 2019; the public evidence does not establish completion of those diplomas.",
-      es: "Máster en Desarrollo de IA — en curso, 2026–presente. Formación de inglés, EF Education First, Australia — 2024. Estudios en Desarrollo de Aplicaciones Web (DAW) — 2020 y Administración de Sistemas Informáticos en Red (ASIR) — 2019; la evidencia pública no acredita la finalización de esos títulos.",
+      en: "Master's Degree in AI Development — completed, 2026. English Language Training, EF Education First, Australia — 2024. Studies in Web Application Development (DAW) — 2020 and Systems and Network Administration (ASIR) — 2019; the public evidence does not establish completion of those diplomas.",
+      es: "Máster en Desarrollo de IA — finalizado, 2026. Formación de inglés, EF Education First, Australia — 2024. Estudios en Desarrollo de Aplicaciones Web (DAW) — 2020 y Administración de Sistemas Informáticos en Red (ASIR) — 2019; la evidencia pública no acredita la finalización de esos títulos.",
     },
     keywords: {
       en: ["education", "training", "studies", "master", "daw", "asir"],
