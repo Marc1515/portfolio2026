@@ -36,6 +36,8 @@ jobs:
             echo "::warning::Ollama container not found; deploying without runtime fallback connectivity."
           fi
           docker compose \
+            --env-file .env \
+            --env-file .env.traefik \
             -f docker-compose.dev.yml \
             -f docker-compose.dev.secure.yml \
             up -d --build --remove-orphans
